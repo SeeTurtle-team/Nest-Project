@@ -48,7 +48,7 @@ import { UserImgEntity } from './entities/userImg.entity';
         UserEntity,
         UserImgEntity,
       ],
-      synchronize: true,
+      synchronize: false,
       autoLoadEntities: true,
       logging: true,
     }),

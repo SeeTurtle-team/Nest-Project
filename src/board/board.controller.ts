@@ -10,8 +10,8 @@ export class BoardController {
 
   @ApiOperation({ summary: '게시판 전체 조회' })
   @Get()
-  getBoard() {
+  async getAll() {
     this.logger.log('-----GET /board');
-    return this.boardService.getBoard();
+    return await this.boardService.getAll();
   }
 }

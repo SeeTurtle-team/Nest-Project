@@ -3,6 +3,7 @@ import { BoardService } from './board.service';
 import { Repository } from 'typeorm';
 import { BoardEntity } from 'src/entities/board.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { BoardRepository } from './repository/board.repository';
 
 const MockBoardRepository = () => ({
   find:jest.fn(),
@@ -17,16 +18,14 @@ describe('BoardService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BoardService,{
-          provide:getRepositoryToken(BoardEntity),
+          provide:getRepositoryToken(BoardRepository),
           useValue : MockBoardRepository(),
         }
       ],
     }).compile();
 
     service = module.get<BoardService>(BoardService);
-    boardRepository = module.get<MockRepository<BoardEntity>>(
-      getRepositoryToken(BoardEntity)
-    )
+    boardRepository = module.get(getRepositoryToken(BoardRepository))
   });
 
   it('should be defined', () => {

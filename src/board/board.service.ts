@@ -7,7 +7,7 @@ export class BoardService {
   constructor(private readonly boardRepository: BoardRepository) {}
 
   /**
-   *get all boards with nicnname
+   *get all boards with nickname
    */
   async getAll() {
     try {

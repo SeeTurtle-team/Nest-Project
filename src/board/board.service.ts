@@ -7,7 +7,7 @@ export class BoardService {
   constructor(private readonly boardRepository: BoardRepository) {}
 
   /**
-   *get all boards
+   *get all boards with nicnname
    */
   async getAll() {
     try {
@@ -28,7 +28,7 @@ export class BoardService {
 
       return board;
     } catch (err) {
-      this.logger.error('게시판 조회 중 에러 발생');
+      this.logger.error(err);
       throw new HttpException(
         {
           status: HttpStatus.NOT_FOUND,

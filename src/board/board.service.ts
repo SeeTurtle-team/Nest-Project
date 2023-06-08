@@ -1,5 +1,6 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { BoardRepository } from './repository/board.repository';
+import { BoardEntity } from 'src/entities/board.entity';
 
 @Injectable()
 export class BoardService {
@@ -33,6 +34,50 @@ export class BoardService {
         {
           status: HttpStatus.NOT_FOUND,
           error: '게시판 조회 중 에러 발생',
+        },
+        404,
+      );
+    }
+  }
+
+  /**
+   * create board
+   * @param createData
+   */
+  async create(createData) {
+    const boardData = new BoardEntity();
+    boardData.title = createData.title;
+    boardData.contents = createData.contents;
+    boardData.user = createData.userId;
+    boardData.boardCategory = createData.boardCategoryId;
+    boardData.dateTime = new Date();
+    boardData.isDeleted = false;
+    boardData.isModified = false;
+    boardData.recommand = 0;
+    try {
+      const board = await this.boardRepository
+        .createQueryBuilder()
+        .insert()
+        .into('board')
+        .values({
+          title: boardData.title,
+          contents: boardData.contents,
+          dateTime: boardData.dateTime,
+          isDeleted: boardData.isDeleted,
+          isModified: boardData.isModified,
+          recommand: boardData.recommand,
+          user: boardData.user,
+          boardCategory: boardData.boardCategory,
+        })
+        .execute();
+
+      return board;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: '게시판 생성 중 에러 발생',
         },
         404,
       );

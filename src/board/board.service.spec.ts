@@ -28,7 +28,25 @@ describe('BoardService', () => {
     boardRepository = module.get(getRepositoryToken(BoardRepository))
   });
 
+
+  // afterEach(async () => {
+  //   // 테스트용 데이터 삭제
+  //   await boardRepository.clear();
+  // });
+
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+
+  describe('getAll',() => {
+    it('should return array type',async ()=>{
+      // jest.spyOn(service,'getAll').mockReturnValue
+      const items = await service.getAll();
+      console.log(items)
+      expect(items).toBeDefined();
+      expect(Array.isArray(items)).toBeTruthy();
+    })
+  })
+  
 });

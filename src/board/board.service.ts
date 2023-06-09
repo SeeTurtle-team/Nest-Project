@@ -86,3 +86,5 @@ export class BoardService {
     }
   }
 }
+
+//아니 이게 왜 안 뜨지 왜 안 뜰까 왜?

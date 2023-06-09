@@ -14,6 +14,7 @@ export class BoardService {
       const board = await this.boardRepository
         .createQueryBuilder('board')
         .select([
+          'board.id',    //id 값을 넘겨주어야 프론트에서 처리가 가능합니다
           'board.title',
           'board.dateTime',
           'board.isDeleted',

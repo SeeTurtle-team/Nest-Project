@@ -13,7 +13,7 @@ export class BoardService {
     try {
       const board = await this.boardRepository
         .createQueryBuilder('board')
-        .select([
+        .select([//이거 leftjoinandselect 쓰면 한번에 다 나올거에요 한번 바꿔보세요
           'board.id',    //id 값을 넘겨주어야 프론트에서 처리가 가능합니다
           'board.title',
           'board.dateTime',

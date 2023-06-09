@@ -56,7 +56,7 @@ export class BoardService {
     boardData.isModified = false;
     boardData.recommand = 0;
     try {
-      const board = await this.boardRepository
+      await this.boardRepository
         .createQueryBuilder()
         .insert()
         .into('board')

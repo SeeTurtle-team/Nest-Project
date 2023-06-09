@@ -15,6 +15,7 @@ export class BoardService {
       const board = await this.boardRepository
         .createQueryBuilder('board')
         .select([
+          'board.id',
           'board.title',
           'board.dateTime',
           'board.isDeleted',
@@ -32,10 +33,10 @@ export class BoardService {
       this.logger.error(err);
       throw new HttpException(
         {
-          status: HttpStatus.NOT_FOUND,
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시판 조회 중 에러 발생',
         },
-        404,
+        500,
       );
     }
   }
@@ -71,15 +72,15 @@ export class BoardService {
         })
         .execute();
 
-      return board;
+      return { success: true };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
-          status: HttpStatus.NOT_FOUND,
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시판 생성 중 에러 발생',
         },
-        404,
+        500,
       );
     }
   }

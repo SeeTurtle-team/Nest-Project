@@ -14,8 +14,9 @@ export class BoardService {
     try {
       const board = await this.boardRepository
         .createQueryBuilder('board')
-        .select([//leftjoinandselect 사용 시 user의 비밀번호, 이메일 등 불필요한 정보가 넘어가는 것을 확인했습니다 혹시
-          'board.id',//leftjoinandselect를 사용해야 하는 다른 이유가 있을까요??
+        .select([
+          //leftjoinandselect 사용 시 user의 비밀번호, 이메일 등 불필요한 정보가 넘어가는 것을 확인했습니다 혹시
+          'board.id', //leftjoinandselect를 사용해야 하는 다른 이유가 있을까요??
           'board.title',
           'board.dateTime',
           'board.isDeleted',
@@ -85,3 +86,5 @@ export class BoardService {
     }
   }
 }
+
+//아니 이게 왜 안 뜨지 왜 안 뜰까 왜?

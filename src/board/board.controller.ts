@@ -1,6 +1,7 @@
-import { Controller, Get, Logger } from '@nestjs/common';
+import { Controller, Get, Logger, Post, Body } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BoardService } from './board.service';
+import { CreateBoardDto } from './dto/create-board.dto';
 
 @Controller('board')
 @ApiTags('Board API')
@@ -13,5 +14,12 @@ export class BoardController {
   async getAll() {
     this.logger.log('-----GET /board');
     return await this.boardService.getAll();
+  }
+
+  @ApiOperation({ summary: '게시판 작성' })
+  @Post('/create')
+  async create(@Body() boardData: CreateBoardDto) {
+    this.logger.log('-----POST /board/create');
+    return await this.boardService.create(boardData);
   }
 }

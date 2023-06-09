@@ -49,7 +49,7 @@ import { BoardModule } from './board/board.module';
         UserEntity,
         UserImgEntity,
       ],
-      synchronize: true,
+      synchronize: false,
       autoLoadEntities: true,
       logging: true,
     }),

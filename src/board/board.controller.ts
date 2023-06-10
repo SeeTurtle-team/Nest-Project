@@ -54,4 +54,11 @@ export class BoardController {
     this.logger.log('-----GET /read/:id');
     return await this.boardService.getOne(id);
   }
+
+  @ApiOperation({ summary: '타입 별 게시판 조회' })
+  @Post()
+  async getTyped(@Body() boardCategoryId: number) {
+    this.logger.log('-----POST /board');
+    return await this.boardService.getTyped(boardCategoryId);
+  }
 }

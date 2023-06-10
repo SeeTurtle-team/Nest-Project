@@ -8,15 +8,15 @@ export class BoardService {
   constructor(private readonly boardRepository: BoardRepository) {}
 
   /**
-   *get all boards with nickname
+   * get all boards with nickname
+   * @return board
    */
   async getAll() {
     try {
       const board = await this.boardRepository
         .createQueryBuilder('board')
         .select([
-          //leftjoinandselect 사용 시 user의 비밀번호, 이메일 등 불필요한 정보가 넘어가는 것을 확인했습니다 혹시
-          'board.id', //leftjoinandselect를 사용해야 하는 다른 이유가 있을까요??
+          'board.id',
           'board.title',
           'board.dateTime',
           'board.isDeleted',
@@ -25,6 +25,7 @@ export class BoardService {
           'board.boardCategoryId',
           'user.nickname',
         ])
+        .where('"isDeleted" = :isDeleted', { isDeleted: false })
         .leftJoin('board.user', 'user')
         .orderBy('board.dateTime', 'DESC')
         .getRawMany();
@@ -45,6 +46,7 @@ export class BoardService {
   /**
    * create board
    * @param createData
+   * @return success: true || exception
    */
   async create(createData) {
     const boardData = new BoardEntity();
@@ -80,6 +82,76 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시판 생성 중 에러 발생',
+        },
+        500,
+      );
+    }
+  }
+
+  /**
+   * delete board
+   * @param deleteData
+   * @return success: true || exception
+   */
+  async delete(deleteData) {
+    try {
+      await this.boardRepository
+        .createQueryBuilder('board')
+        .update()
+        .set({
+          isDeleted: true,
+        })
+        .where('id = :id', { id: deleteData.id })
+        .andWhere('userId = :userId', { userId: deleteData.userId })
+        .execute();
+
+      return { success: true };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '게시판 삭제 중 에러 발생',
+        },
+        500,
+      );
+    }
+  }
+
+  /**
+   * update board
+   * @param updateData
+   * @returns success: true || exception
+   */
+  async update(updateData) {
+    const boardData = new BoardEntity();
+    boardData.id = updateData.id;
+    boardData.title = updateData.title;
+    boardData.contents = updateData.contents;
+    boardData.user = updateData.userId;
+    boardData.boardCategory = updateData.boardCategoryId;
+    boardData.isModified = true;
+    try {
+      await this.boardRepository
+        .createQueryBuilder('board')
+        .update()
+        .set({
+          title: boardData.title,
+          contents: boardData.contents,
+          boardCategory: boardData.boardCategory,
+          isModified: boardData.isModified,
+        })
+        .where('id = :id', { id: boardData.id })
+        .andWhere('userId = :userId', { userId: boardData.user })
+        .execute();
+
+      return { success: true };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '게시판 수정 중 에러 발생',
         },
         500,
       );

@@ -6,6 +6,7 @@ import {
   Body,
   Delete,
   Patch,
+  Param,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BoardService } from './board.service';
@@ -45,5 +46,12 @@ export class BoardController {
   async update(@Body() updateData: UpdateBoardDto) {
     this.logger.log('-----PATCH /board/update');
     return await this.boardService.update(updateData);
+  }
+
+  @ApiOperation({ summary: '게시글 열람' })
+  @Get('/read/:id')
+  async getOne(@Param('id') id: number) {
+    this.logger.log('-----GET /read/:id');
+    return await this.boardService.getOne(id);
   }
 }

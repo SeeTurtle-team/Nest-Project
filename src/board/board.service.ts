@@ -157,4 +157,25 @@ export class BoardService {
       );
     }
   }
+
+  async getOne(id) {
+    try {
+      const board = await this.boardRepository
+        .createQueryBuilder('board')
+        .select()
+        .where('id = :id', { id: id })
+        .getRawMany();
+
+      return board;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '게시글 조회 중 에러 발생',
+        },
+        500,
+      );
+    }
+  }
 }

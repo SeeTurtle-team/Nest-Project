@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Post, Body } from '@nestjs/common';
+import { Controller, Get, Logger, Post, Body, Delete } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BoardService } from './board.service';
 import { CreateBoardDto } from './dto/create-board.dto';
@@ -25,7 +25,7 @@ export class BoardController {
   }
 
   @ApiOperation({ summary: '게시글 삭제' })
-  @Post('/delete')
+  @Delete('/delete')
   async delete(@Body() deleteData: DeleteBoardDto) {
     this.logger.log('-----POST /board/delete');
     return await this.boardService.delete(deleteData);

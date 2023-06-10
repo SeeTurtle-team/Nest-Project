@@ -1,8 +1,17 @@
-import { Controller, Get, Logger, Post, Body, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Logger,
+  Post,
+  Body,
+  Delete,
+  Patch,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BoardService } from './board.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { DeleteBoardDto } from './dto/delete-board.dto';
+import { UpdateBoardDto } from './dto/update-board.dto';
 
 @Controller('board')
 @ApiTags('Board API')
@@ -27,7 +36,14 @@ export class BoardController {
   @ApiOperation({ summary: '게시글 삭제' })
   @Delete('/delete')
   async delete(@Body() deleteData: DeleteBoardDto) {
-    this.logger.log('-----POST /board/delete');
+    this.logger.log('-----DELETE /board/delete');
     return await this.boardService.delete(deleteData);
+  }
+
+  @ApiOperation({ summary: '게시글 수정' })
+  @Patch('/update')
+  async update(@Body() updateData: UpdateBoardDto) {
+    this.logger.log('-----PATCH /board/update');
+    return await this.boardService.update(updateData);
   }
 }

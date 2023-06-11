@@ -11,7 +11,7 @@ export class BoardService {
    * get all boards with nickname
    * @return board
    */
-  async getAll() {
+  async getAll(): Promise<object> {
     try {
       const board = await this.boardRepository
         .createQueryBuilder('board')
@@ -21,7 +21,7 @@ export class BoardService {
           'board.dateTime',
           'board.isDeleted',
           'board.isModified',
-          'board.recommand',
+          'board.recommend',
           'board.boardCategoryId',
           'user.nickname',
         ])
@@ -46,19 +46,20 @@ export class BoardService {
   /**
    * create board
    * @param createData
-   * @return success: true || exception
+   * @return success: true
    */
-  async create(createData) {
-    const boardData = new BoardEntity();
-    boardData.title = createData.title;
-    boardData.contents = createData.contents;
-    boardData.user = createData.userId;
-    boardData.boardCategory = createData.boardCategoryId;
-    boardData.dateTime = new Date();
-    boardData.isDeleted = false;
-    boardData.isModified = false;
-    boardData.recommand = 0;
+  async create(createData): Promise<object> {
     try {
+      const boardData = new BoardEntity();
+      boardData.title = createData.title;
+      boardData.contents = createData.contents;
+      boardData.user = createData.userId;
+      boardData.boardCategory = createData.boardCategoryId;
+      boardData.dateTime = new Date();
+      boardData.isDeleted = false;
+      boardData.isModified = false;
+      boardData.recommend = 0;
+
       await this.boardRepository
         .createQueryBuilder()
         .insert()
@@ -69,7 +70,7 @@ export class BoardService {
           dateTime: boardData.dateTime,
           isDeleted: boardData.isDeleted,
           isModified: boardData.isModified,
-          recommand: boardData.recommand,
+          recommend: boardData.recommend,
           user: boardData.user,
           boardCategory: boardData.boardCategory,
         })
@@ -91,9 +92,9 @@ export class BoardService {
   /**
    * delete board
    * @param deleteData
-   * @return success: true || exception
+   * @return success: true
    */
-  async delete(deleteData) {
+  async delete(deleteData): Promise<object> {
     try {
       await this.boardRepository
         .createQueryBuilder('board')
@@ -121,17 +122,18 @@ export class BoardService {
   /**
    * update board
    * @param updateData
-   * @returns success: true || exception
+   * @returns success: true
    */
-  async update(updateData) {
-    const boardData = new BoardEntity();
-    boardData.id = updateData.id;
-    boardData.title = updateData.title;
-    boardData.contents = updateData.contents;
-    boardData.user = updateData.userId;
-    boardData.boardCategory = updateData.boardCategoryId;
-    boardData.isModified = true;
+  async update(updateData): Promise<object> {
     try {
+      const boardData = new BoardEntity();
+      boardData.id = updateData.id;
+      boardData.title = updateData.title;
+      boardData.contents = updateData.contents;
+      boardData.user = updateData.userId;
+      boardData.boardCategory = updateData.boardCategoryId;
+      boardData.isModified = true;
+
       await this.boardRepository
         .createQueryBuilder('board')
         .update()
@@ -152,6 +154,72 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시판 수정 중 에러 발생',
+        },
+        500,
+      );
+    }
+  }
+
+  /**
+   * get one board
+   * @param number - id
+   * @returns one board
+   */
+  async getOne(id): Promise<object> {
+    try {
+      const board = await this.boardRepository
+        .createQueryBuilder('board')
+        .select()
+        .where('id = :id', { id: id })
+        .getRawMany();
+
+      return board;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '게시글 조회 중 에러 발생',
+        },
+        500,
+      );
+    }
+  }
+
+  /**
+   * get typed board
+   * @param type
+   * @returns typed board
+   */
+  async getTyped(type): Promise<object> {
+    try {
+      const board = await this.boardRepository
+        .createQueryBuilder('board')
+        .select([
+          'board.id',
+          'board.title',
+          'board.dateTime',
+          'board.isDeleted',
+          'board.isModified',
+          'board.recommend',
+          'board.boardCategoryId',
+          'user.nickname',
+        ])
+        .where('"isDeleted" = :isDeleted', { isDeleted: false })
+        .andWhere('"boardCategoryId" = :boardCategoryId', {
+          boardCategoryId: type.boardCategoryId,
+        })
+        .leftJoin('board.user', 'user')
+        .orderBy('board.dateTime', 'DESC')
+        .getRawMany();
+
+      return board;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '타입 별 게시판 조회 중 에러 발생',
         },
         500,
       );

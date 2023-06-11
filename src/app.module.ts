@@ -19,6 +19,7 @@ import { SmallTalkEntity } from './entities/smallTalk.entity';
 import { SubscribeEntity } from './entities/subscribe.entity';
 import { UserImgEntity } from './entities/userImg.entity';
 import { BoardModule } from './board/board.module';
+import { BoardRecommendEntity } from './entities/boardRecommend.entity';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { BoardModule } from './board/board.module';
         BoardEntity,
         BoardCategoryEntity,
         BoardCommentEntity,
+        BoardRecommendEntity,
         EbookEntity,
         EbookCommentEntity,
         EbookFileEntity,

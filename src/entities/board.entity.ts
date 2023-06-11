@@ -9,6 +9,7 @@ import { UserEntity } from './user.entity';
 import { BoardCategoryEntity } from './boardCategory.entity';
 import { BoardCommentEntity } from './boardComment.entity';
 import { ImgEntity } from './img.entity';
+import { BoardRecommandEntity } from './boardRecommand.entity';
 
 @Entity('board')
 export class BoardEntity {
@@ -50,4 +51,10 @@ export class BoardEntity {
 
   @OneToMany((type) => ImgEntity, (imgEntity) => imgEntity.board)
   imgEntities: ImgEntity[];
+
+  @OneToMany(
+    (type) => BoardRecommandEntity,
+    (boardRecommandEntity) => boardRecommandEntity.board,
+  )
+  boardRecommandEntities: BoardRecommandEntity[];
 }

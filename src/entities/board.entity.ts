@@ -9,7 +9,7 @@ import { UserEntity } from './user.entity';
 import { BoardCategoryEntity } from './boardCategory.entity';
 import { BoardCommentEntity } from './boardComment.entity';
 import { ImgEntity } from './img.entity';
-import { BoardRecommandEntity } from './boardRecommand.entity';
+import { BoardRecommendEntity } from './boardRecommend.entity';
 
 @Entity('board')
 export class BoardEntity {
@@ -32,7 +32,7 @@ export class BoardEntity {
   isModified: Boolean;
 
   @Column()
-  recommand: number;
+  recommend: number;
 
   @ManyToOne((type) => UserEntity, (userEntity) => userEntity.boardEntities)
   user: UserEntity;
@@ -53,8 +53,8 @@ export class BoardEntity {
   imgEntities: ImgEntity[];
 
   @OneToMany(
-    (type) => BoardRecommandEntity,
-    (boardRecommandEntity) => boardRecommandEntity.board,
+    (type) => BoardRecommendEntity,
+    (boardRecommendEntity) => boardRecommendEntity.board,
   )
-  boardRecommandEntities: BoardRecommandEntity[];
+  boardRecommendEntities: BoardRecommendEntity[];
 }

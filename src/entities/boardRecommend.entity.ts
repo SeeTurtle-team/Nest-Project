@@ -2,8 +2,8 @@ import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { BoardEntity } from './board.entity';
 
-@Entity('boardRecommand')
-export class BoardRecommandEntity {
+@Entity('boardRecommend')
+export class BoardRecommendEntity {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
@@ -12,13 +12,13 @@ export class BoardRecommandEntity {
 
   @ManyToOne(
     (type) => UserEntity,
-    (userEntity) => userEntity.boardRecommandEntities,
+    (userEntity) => userEntity.boardRecommendEntities,
   )
   user: UserEntity;
 
   @ManyToOne(
     (type) => BoardEntity,
-    (boardEntity) => boardEntity.boardRecommandEntities,
+    (boardEntity) => boardEntity.boardRecommendEntities,
   )
   board: BoardEntity;
 }

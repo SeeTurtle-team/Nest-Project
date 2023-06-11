@@ -21,7 +21,7 @@ export class BoardService {
           'board.dateTime',
           'board.isDeleted',
           'board.isModified',
-          'board.recommand',
+          'board.recommend',
           'board.boardCategoryId',
           'user.nickname',
         ])
@@ -57,7 +57,7 @@ export class BoardService {
     boardData.dateTime = new Date();
     boardData.isDeleted = false;
     boardData.isModified = false;
-    boardData.recommand = 0;
+    boardData.recommend = 0;
     try {
       await this.boardRepository
         .createQueryBuilder()
@@ -69,7 +69,7 @@ export class BoardService {
           dateTime: boardData.dateTime,
           isDeleted: boardData.isDeleted,
           isModified: boardData.isModified,
-          recommand: boardData.recommand,
+          recommend: boardData.recommend,
           user: boardData.user,
           boardCategory: boardData.boardCategory,
         })
@@ -199,7 +199,7 @@ export class BoardService {
           'board.dateTime',
           'board.isDeleted',
           'board.isModified',
-          'board.recommand',
+          'board.recommend',
           'board.boardCategoryId',
           'user.nickname',
         ])

@@ -16,7 +16,7 @@ import { EbookRatingEntity } from './ebookRating.entity';
 import { SubscribeEntity } from './subscribe.entity';
 import { UserImgEntity } from './userImg.entity';
 import { SmallTalkEntity } from './smallTalk.entity';
-import { BoardRecommandEntity } from './boardRecommand.entity';
+import { BoardRecommendEntity } from './boardRecommend.entity';
 
 @Entity('user')
 export class UserEntity {
@@ -93,8 +93,8 @@ export class UserEntity {
   smallTalkEntities: SmallTalkEntity[];
 
   @OneToMany(
-    (type) => BoardRecommandEntity,
-    (boardRecommandEntity) => boardRecommandEntity.user,
+    (type) => BoardRecommendEntity,
+    (boardRecommendEntity) => boardRecommendEntity.user,
   )
-  boardRecommandEntities: BoardRecommandEntity[];
+  boardRecommendEntities: BoardRecommendEntity[];
 }

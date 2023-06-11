@@ -11,7 +11,7 @@ export class BoardCommentEntity {
   contents: string;
 
   @Column()
-  dateTime: string;
+  dateTime: Date;
 
   @Column()
   isDeleted: boolean;

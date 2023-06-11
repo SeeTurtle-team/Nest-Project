@@ -1,4 +1,4 @@
-import { IsBoolean, IsNumber } from 'class-validator';
+import { IsNumber } from 'class-validator';
 
 export class RecommendBoardDto {
   @IsNumber()
@@ -6,7 +6,4 @@ export class RecommendBoardDto {
 
   @IsNumber()
   readonly boardId: number;
-
-  @IsBoolean()
-  readonly check: boolean;
 }

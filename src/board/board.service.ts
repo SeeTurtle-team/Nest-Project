@@ -11,7 +11,7 @@ export class BoardService {
    * get all boards with nickname
    * @return board
    */
-  async getAll() {
+  async getAll(): Promise<object> {
     try {
       const board = await this.boardRepository
         .createQueryBuilder('board')
@@ -48,17 +48,18 @@ export class BoardService {
    * @param createData
    * @return success: true
    */
-  async create(createData) {
-    const boardData = new BoardEntity();
-    boardData.title = createData.title;
-    boardData.contents = createData.contents;
-    boardData.user = createData.userId;
-    boardData.boardCategory = createData.boardCategoryId;
-    boardData.dateTime = new Date();
-    boardData.isDeleted = false;
-    boardData.isModified = false;
-    boardData.recommend = 0;
+  async create(createData): Promise<object> {
     try {
+      const boardData = new BoardEntity();
+      boardData.title = createData.title;
+      boardData.contents = createData.contents;
+      boardData.user = createData.userId;
+      boardData.boardCategory = createData.boardCategoryId;
+      boardData.dateTime = new Date();
+      boardData.isDeleted = false;
+      boardData.isModified = false;
+      boardData.recommend = 0;
+
       await this.boardRepository
         .createQueryBuilder()
         .insert()
@@ -93,7 +94,7 @@ export class BoardService {
    * @param deleteData
    * @return success: true
    */
-  async delete(deleteData) {
+  async delete(deleteData): Promise<object> {
     try {
       await this.boardRepository
         .createQueryBuilder('board')
@@ -123,15 +124,16 @@ export class BoardService {
    * @param updateData
    * @returns success: true
    */
-  async update(updateData) {
-    const boardData = new BoardEntity();
-    boardData.id = updateData.id;
-    boardData.title = updateData.title;
-    boardData.contents = updateData.contents;
-    boardData.user = updateData.userId;
-    boardData.boardCategory = updateData.boardCategoryId;
-    boardData.isModified = true;
+  async update(updateData): Promise<object> {
     try {
+      const boardData = new BoardEntity();
+      boardData.id = updateData.id;
+      boardData.title = updateData.title;
+      boardData.contents = updateData.contents;
+      boardData.user = updateData.userId;
+      boardData.boardCategory = updateData.boardCategoryId;
+      boardData.isModified = true;
+
       await this.boardRepository
         .createQueryBuilder('board')
         .update()
@@ -163,7 +165,7 @@ export class BoardService {
    * @param number - id
    * @returns one board
    */
-  async getOne(id) {
+  async getOne(id): Promise<object> {
     try {
       const board = await this.boardRepository
         .createQueryBuilder('board')
@@ -189,7 +191,7 @@ export class BoardService {
    * @param type
    * @returns typed board
    */
-  async getTyped(type) {
+  async getTyped(type): Promise<object> {
     try {
       const board = await this.boardRepository
         .createQueryBuilder('board')

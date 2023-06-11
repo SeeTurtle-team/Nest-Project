@@ -14,7 +14,7 @@ export class BoardCommentService {
    * @param id
    * @returns comments
    */
-  async getComment(id) {
+  async getComment(id): Promise<object> {
     try {
       const comment = this.boardCommentRepository
         .createQueryBuilder('boardComment')
@@ -52,15 +52,16 @@ export class BoardCommentService {
    * @param createData
    * @returns success: true
    */
-  async createComment(createData) {
-    const commentData = new BoardCommentEntity();
-    commentData.contents = createData.contents;
-    commentData.user = createData.userId;
-    commentData.board = createData.boardId;
-    commentData.isDeleted = false;
-    commentData.isModified = false;
-    commentData.dateTime = new Date();
+  async createComment(createData): Promise<object> {
     try {
+      const commentData = new BoardCommentEntity();
+      commentData.contents = createData.contents;
+      commentData.user = createData.userId;
+      commentData.board = createData.boardId;
+      commentData.isDeleted = false;
+      commentData.isModified = false;
+      commentData.dateTime = new Date();
+
       await this.boardCommentRepository
         .createQueryBuilder()
         .insert()
@@ -93,15 +94,16 @@ export class BoardCommentService {
    * @param updateData
    * @return success: true
    */
-  async updateComment(updateData) {
-    const commentData = new BoardCommentEntity();
-    commentData.id = updateData.id;
-    commentData.contents = updateData.contents;
-    commentData.user = updateData.userId;
-    commentData.board = updateData.boardId;
-    commentData.isDeleted = false;
-    commentData.isModified = true;
+  async updateComment(updateData): Promise<object> {
     try {
+      const commentData = new BoardCommentEntity();
+      commentData.id = updateData.id;
+      commentData.contents = updateData.contents;
+      commentData.user = updateData.userId;
+      commentData.board = updateData.boardId;
+      commentData.isDeleted = false;
+      commentData.isModified = true;
+
       await this.boardCommentRepository
         .createQueryBuilder('boardComment')
         .update()
@@ -131,7 +133,7 @@ export class BoardCommentService {
    * @param deleteData
    * @returns success: true
    */
-  async deleteComment(deleteData) {
+  async deleteComment(deleteData): Promise<object> {
     try {
       await this.boardCommentRepository
         .createQueryBuilder('boardComment')

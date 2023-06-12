@@ -1,7 +1,6 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { BoardRepository } from './repository/board.repository';
 import { BoardEntity } from 'src/entities/board.entity';
-import { BoardRecommendRepository } from './repository/boardRecommend.repository';
 import { DataSource } from 'typeorm';
 
 @Injectable()
@@ -9,7 +8,6 @@ export class BoardService {
   private readonly logger = new Logger(BoardService.name);
   constructor(
     private readonly boardRepository: BoardRepository,
-    private readonly boardRecommendReopsitory: BoardRecommendRepository,
     private dataSource: DataSource,
   ) {}
 

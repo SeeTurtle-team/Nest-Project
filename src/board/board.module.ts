@@ -5,14 +5,12 @@ import { BoardRepository } from './repository/board.repository';
 import { TypeOrmExModule } from 'src/typeorm-ex.module';
 import { BoardCommentService } from './boardComment.service';
 import { BoardCommentRepository } from './repository/boardComment.repository';
-import { BoardRecommendRepository } from './repository/boardRecommend.repository';
 
 @Module({
   imports: [
     TypeOrmExModule.forCustomRepository([
       BoardRepository,
       BoardCommentRepository,
-      BoardRecommendRepository,
     ]),
   ],
   controllers: [BoardController],

@@ -1,13 +1,15 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { BoardRepository } from './repository/board.repository';
 import { BoardEntity } from 'src/entities/board.entity';
-import { CreateBoardDto } from './dto/create-board.dto';
-import { DeleteBoardDto } from './dto/delete-board.dto';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class BoardService {
   private readonly logger = new Logger(BoardService.name);
-  constructor(private readonly boardRepository: BoardRepository) {}
+  constructor(
+    private readonly boardRepository: BoardRepository,
+    private dataSource: DataSource,
+  ) {}
 
   /**
    * get all boards with nickname
@@ -222,6 +224,171 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '타입 별 게시판 조회 중 에러 발생',
+        },
+        500,
+      );
+    }
+  }
+
+  /**
+   * recommend board
+   * @param recommendData
+   * @returns success: true, msg: 'create recommend' | 'cancle recommend' | 'reRecommend'
+   */
+  async recommend(recommendData): Promise<object> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const check = await this.checkRecommend(
+        recommendData.boardId,
+        recommendData.userId,
+        queryRunner,
+      );
+      let res;
+      if (!!check[0]) {
+        if (check[0].check) {
+          res = await this.cancelRecommend(
+            recommendData.boardId,
+            recommendData.userId,
+            queryRunner,
+          );
+        } else {
+          res = await this.reRecommend(
+            recommendData.boardId,
+            recommendData.userId,
+            queryRunner,
+          );
+        }
+      } else {
+        res = await this.createRecommend(
+          recommendData.boardId,
+          recommendData.userId,
+          queryRunner,
+        );
+      }
+      if (res['success']) {
+        await queryRunner.commitTransaction();
+        return res;
+      } else {
+        await queryRunner.rollbackTransaction();
+        return { success: false, msg: '게시글 추천 중 에러 발생' };
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '게시글 추천 중 에러 발생',
+        },
+        500,
+      );
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async checkRecommend(boardId, userId, queryRunner) {
+    try {
+      const res = await queryRunner.query(
+        `select * from public."boardRecommend" where "userId" = ${userId} and "boardId" = ${boardId}`,
+      );
+
+      return res;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '추천 체크 중 에러 발생',
+        },
+        500,
+      );
+    }
+  }
+
+  async createRecommend(boardId, userId, queryRunner) {
+    try {
+      await queryRunner.query(
+        `insert into "boardRecommend"("check", "userId", "boardId") values(TRUE, ${userId}, ${boardId})`,
+      );
+
+      await this.changeRecommendCount(1, boardId, queryRunner);
+
+      return { success: true, msg: 'create recommend' };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '추천 생성 중 에러 발생',
+        },
+        500,
+      );
+    }
+  }
+
+  async cancelRecommend(boardId, userId, queryRunner) {
+    try {
+      await queryRunner.query(
+        `UPDATE "boardRecommend" set "check" = FALSE where "boardId" = ${boardId} and "userId" = ${userId}`,
+      );
+
+      await this.changeRecommendCount(-1, boardId, queryRunner);
+
+      return { success: true, msg: 'cancle recommend' };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '추천 취소 중 에러 발생',
+        },
+        500,
+      );
+    }
+  }
+
+  async reRecommend(boardId, userId, queryRunner) {
+    try {
+      await queryRunner.query(
+        `UPDATE "boardRecommend" set "check" = TRUE where "boardId" = ${boardId} and "userId" = ${userId}`,
+      );
+
+      await this.changeRecommendCount(1, boardId, queryRunner);
+
+      return { success: true, msg: 'reRecommend' };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '재추천 중 에러 발생',
+        },
+        500,
+      );
+    }
+  }
+
+  async changeRecommendCount(num, boardId, queryRunner) {
+    try {
+      const count = await queryRunner.query(
+        `select recommend from board where id = ${boardId}`,
+      );
+
+      await queryRunner.query(
+        `UPDATE "board" set recommend = ${
+          count[0].recommend + num
+        } where id = ${boardId}`,
+      );
+
+      return { success: true, msg: 'change count' };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '추천 수 수정 중 에러 발생',
         },
         500,
       );

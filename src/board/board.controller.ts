@@ -17,6 +17,7 @@ import { BoardCommentService } from './boardComment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { DeleteCommentDto } from './dto/delete-comment.dto';
+import { RecommendBoardDto } from './dto/recommend-board.dto';
 
 @Controller('board')
 @ApiTags('Board API')
@@ -68,6 +69,13 @@ export class BoardController {
   async getTyped(@Body() boardCategoryId: number) {
     this.logger.log('-----POST /board');
     return await this.boardService.getTyped(boardCategoryId);
+  }
+
+  @ApiOperation({ summary: '게시글 추천' })
+  @Post('/recommend')
+  async recommend(@Body() recommendData: RecommendBoardDto) {
+    this.logger.log('-----POST /board/recommend');
+    return await this.boardService.recommend(recommendData);
   }
 
   @ApiOperation({ summary: '댓글 열람' })

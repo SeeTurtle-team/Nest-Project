@@ -4,8 +4,9 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {cors:true});
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -32,6 +33,8 @@ async function bootstrap() {
   app.use(helmet.xssFilter());
   //https://lts0606.tistory.com/627
 
+  //cruf 적용 예정
+ 
   const config = new DocumentBuilder()
     .setTitle('nest server API')
     .setDescription('nest team project')

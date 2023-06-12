@@ -14,7 +14,7 @@ export class BoardCommentService {
    * @param id
    * @returns comments
    */
-  async getComment(id): Promise<object> {
+  async getComment(id:number): Promise<object> {
     try {
       const comment = this.boardCommentRepository
         .createQueryBuilder('boardComment')

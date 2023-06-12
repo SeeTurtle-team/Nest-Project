@@ -98,7 +98,7 @@ export class BoardService {
    * @param deleteData
    * @return success: true
    */
-  async delete(deleteData): Promise<object> {
+  async delete(deleteData:DeleteBoardDto): Promise<object> {
     try {
       await this.boardRepository
         .createQueryBuilder('board')
@@ -169,7 +169,7 @@ export class BoardService {
    * @param number - id
    * @returns one board
    */
-  async getOne(id): Promise<object> {
+  async getOne(id:number): Promise<object> {
     try {
       const board = await this.boardRepository
         .createQueryBuilder('board')

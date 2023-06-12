@@ -63,6 +63,7 @@ export class BoardController {
     return await this.boardService.getOne(id);
   }
 
+  /**???? */
   @ApiOperation({ summary: '타입 별 게시판 조회' })
   @Post()
   async getTyped(@Body() boardCategoryId: number) {

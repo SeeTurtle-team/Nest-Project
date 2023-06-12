@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 
 async function bootstrap() {
@@ -34,6 +35,13 @@ async function bootstrap() {
   //https://lts0606.tistory.com/627
 
   //cruf 적용 예정
+
+  // app.use(
+  //   rateLimit({
+  //     windowMs: 15 * 60 * 1000, // 15 minutes
+  //     max: 100, // limit each IP to 100 requests per windowMs
+  //   }),
+  // );
  
   const config = new DocumentBuilder()
     .setTitle('nest server API')

@@ -245,28 +245,9 @@ export class BoardService {
         recommendData.userId,
         queryRunner,
       );
-      let res;
-      if (!!check[0]) {
-        if (check[0].check) {
-          res = await this.cancelRecommend(
-            recommendData.boardId,
-            recommendData.userId,
-            queryRunner,
-          );
-        } else {
-          res = await this.reRecommend(
-            recommendData.boardId,
-            recommendData.userId,
-            queryRunner,
-          );
-        }
-      } else {
-        res = await this.createRecommend(
-          recommendData.boardId,
-          recommendData.userId,
-          queryRunner,
-        );
-      }
+
+      const res = await this.checkAndCall(check, recommendData, queryRunner);
+
       if (res['success']) {
         await queryRunner.commitTransaction();
         return res;
@@ -276,6 +257,7 @@ export class BoardService {
       }
     } catch (err) {
       this.logger.error(err);
+      await queryRunner.rollbackTransaction();
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -301,6 +283,43 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '추천 체크 중 에러 발생',
+        },
+        500,
+      );
+    }
+  }
+
+  async checkAndCall(check, recommendData, queryRunner) {
+    try {
+      let res;
+      if (!!check[0]) {
+        if (check[0].check) {
+          res = await this.cancelRecommend(
+            recommendData.boardId,
+            recommendData.userId,
+            queryRunner,
+          );
+        } else {
+          res = await this.reRecommend(
+            recommendData.boardId,
+            recommendData.userId,
+            queryRunner,
+          );
+        }
+      } else {
+        res = await this.createRecommend(
+          recommendData.boardId,
+          recommendData.userId,
+          queryRunner,
+        );
+      }
+      return res;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '체크 확인 후 함수 호출 중 에러 발생',
         },
         500,
       );

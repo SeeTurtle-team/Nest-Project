@@ -9,7 +9,7 @@ export class BoardService {
   constructor(
     private readonly boardRepository: BoardRepository,
     private dataSource: DataSource,
-  ) {}
+  ) { }
 
   /**
    * get all boards with nickname
@@ -35,6 +35,7 @@ export class BoardService {
         .getRawMany();
 
       return board;
+      
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -81,6 +82,7 @@ export class BoardService {
         .execute();
 
       return { success: true };
+
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -111,6 +113,7 @@ export class BoardService {
         .execute();
 
       return { success: true };
+
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -314,6 +317,7 @@ export class BoardService {
         );
       }
       return res;
+
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -335,6 +339,7 @@ export class BoardService {
       await this.changeRecommendCount(1, boardId, queryRunner);
 
       return { success: true, msg: 'create recommend' };
+
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -355,7 +360,8 @@ export class BoardService {
 
       await this.changeRecommendCount(-1, boardId, queryRunner);
 
-      return { success: true, msg: 'cancle recommend' };
+      return { success: true, msg: 'cancel recommend' };
+
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -377,6 +383,7 @@ export class BoardService {
       await this.changeRecommendCount(1, boardId, queryRunner);
 
       return { success: true, msg: 'reRecommend' };
+
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -396,12 +403,12 @@ export class BoardService {
       );
 
       await queryRunner.query(
-        `UPDATE "board" set recommend = ${
-          count[0].recommend + num
+        `UPDATE "board" set recommend = ${count[0].recommend + num
         } where id = ${boardId}`,
       );
 
       return { success: true, msg: 'change count' };
+
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(

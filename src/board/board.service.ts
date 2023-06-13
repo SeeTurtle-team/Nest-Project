@@ -262,6 +262,7 @@ export class BoardService {
         await queryRunner.commitTransaction();
         return res;
       } else {
+        this.logger.error('게시글 추천 중 에러 발생');
         await queryRunner.rollbackTransaction();
         return { success: false, msg: '게시글 추천 중 에러 발생' };
       }

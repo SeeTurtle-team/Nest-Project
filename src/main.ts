@@ -5,9 +5,8 @@ import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
-
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {cors:true});
+  const app = await NestFactory.create(AppModule, { cors: true });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -42,7 +41,7 @@ async function bootstrap() {
   //     max: 100, // limit each IP to 100 requests per windowMs
   //   }),
   // );
- 
+
   const config = new DocumentBuilder()
     .setTitle('nest server API')
     .setDescription('nest team project')

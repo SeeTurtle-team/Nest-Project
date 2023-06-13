@@ -18,7 +18,7 @@ export class BoardService {
       const board = await this.boardRepository
         .createQueryBuilder('board')
         .select([
-          'board.id',
+          'board.id AS',
           'board.title',
           'board.dateTime',
           'board.isDeleted',

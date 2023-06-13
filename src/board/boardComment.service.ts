@@ -41,6 +41,7 @@ export class BoardCommentService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '댓글 조회 중 에러 발생',
+          success:false
         },
         500,
       );
@@ -83,6 +84,8 @@ export class BoardCommentService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '댓글 생성 중 에러 발생',
+          success:false
+
         },
         500,
       );
@@ -122,6 +125,7 @@ export class BoardCommentService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '댓글 수정 중 에러 발생',
+          success:false
         },
         500,
       );
@@ -152,6 +156,7 @@ export class BoardCommentService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '댓글 삭제 중 에러 발생',
+          success:false
         },
         500,
       );

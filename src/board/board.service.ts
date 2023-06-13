@@ -35,13 +35,14 @@ export class BoardService {
         .getRawMany();
 
       return board;
-      
+
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시판 조회 중 에러 발생',
+          success:false
         },
         500,
       );
@@ -89,6 +90,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시판 생성 중 에러 발생',
+          success:false
         },
         500,
       );
@@ -120,6 +122,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시판 삭제 중 에러 발생',
+          success:false
         },
         500,
       );
@@ -161,6 +164,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시판 수정 중 에러 발생',
+          success:false
         },
         500,
       );
@@ -187,6 +191,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시글 조회 중 에러 발생',
+          success:false
         },
         500,
       );
@@ -227,6 +232,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '타입 별 게시판 조회 중 에러 발생',
+          success:false
         },
         500,
       );
@@ -265,6 +271,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시글 추천 중 에러 발생',
+          success:false
         },
         500,
       );
@@ -286,6 +293,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '추천 체크 중 에러 발생',
+          success:false
         },
         500,
       );
@@ -324,6 +332,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '체크 확인 후 함수 호출 중 에러 발생',
+          success:false
         },
         500,
       );
@@ -346,6 +355,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '추천 생성 중 에러 발생',
+          success:false
         },
         500,
       );
@@ -368,6 +378,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '추천 취소 중 에러 발생',
+          success:false
         },
         500,
       );
@@ -390,6 +401,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '재추천 중 에러 발생',
+          success:false
         },
         500,
       );
@@ -415,6 +427,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '추천 수 수정 중 에러 발생',
+          success:false
         },
         500,
       );

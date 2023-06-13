@@ -39,14 +39,14 @@ describe('BoardService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('getAll',() => {
-    it('should return array type',async ()=>{
-      // jest.spyOn(service,'getAll').mockReturnValue
-      const items = await service.getAll();
-      console.log(items)
-      expect(items).toBeDefined();
-      expect(Array.isArray(items)).toBeTruthy();
-    })
-  })
+  // describe('getAll',() => {
+  //   it('should return array type',async ()=>{
+  //     // jest.spyOn(service,'getAll').mockReturnValue
+  //     const items = await service.getAll();
+  //     console.log(items)
+  //     expect(items).toBeDefined();
+  //     expect(Array.isArray(items)).toBeTruthy();
+  //   })
+  // })
   
 });

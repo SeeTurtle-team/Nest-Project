@@ -20,7 +20,8 @@ import { SubscribeEntity } from './entities/subscribe.entity';
 import { UserImgEntity } from './entities/userImg.entity';
 import { BoardModule } from './board/board.module';
 import { BoardRecommendEntity } from './entities/boardRecommend.entity';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -60,13 +61,16 @@ import { ThrottlerModule } from '@nestjs/throttler';
     //동일한 IP의 10개 요청이 1분 안에 단일 엔드포인트로 이루어질 수 있음을 의미
     ThrottlerModule.forRoot({
       ttl: 60,
-      limit: 10,
+      limit: 20,
     }),//https://github.com/nestjs/throttler
     
     BoardModule,
   ],
   
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,{
+    provide: APP_GUARD,
+    useClass: ThrottlerGuard,
+  }],
 })
 export class AppModule {}

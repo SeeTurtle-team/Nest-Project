@@ -19,7 +19,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { DeleteCommentDto } from './dto/delete-comment.dto';
 import { RecommendBoardDto } from './dto/recommend-board.dto';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { Throttle, ThrottlerModule } from '@nestjs/throttler';
 
 @Controller('board')
 @ApiTags('Board API')
@@ -32,6 +32,7 @@ export class BoardController {
 
   @ApiOperation({ summary: '게시판 전체 조회' })
   @UseGuards(ThrottlerModule)
+  @Throttle(10, 60)
   @Get()
   async getAll() {
     this.logger.log('-----GET /board');

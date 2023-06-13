@@ -7,6 +7,7 @@ import {
   Delete,
   Patch,
   Param,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BoardService } from './board.service';
@@ -18,6 +19,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { DeleteCommentDto } from './dto/delete-comment.dto';
 import { RecommendBoardDto } from './dto/recommend-board.dto';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Controller('board')
 @ApiTags('Board API')
@@ -29,6 +31,7 @@ export class BoardController {
   private readonly logger = new Logger(BoardController.name);
 
   @ApiOperation({ summary: '게시판 전체 조회' })
+  @UseGuards(ThrottlerModule)
   @Get()
   async getAll() {
     this.logger.log('-----GET /board');

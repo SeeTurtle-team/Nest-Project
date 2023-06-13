@@ -21,6 +21,7 @@ export class BoardService {
         .createQueryBuilder('board')
         .select([
           'board.id',
+          'board.contents',
           'board.title',
           'board.dateTime',
           'board.isDeleted',

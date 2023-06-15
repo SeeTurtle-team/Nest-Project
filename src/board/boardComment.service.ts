@@ -1,12 +1,15 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { BoardCommentRepository } from './repository/boardComment.repository';
 import { BoardCommentEntity } from 'src/entities/boardComment.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class BoardCommentService {
   private readonly logger = new Logger(BoardCommentService.name);
   constructor(
-    private readonly boardCommentRepository: BoardCommentRepository,
+    @InjectRepository(BoardCommentEntity)
+    private readonly boardCommentRepository: Repository<BoardCommentEntity>,
   ) {}
 
   /**

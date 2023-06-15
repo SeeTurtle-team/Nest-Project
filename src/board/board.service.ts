@@ -1,14 +1,20 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { BoardRepository } from './repository/board.repository';
 import { BoardEntity } from 'src/entities/board.entity';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { BoardNotifyEntity } from 'src/entities/boardNotify.entity';
 
 @Injectable()
 export class BoardService {
   private readonly logger = new Logger(BoardService.name);
   constructor(
-    private readonly boardRepository: BoardRepository,
+    @InjectRepository(BoardEntity)
+    private readonly boardRepository: Repository<BoardEntity>,
+    @InjectRepository(BoardNotifyEntity)
+    private readonly boardNofityRepository : Repository<BoardNotifyEntity>,
     private dataSource: DataSource,
+    
   ) { }
 
   /**

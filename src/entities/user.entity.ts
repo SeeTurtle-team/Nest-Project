@@ -18,6 +18,7 @@ import { UserImgEntity } from './userImg.entity';
 import { SmallTalkEntity } from './smallTalk.entity';
 import { BoardRecommendEntity } from './boardRecommend.entity';
 import { BoardNotifyEntity } from './boardNotify.entity';
+import { UserGradeEntity } from './userGrade.Entity';
 
 @Entity('user')
 export class UserEntity {
@@ -104,4 +105,10 @@ export class UserEntity {
     boardNotifyEntity => boardNotifyEntity.user
   )
   boardNotifyEntities : BoardNotifyEntity[];
+
+  @ManyToOne(
+    (type) => UserGradeEntity,
+    userGradeEntity => userGradeEntity.userEntities
+  )
+  userGrade : UserGradeEntity;
 }

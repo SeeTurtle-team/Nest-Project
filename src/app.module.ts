@@ -23,6 +23,7 @@ import { BoardRecommendEntity } from './entities/boardRecommend.entity';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { BoardNotifyEntity } from './entities/boardNotify.entity';
+import { UserGradeEntity } from './entities/userGrade.Entity';
 
 @Module({
   imports: [
@@ -53,7 +54,8 @@ import { BoardNotifyEntity } from './entities/boardNotify.entity';
         SubscribeEntity,
         UserEntity,
         UserImgEntity,
-        BoardNotifyEntity
+        BoardNotifyEntity,
+        UserGradeEntity
       ],
       synchronize: false,
       autoLoadEntities: true,

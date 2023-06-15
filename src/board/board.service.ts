@@ -443,6 +443,29 @@ export class BoardService {
     }
   }
 
+  /**신고 리스트 불러오기 */
+  async getNotiList(){
+    try{
+      const res = await this.boardNofityRepository
+                  .createQueryBuilder('boardNotify')
+                  .select()
+                  .where('"IsDeleted" =:IsDeleted ',{IsDeleted:false})
+                  .getMany();
+
+      return res;
+      
+    }catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '신고 리스트 불러오기 중 에러 발생',
+          success:false
+        },
+        500,
+      );
+    }
+  }
 
   /**신고 접수 */
   async insertNotify(notifyDto){

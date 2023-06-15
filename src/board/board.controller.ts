@@ -112,6 +112,13 @@ export class BoardController {
     return await this.boardCommentService.deleteComment(deleteCommentData);
   }
 
+  @ApiOperation({ summary: '신고 리스트 불러오기'})
+  @Get('/notify')
+  async getNotiList(){
+    this.logger.log('-----Delete /comment/delete');
+    return await this.boardService.getNotiList();
+  }
+
   @ApiOperation({ summary: '신고 접수'})
   @Post('/notify')
   async insertNotify(@Body() notifyDto : InsertNotifyDto){

@@ -441,4 +441,34 @@ export class BoardService {
       );
     }
   }
+
+
+  /**신고 접수 */
+  async insertNotify(notifyDto){
+    try{
+      const boardNotifyEntity = new BoardNotifyEntity();
+
+      boardNotifyEntity.reason = notifyDto.reason;
+      boardNotifyEntity.dateTime = new Date();
+      boardNotifyEntity.IsChecked = false;
+      boardNotifyEntity.IsDeleted = false;
+      boardNotifyEntity.board = notifyDto.boardId;
+      boardNotifyEntity.user  = notifyDto.userId;
+
+      await this.boardNofityRepository.save(boardNotifyEntity);
+
+      return {success: true};
+
+    }catch(err){
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '추천 수 수정 중 에러 발생',
+          success:false
+        },
+        500,
+      );
+    }
+  }
 }

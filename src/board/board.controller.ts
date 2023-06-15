@@ -20,6 +20,7 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { DeleteCommentDto } from './dto/delete-comment.dto';
 import { RecommendBoardDto } from './dto/recommend-board.dto';
 import { Throttle, ThrottlerModule } from '@nestjs/throttler';
+import { InsertNotifyDto } from './dto/InsertNotify.dto';
 
 @Controller('board')
 @ApiTags('Board API')
@@ -108,5 +109,12 @@ export class BoardController {
   async deleteComment(@Body() deleteCommentData: DeleteCommentDto) {
     this.logger.log('-----Delete /comment/delete');
     return await this.boardCommentService.deleteComment(deleteCommentData);
+  }
+
+  @ApiOperation({ summary: '신고 접수'})
+  @Post('/notify')
+  async insertNotify(@Body() notifyDto : InsertNotifyDto){
+    this.logger.log('-----Insert /notify');
+    return await this.boardService.insertNotify(notifyDto);
   }
 }

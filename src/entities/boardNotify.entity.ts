@@ -15,6 +15,9 @@ export class BoardNotifyEntity{
 
     @Column()
     IsChecked : boolean;
+
+    @Column()
+    IsDeleted : boolean;
     
     @ManyToOne(
         (type) => BoardEntity,

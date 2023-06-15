@@ -10,6 +10,7 @@ import { BoardCategoryEntity } from './boardCategory.entity';
 import { BoardCommentEntity } from './boardComment.entity';
 import { ImgEntity } from './img.entity';
 import { BoardRecommendEntity } from './boardRecommend.entity';
+import { BoardNotifyEntity } from './boardNotify.entity';
 
 @Entity('board')
 export class BoardEntity {
@@ -30,6 +31,9 @@ export class BoardEntity {
 
   @Column()
   isModified: Boolean;
+
+  @Column({ type: 'boolean', nullable: false })
+  ban : boolean;
 
   @Column()
   recommend: number;
@@ -57,4 +61,10 @@ export class BoardEntity {
     (boardRecommendEntity) => boardRecommendEntity.board,
   )
   boardRecommendEntities: BoardRecommendEntity[];
+
+  @OneToMany(
+    (type) => BoardNotifyEntity,
+    (boardNotifyEntity) => boardNotifyEntity.board
+  )
+  boardNotifyEntities : BoardNotifyEntity[];
 }

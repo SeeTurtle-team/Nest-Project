@@ -17,6 +17,7 @@ import { SubscribeEntity } from './subscribe.entity';
 import { UserImgEntity } from './userImg.entity';
 import { SmallTalkEntity } from './smallTalk.entity';
 import { BoardRecommendEntity } from './boardRecommend.entity';
+import { BoardNotifyEntity } from './boardNotify.entity';
 
 @Entity('user')
 export class UserEntity {
@@ -97,4 +98,10 @@ export class UserEntity {
     (boardRecommendEntity) => boardRecommendEntity.user,
   )
   boardRecommendEntities: BoardRecommendEntity[];
+
+  @OneToMany(
+    (type) => BoardNotifyEntity,
+    boardNotifyEntity => boardNotifyEntity.user
+  )
+  boardNotifyEntities : BoardNotifyEntity[];
 }

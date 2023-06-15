@@ -465,7 +465,7 @@ export class BoardService {
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: '추천 수 수정 중 에러 발생',
+          error: '신고 접수 중 에러 발생',
           success:false
         },
         500,
@@ -474,13 +474,82 @@ export class BoardService {
   }
 
   /**신고 접수 후 게시물 밴 */
-  async banBoard(){
+  async banBoard(banBoardDto){
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try{
+      //유저 권한 체크 jwt 이후 추가 예정
+
+      const res = await this.banBoardCotents(banBoardDto.boardId, queryRunner);
+
+      if(res['success']){
+        await this.checkBoardNotiy(banBoardDto.boardNotifyId,queryRunner);
+      }else{
+        this.logger.error('글 추천 중 에러 발생');
+        await queryRunner.rollbackTransaction();
+        return res;
+      }   
+                
+      await queryRunner.commitTransaction();
+      
+      return {success: true};
 
     }catch(err){
-
+      this.logger.error(err);
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '신고 접수 후 게시물 밴 중 에러 발생',
+          success:false
+        },
+        500,);
     }finally{
+      await queryRunner.release();
+    }
+  }
 
+  /**게시물 밴 처리 */
+  async banBoardCotents(boardId, queryRunner){
+    try{
+      await queryRunner.query(
+        `UPDATE "board" set "ban" = true where "id" = ${boardId}`
+      );
+
+      return {success:true, msg:"게시물 밴"};
+
+    }catch(err){
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '게시물 밴 처리 중 에러 발생',
+          success:false
+        },
+        500,);
+    }
+  }
+
+/**신고 삭제 */  
+  async checkBoardNotiy(boardNotifyId, queryRunner){
+    try{
+      await queryRunner.query(
+        `UPDATE "boardNotify" set "IsDeleted" = true where "id" = ${boardNotifyId}`
+      );
+
+      return {success:true, msg:'신고 삭제'};
+
+    }catch(err){
+      this.logger.error(err);
+      throw new HttpException(
+      {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: '신고 삭제 중 에러 발생',
+        success:false
+      },
+      500,);
     }
   }
 

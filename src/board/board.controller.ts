@@ -21,6 +21,7 @@ import { DeleteCommentDto } from './dto/delete-comment.dto';
 import { RecommendBoardDto } from './dto/recommend-board.dto';
 import { Throttle, ThrottlerModule } from '@nestjs/throttler';
 import { InsertNotifyDto } from './dto/InsertNotify.dto';
+import { BanBoardDto } from './dto/BanBoard.dto';
 
 @Controller('board')
 @ApiTags('Board API')
@@ -119,8 +120,9 @@ export class BoardController {
   }
 
   @ApiOperation({ summary : '신고 확인 및 게시물 밴'})
-  @Get('/notify/:id')
-  async banBoard(){
-
+  @Post('/notify/ban')
+  async banBoard(@Body() banBoardDto: BanBoardDto){
+    this.logger.log('-----POST /notify/ban');
+    return await this.boardService.banBoard(banBoardDto);
   }
 }

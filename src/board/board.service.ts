@@ -37,6 +37,7 @@ export class BoardService {
           'user.nickname',
         ])
         .where('"isDeleted" = :isDeleted', { isDeleted: false })
+        .andWhere('"ban" = :ban',{ ban : false})
         .leftJoin('board.user', 'user')
         .orderBy('board.dateTime', 'DESC')
         .getRawMany();
@@ -471,4 +472,16 @@ export class BoardService {
       );
     }
   }
+
+  /**신고 접수 후 게시물 밴 */
+  async banBoard(){
+    try{
+
+    }catch(err){
+
+    }finally{
+
+    }
+  }
+
 }

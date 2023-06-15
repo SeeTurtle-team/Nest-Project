@@ -117,4 +117,10 @@ export class BoardController {
     this.logger.log('-----Insert /notify');
     return await this.boardService.insertNotify(notifyDto);
   }
+
+  @ApiOperation({ summary : '신고 확인 및 게시물 밴'})
+  @Get('/notify/:id')
+  async banBoard(){
+
+  }
 }

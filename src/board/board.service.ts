@@ -69,6 +69,7 @@ export class BoardService {
       boardData.contents = createData.contents;
       boardData.user = createData.userId;
       boardData.boardCategory = createData.boardCategoryId;
+      boardData.ban = false;
       boardData.dateTime = new Date();
       boardData.isDeleted = false;
       boardData.isModified = false;
@@ -87,6 +88,7 @@ export class BoardService {
           recommend: boardData.recommend,
           user: boardData.user,
           boardCategory: boardData.boardCategory,
+          ban :boardData.ban,
         })
         .execute();
 

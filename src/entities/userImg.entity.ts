@@ -6,7 +6,7 @@ export class UserImgEntity {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column()
+  @Column({ length: 1000 })
   imgUrl: string;
 
   @ManyToOne((type) => UserEntity, (userEntity) => userEntity.userImgEntities)

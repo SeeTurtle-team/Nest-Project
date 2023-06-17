@@ -6,7 +6,7 @@ export class NotifyEntity {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column()
+  @Column({ length: 1000 })
   contents: string;
 
   @ManyToOne((type) => UserEntity, (userEntity) => userEntity.notifyEntities)

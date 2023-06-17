@@ -6,7 +6,7 @@ export class EbookFileEntity {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column()
+  @Column({ length: 1000 })
   fileUrl: string;
 
   @ManyToOne(

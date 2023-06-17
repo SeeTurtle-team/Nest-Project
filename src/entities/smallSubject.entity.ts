@@ -6,10 +6,10 @@ export class SmallSubjectEntity {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column()
+  @Column({ length: 100 })
   title: string;
 
-  @Column()
+  @Column({ length: 1000 })
   detail: string;
 
   @Column()

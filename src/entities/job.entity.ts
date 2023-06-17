@@ -6,7 +6,7 @@ export class JobEntity {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column()
+  @Column({ length: 10 })
   job: string;
 
   @OneToMany((type) => UserEntity, (userEntity) => userEntity.job)

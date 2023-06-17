@@ -17,10 +17,10 @@ export class BoardEntity {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column()
+  @Column({ length: 100 })
   title: string;
 
-  @Column()
+  @Column({ length: 1000 })
   contents: string;
 
   @Column()
@@ -33,7 +33,7 @@ export class BoardEntity {
   isModified: Boolean;
 
   @Column({ type: 'boolean', nullable: false })
-  ban : boolean;
+  ban: boolean;
 
   @Column()
   recommend: number;
@@ -64,7 +64,7 @@ export class BoardEntity {
 
   @OneToMany(
     (type) => BoardNotifyEntity,
-    (boardNotifyEntity) => boardNotifyEntity.board
+    (boardNotifyEntity) => boardNotifyEntity.board,
   )
-  boardNotifyEntities : BoardNotifyEntity[];
+  boardNotifyEntities: BoardNotifyEntity[];
 }

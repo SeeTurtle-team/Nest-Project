@@ -7,7 +7,7 @@ export class BoardCategoryEntity {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column({length:10})
+  @Column({ length: 10 })
   category: string;
 
   @OneToMany((type) => BoardEntity, (boardEntity) => boardEntity.boardCategory)

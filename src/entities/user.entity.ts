@@ -25,28 +25,28 @@ export class UserEntity {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column()
+  @Column({ length: 50 })
   userId: string;
 
-  @Column()
+  @Column({ length: 100 })
   password: string;
 
-  @Column()
+  @Column({ length: 50 })
   name: string;
 
   @Column()
   birth: Date;
 
-  @Column()
+  @Column({ length: 50 })
   nickname: string;
 
-  @Column()
+  @Column({ length: 50 })
   email: string;
 
   @Column({ type: 'enum', enum: UserStatus })
   userLoginType: UserStatus;
 
-  @Column()
+  @Column({ length: 1000 })
   img: string;
 
   @ManyToOne((type) => JobEntity, (jobEntity) => jobEntity.userEntities)
@@ -102,13 +102,13 @@ export class UserEntity {
 
   @OneToMany(
     (type) => BoardNotifyEntity,
-    boardNotifyEntity => boardNotifyEntity.user
+    (boardNotifyEntity) => boardNotifyEntity.user,
   )
-  boardNotifyEntities : BoardNotifyEntity[];
+  boardNotifyEntities: BoardNotifyEntity[];
 
   @ManyToOne(
     (type) => UserGradeEntity,
-    userGradeEntity => userGradeEntity.userEntities
+    (userGradeEntity) => userGradeEntity.userEntities,
   )
-  userGrade : UserGradeEntity;
+  userGrade: UserGradeEntity;
 }

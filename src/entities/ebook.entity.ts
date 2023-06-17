@@ -16,10 +16,10 @@ export class EbookEntity {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column()
+  @Column({ length: 100 })
   title: string;
 
-  @Column()
+  @Column({ length: 10000 })
   contents: string;
 
   @Column()

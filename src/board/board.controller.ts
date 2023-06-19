@@ -58,9 +58,9 @@ export class BoardController {
 
   @ApiOperation({ summary: '게시글 수정 전 가져오기' })
   @Post('/getupdate')
-  async getUpdate(@Body() ids: GetUpdateBoardtDto) {
+  async getUpdate(@Body() boardAndUserId: GetUpdateBoardtDto) {
     this.logger.log('-----POST /board/getupdate');
-    return await this.boardService.getUpdate(ids);
+    return await this.boardService.getUpdate(boardAndUserId);
   }
 
   @ApiOperation({ summary: '게시글 수정' })

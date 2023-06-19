@@ -135,6 +135,13 @@ export class BoardService {
     }
   }
 
+  checkUser(id1, id2) {
+    if (id1 === id2) {
+      return true;
+    }
+    return false;
+  }
+
   /**
    *
    * @param ids
@@ -147,8 +154,8 @@ export class BoardService {
         .select('"userId"')
         .where('id = :boardId', { boardId: ids.boardId })
         .getRawOne();
-      const userId = id.userId;
-      if (userId === ids.userId) {
+      const check = this.checkUser(id.userId, ids.userId);
+      if (check) {
         const board = await this.getOne(ids.boardId);
 
         return board;

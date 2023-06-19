@@ -135,11 +135,27 @@ export class BoardService {
     }
   }
 
-  checkUser(id1, id2) {
-    if (id1 === id2) {
-      return true;
+  async checkUser(ids) {
+    try {
+      const id = await this.boardRepository
+        .createQueryBuilder()
+        .select('"userId"')
+        .where('id = :boardId', { boardId: ids.boardId })
+        .getRawOne();
+      if (ids.userId === id.userId) {
+        return true;
+      } else return false;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '유저 체크 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
     }
-    return false;
   }
 
   /**
@@ -149,12 +165,7 @@ export class BoardService {
    */
   async getUpdate(ids): Promise<object> {
     try {
-      const id = await this.boardRepository
-        .createQueryBuilder()
-        .select('"userId"')
-        .where('id = :boardId', { boardId: ids.boardId })
-        .getRawOne();
-      const check = this.checkUser(id.userId, ids.userId);
+      const check = await this.checkUser(ids);
       if (check) {
         const board = await this.getOne(ids.boardId);
 

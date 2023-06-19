@@ -22,6 +22,7 @@ import { RecommendBoardDto } from './dto/recommend-board.dto';
 import { Throttle, ThrottlerModule } from '@nestjs/throttler';
 import { InsertNotifyDto } from './dto/InsertNotify.dto';
 import { BanBoardDto } from './dto/BanBoard.dto';
+import { GetUpdateBoardtDto } from './dto/getupdate-board.dto';
 
 @Controller('board')
 @ApiTags('Board API')
@@ -53,6 +54,13 @@ export class BoardController {
   async delete(@Body() deleteData: DeleteBoardDto) {
     this.logger.log('-----DELETE /board/delete');
     return await this.boardService.delete(deleteData);
+  }
+
+  @ApiOperation({ summary: '게시글 수정 전 가져오기' })
+  @Post('/getupdate')
+  async getUpdate(@Body() ids: GetUpdateBoardtDto) {
+    this.logger.log('-----POST /board/getupdate');
+    return await this.boardService.getUpdate(ids);
   }
 
   @ApiOperation({ summary: '게시글 수정' })
@@ -112,23 +120,23 @@ export class BoardController {
     return await this.boardCommentService.deleteComment(deleteCommentData);
   }
 
-  @ApiOperation({ summary: '신고 리스트 불러오기'})
+  @ApiOperation({ summary: '신고 리스트 불러오기' })
   @Get('/notify')
-  async getNotiList(){
+  async getNotiList() {
     this.logger.log('-----Delete /comment/delete');
     return await this.boardService.getNotiList();
   }
 
-  @ApiOperation({ summary: '신고 접수'})
+  @ApiOperation({ summary: '신고 접수' })
   @Post('/notify')
-  async insertNotify(@Body() notifyDto : InsertNotifyDto){
+  async insertNotify(@Body() notifyDto: InsertNotifyDto) {
     this.logger.log('-----Insert /notify');
     return await this.boardService.insertNotify(notifyDto);
   }
 
-  @ApiOperation({ summary : '신고 확인 및 게시물 밴'})
+  @ApiOperation({ summary: '신고 확인 및 게시물 밴' })
   @Post('/notify/ban')
-  async banBoard(@Body() banBoardDto: BanBoardDto){
+  async banBoard(@Body() banBoardDto: BanBoardDto) {
     this.logger.log('-----POST /notify/ban');
     return await this.boardService.banBoard(banBoardDto);
   }

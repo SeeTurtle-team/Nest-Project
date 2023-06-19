@@ -12,10 +12,9 @@ export class BoardService {
     @InjectRepository(BoardEntity)
     private readonly boardRepository: Repository<BoardEntity>,
     @InjectRepository(BoardNotifyEntity)
-    private readonly boardNofityRepository : Repository<BoardNotifyEntity>,
+    private readonly boardNofityRepository: Repository<BoardNotifyEntity>,
     private dataSource: DataSource,
-    
-  ) { }
+  ) {}
 
   /**
    * get all boards with nickname
@@ -37,20 +36,19 @@ export class BoardService {
           'user.nickname',
         ])
         .where('"isDeleted" = :isDeleted', { isDeleted: false })
-        .andWhere('"ban" = :ban',{ ban : false})
+        .andWhere('"ban" = :ban', { ban: false })
         .leftJoin('board.user', 'user')
         .orderBy('board.dateTime', 'DESC')
         .getRawMany();
 
       return board;
-
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시판 조회 중 에러 발생',
-          success:false
+          success: false,
         },
         500,
       );
@@ -88,19 +86,18 @@ export class BoardService {
           recommend: boardData.recommend,
           user: boardData.user,
           boardCategory: boardData.boardCategory,
-          ban :boardData.ban,
+          ban: boardData.ban,
         })
         .execute();
 
       return { success: true };
-
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시판 생성 중 에러 발생',
-          success:false
+          success: false,
         },
         500,
       );
@@ -125,14 +122,47 @@ export class BoardService {
         .execute();
 
       return { success: true };
-
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시판 삭제 중 에러 발생',
-          success:false
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**
+   *
+   * @param ids
+   * @returns board
+   */
+  async getUpdate(ids): Promise<object> {
+    try {
+      const id = await this.boardRepository
+        .createQueryBuilder()
+        .select('"userId"')
+        .where('id = :boardId', { boardId: ids.boardId })
+        .getRawOne();
+      const userId = id.userId;
+      if (userId === ids.userId) {
+        const board = await this.getOne(ids.boardId);
+
+        return board;
+      } else {
+        this.logger.log('not same user');
+        return { success: false, msg: '유저 불일치' };
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '업데이트 전 가져오기 중 에러 발생',
+          success: false,
         },
         500,
       );
@@ -174,7 +204,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시판 수정 중 에러 발생',
-          success:false
+          success: false,
         },
         500,
       );
@@ -192,7 +222,7 @@ export class BoardService {
         .createQueryBuilder('board')
         .select()
         .where('id = :id', { id: id })
-        .getRawMany();
+        .getOne();
 
       return board;
     } catch (err) {
@@ -201,7 +231,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시글 조회 중 에러 발생',
-          success:false
+          success: false,
         },
         500,
       );
@@ -242,7 +272,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '타입 별 게시판 조회 중 에러 발생',
-          success:false
+          success: false,
         },
         500,
       );
@@ -282,7 +312,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시글 추천 중 에러 발생',
-          success:false
+          success: false,
         },
         500,
       );
@@ -304,7 +334,7 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '추천 체크 중 에러 발생',
-          success:false
+          success: false,
         },
         500,
       );
@@ -336,14 +366,13 @@ export class BoardService {
         );
       }
       return res;
-
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '체크 확인 후 함수 호출 중 에러 발생',
-          success:false
+          success: false,
         },
         500,
       );
@@ -359,14 +388,13 @@ export class BoardService {
       await this.changeRecommendCount(1, boardId, queryRunner);
 
       return { success: true, msg: 'create recommend' };
-
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '추천 생성 중 에러 발생',
-          success:false
+          success: false,
         },
         500,
       );
@@ -382,14 +410,13 @@ export class BoardService {
       await this.changeRecommendCount(-1, boardId, queryRunner);
 
       return { success: true, msg: 'cancel recommend' };
-
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '추천 취소 중 에러 발생',
-          success:false
+          success: false,
         },
         500,
       );
@@ -405,14 +432,13 @@ export class BoardService {
       await this.changeRecommendCount(1, boardId, queryRunner);
 
       return { success: true, msg: 'reRecommend' };
-
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '재추천 중 에러 발생',
-          success:false
+          success: false,
         },
         500,
       );
@@ -426,19 +452,19 @@ export class BoardService {
       );
 
       await queryRunner.query(
-        `UPDATE "board" set recommend = ${count[0].recommend + num
+        `UPDATE "board" set recommend = ${
+          count[0].recommend + num
         } where id = ${boardId}`,
       );
 
       return { success: true, msg: 'change count' };
-
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '추천 수 수정 중 에러 발생',
-          success:false
+          success: false,
         },
         500,
       );
@@ -446,23 +472,22 @@ export class BoardService {
   }
 
   /**신고 리스트 불러오기 */
-  async getNotiList(){
-    try{
+  async getNotiList() {
+    try {
       const res = await this.boardNofityRepository
-                  .createQueryBuilder('boardNotify')
-                  .select()
-                  .where('"IsDeleted" =:IsDeleted ',{IsDeleted:false})
-                  .getMany();
+        .createQueryBuilder('boardNotify')
+        .select()
+        .where('"IsDeleted" =:IsDeleted ', { IsDeleted: false })
+        .getMany();
 
       return res;
-      
-    }catch (err) {
+    } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '신고 리스트 불러오기 중 에러 발생',
-          success:false
+          success: false,
         },
         500,
       );
@@ -470,8 +495,8 @@ export class BoardService {
   }
 
   /**신고 접수 */
-  async insertNotify(notifyDto){
-    try{
+  async insertNotify(notifyDto) {
+    try {
       const boardNotifyEntity = new BoardNotifyEntity();
 
       boardNotifyEntity.reason = notifyDto.reason;
@@ -479,19 +504,18 @@ export class BoardService {
       boardNotifyEntity.IsChecked = false;
       boardNotifyEntity.IsDeleted = false;
       boardNotifyEntity.board = notifyDto.boardId;
-      boardNotifyEntity.user  = notifyDto.userId;
+      boardNotifyEntity.user = notifyDto.userId;
 
       await this.boardNofityRepository.save(boardNotifyEntity);
 
-      return {success: true};
-
-    }catch(err){
+      return { success: true };
+    } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '신고 접수 중 에러 발생',
-          success:false
+          success: false,
         },
         500,
       );
@@ -499,83 +523,82 @@ export class BoardService {
   }
 
   /**신고 접수 후 게시물 밴 */
-  async banBoard(banBoardDto){
+  async banBoard(banBoardDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    try{
+    try {
       //유저 권한 체크 jwt 이후 추가 예정
 
       const res = await this.banBoardCotents(banBoardDto.boardId, queryRunner);
 
-      if(res['success']){
-        await this.checkBoardNotiy(banBoardDto.boardNotifyId,queryRunner);
-      }else{
+      if (res['success']) {
+        await this.checkBoardNotiy(banBoardDto.boardNotifyId, queryRunner);
+      } else {
         this.logger.error('글 추천 중 에러 발생');
         await queryRunner.rollbackTransaction();
         return res;
-      }   
-                
-      await queryRunner.commitTransaction();
-      
-      return {success: true};
+      }
 
-    }catch(err){
+      await queryRunner.commitTransaction();
+
+      return { success: true };
+    } catch (err) {
       this.logger.error(err);
       await queryRunner.rollbackTransaction();
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '신고 접수 후 게시물 밴 중 에러 발생',
-          success:false
+          success: false,
         },
-        500,);
-    }finally{
+        500,
+      );
+    } finally {
       await queryRunner.release();
     }
   }
 
   /**게시물 밴 처리 */
-  async banBoardCotents(boardId, queryRunner){
-    try{
+  async banBoardCotents(boardId, queryRunner) {
+    try {
       await queryRunner.query(
-        `UPDATE "board" set "ban" = true where "id" = ${boardId}`
+        `UPDATE "board" set "ban" = true where "id" = ${boardId}`,
       );
 
-      return {success:true, msg:"게시물 밴"};
-
-    }catch(err){
+      return { success: true, msg: '게시물 밴' };
+    } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시물 밴 처리 중 에러 발생',
-          success:false
+          success: false,
         },
-        500,);
+        500,
+      );
     }
   }
 
-/**신고 삭제 */  
-  async checkBoardNotiy(boardNotifyId, queryRunner){
-    try{
+  /**신고 삭제 */
+  async checkBoardNotiy(boardNotifyId, queryRunner) {
+    try {
       await queryRunner.query(
-        `UPDATE "boardNotify" set "IsDeleted" = true where "id" = ${boardNotifyId}`
+        `UPDATE "boardNotify" set "IsDeleted" = true where "id" = ${boardNotifyId}`,
       );
 
-      return {success:true, msg:'신고 삭제'};
-
-    }catch(err){
+      return { success: true, msg: '신고 삭제' };
+    } catch (err) {
       this.logger.error(err);
       throw new HttpException(
-      {
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: '신고 삭제 중 에러 발생',
-        success:false
-      },
-      500,);
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '신고 삭제 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
     }
   }
-
 }

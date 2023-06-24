@@ -24,6 +24,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { BoardNotifyEntity } from './entities/boardNotify.entity';
 import { UserGradeEntity } from './entities/userGrade.Entity';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -55,7 +56,7 @@ import { UserGradeEntity } from './entities/userGrade.Entity';
         UserEntity,
         UserImgEntity,
         BoardNotifyEntity,
-        UserGradeEntity
+        UserGradeEntity,
       ],
       synchronize: false,
       autoLoadEntities: true,
@@ -66,15 +67,19 @@ import { UserGradeEntity } from './entities/userGrade.Entity';
     ThrottlerModule.forRoot({
       ttl: 60,
       limit: 20,
-    }),//https://github.com/nestjs/throttler
-    
+    }), //https://github.com/nestjs/throttler
+
     BoardModule,
+    UserModule,
   ],
-  
+
   controllers: [AppController],
-  providers: [AppService,{
-    provide: APP_GUARD,
-    useClass: ThrottlerGuard,
-  }],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

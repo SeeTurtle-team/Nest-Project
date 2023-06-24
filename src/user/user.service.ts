@@ -12,13 +12,69 @@ export class UserService {
   ) {}
   private readonly logger = new Logger(UserService.name);
 
-  async userIdCheck(userId) {
+  async getIds() {
     try {
-      const ids = await this.userRepository.find({
+      return await this.userRepository.find({
         select: {
           userId: true,
         },
       });
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '아이디 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async getNicknames() {
+    try {
+      return await this.userRepository.find({
+        select: {
+          nickname: true,
+        },
+      });
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '닉네임 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async getEmails() {
+    try {
+      return await this.userRepository.find({
+        select: {
+          email: true,
+        },
+      });
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '이메일 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async userIdCheck(userId) {
+    try {
+      const ids = await this.getIds();
       const check = ids.find((e) => e.userId === userId);
       if (check) return { success: false, msg: '아이디 중복' };
       return { success: true };
@@ -37,11 +93,7 @@ export class UserService {
 
   async nicknameCheck(nickname) {
     try {
-      const nicknames = await this.userRepository.find({
-        select: {
-          nickname: true,
-        },
-      });
+      const nicknames = await this.getNicknames();
       const check = nicknames.find((e) => e.nickname === nickname);
       if (check) return { success: false, msg: '닉네임 중복' };
       return { success: true };
@@ -60,11 +112,7 @@ export class UserService {
 
   async emailCheck(email) {
     try {
-      const emails = await this.userRepository.find({
-        select: {
-          email: true,
-        },
-      });
+      const emails = await this.getEmails();
       const check = emails.find((e) => e.email === email);
       if (check) return { success: false, msg: '이메일 중복' };
       return { success: true };

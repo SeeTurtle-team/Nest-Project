@@ -25,6 +25,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { BoardNotifyEntity } from './entities/boardNotify.entity';
 import { UserGradeEntity } from './entities/userGrade.Entity';
 import { UserModule } from './user/user.module';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
@@ -69,6 +70,24 @@ import { UserModule } from './user/user.module';
       limit: 20,
     }), //https://github.com/nestjs/throttler
 
+    MailerModule.forRootAsync({
+      useFactory: () => ({
+          transport: {
+              host: 'smtp.naver.com',
+              port: 465,
+              auth: {
+                  user: process.env.EMAIL_ID,
+                  pass: process.env.EMAIL_PW
+              },
+          },
+          defaults: {
+              from: '"no-reply" <email address>',
+          },
+          preview: true,
+  
+      })
+  }),
+  
     BoardModule,
     UserModule,
   ],

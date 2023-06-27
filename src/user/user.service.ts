@@ -3,13 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-  ) {}
+    private readonly mailerService: MailerService,
+  ) { }
   private readonly logger = new Logger(UserService.name);
 
   async getIds() {
@@ -169,5 +171,23 @@ export class UserService {
         500,
       );
     }
+  }
+
+ /**여기서 이메일을 파라미터로 전달 받아서 */
+  public example(): void {
+    try{
+      this.mailerService
+      .sendMail({
+        to: 'rtw2343@naver.com', // list of receivers 여기에 넣어주면 됩니다
+        from: process.env.EMAIL_ID, // sender address
+        subject: 'Testing Nest MailerModule ✔', // Subject line
+        text: 'welcome', // plaintext body 내용 부분에 인증번호 보내주고요
+        html: '<b>welcome</b>', // HTML body content
+      })
+      
+    }catch(err){
+        this.logger.error(err);
+    }
+   
   }
 }

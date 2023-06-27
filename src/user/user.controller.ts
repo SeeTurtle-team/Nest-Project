@@ -1,4 +1,4 @@
-import { Body, Controller, Logger, Post } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -14,5 +14,11 @@ export class UserController {
   async signUp(@Body() createUserDto: CreateUserDto) {
     this.logger.log('-----POST /user/signup');
     return this.userService.signUp(createUserDto);
+  }
+
+  
+  @Get('/testMail')
+  async testMail(){
+      await this.userService.example();
   }
 }

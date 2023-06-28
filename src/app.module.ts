@@ -63,6 +63,16 @@ import { MailerModule } from '@nestjs-modules/mailer';
       autoLoadEntities: true,
       logging: true,
     }),
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.gmail.com',
+        port: 587,
+        auth: {
+          user: process.env.MAILER_USER,
+          pass: process.env.MAILER_PASS,
+        },
+      },
+    }),
 
     //동일한 IP의 10개 요청이 1분 안에 단일 엔드포인트로 이루어질 수 있음을 의미
     ThrottlerModule.forRoot({
@@ -72,22 +82,21 @@ import { MailerModule } from '@nestjs-modules/mailer';
 
     MailerModule.forRootAsync({
       useFactory: () => ({
-          transport: {
-              host: 'smtp.naver.com',
-              port: 465,
-              auth: {
-                  user: process.env.EMAIL_ID,
-                  pass: process.env.EMAIL_PW
-              },
+        transport: {
+          host: 'smtp.naver.com',
+          port: 465,
+          auth: {
+            user: process.env.EMAIL_ID,
+            pass: process.env.EMAIL_PW,
           },
-          defaults: {
-              from: '"no-reply" <email address>',
-          },
-          preview: true,
-  
-      })
-  }),
-  
+        },
+        defaults: {
+          from: '"no-reply" <email address>',
+        },
+        preview: true,
+      }),
+    }),
+
     BoardModule,
     UserModule,
   ],

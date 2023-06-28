@@ -16,9 +16,8 @@ export class UserController {
     return this.userService.signUp(createUserDto);
   }
 
-  
-  @Get('/testMail')
-  async testMail(){
-      await this.userService.example();
+  @Post('/testemail')
+  async testEmail(@Body() email: string) {
+    return await this.userService.sendVerificationCode(email);
   }
 }

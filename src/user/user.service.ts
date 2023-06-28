@@ -14,6 +14,26 @@ export class UserService {
   ) {}
   private readonly logger = new Logger(UserService.name);
 
+  async findOne(userId) {
+    try {
+      return this.userRepository.findOne({
+        where: {
+          userId: userId,
+        },
+      });
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '유저 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
   async getIds() {
     try {
       return await this.userRepository.find({

@@ -26,6 +26,7 @@ import { BoardNotifyEntity } from './entities/boardNotify.entity';
 import { UserGradeEntity } from './entities/userGrade.Entity';
 import { UserModule } from './user/user.module';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -99,6 +100,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 
     BoardModule,
     UserModule,
+    AuthModule,
   ],
 
   controllers: [AppController],

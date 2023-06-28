@@ -2,11 +2,19 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { SignInDto } from './dto/signIn.dto';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private usersService: UserService) {}
+  constructor(
+    private usersService: UserService,
+    private jwtService: JwtService,
+  ) {}
   private readonly logger = new Logger(AuthService.name);
+
+  async getJwtToken(payload) {
+    return { access_token: await this.jwtService.signAsync(payload) };
+  }
 
   async signIn(signInDto: SignInDto) {
     try {
@@ -16,8 +24,11 @@ export class AuthService {
       if (!check)
         return { success: false, msg: '비밀번호가 일치하지 않습니다.' };
       const { password, ...result } = user;
-      //여기 JWT 삽입 예정
-      return result;
+
+      const payload = { sub: user.userId, username: user.name };
+      const jwtToken = await this.getJwtToken(payload);
+
+      return jwtToken;
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(

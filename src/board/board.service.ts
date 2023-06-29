@@ -300,7 +300,7 @@ export class BoardService {
   /**
    * recommend board
    * @param recommendData
-   * @returns success: true, msg: 'create recommend' | 'cancle recommend' | 'reRecommend'
+   * @returns success: true, msg: 'create recommend' | 'cancle recommend' | 'reRecommend, recommend: ${recommend}'
    */
   async recommend(recommendData): Promise<object> {
     const queryRunner = this.dataSource.createQueryRunner();

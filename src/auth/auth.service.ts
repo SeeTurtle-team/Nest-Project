@@ -23,9 +23,13 @@ export class AuthService {
       const check = await bcrypt.compare(signInDto.password, user.password);
       if (!check)
         return { success: false, msg: '비밀번호가 일치하지 않습니다.' };
-      const { password, ...result } = user;
 
-      const payload = { sub: user.userId, username: user.name };
+      const payload = {
+        sub: user.userId,
+        username: user.name,
+        nickname: user.nickname,
+        imgUrl: user.img,
+      };
       const jwtToken = await this.getJwtToken(payload);
 
       return jwtToken;

@@ -24,6 +24,9 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { BoardNotifyEntity } from './entities/boardNotify.entity';
 import { UserGradeEntity } from './entities/userGrade.Entity';
+import { UserModule } from './user/user.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -55,26 +58,58 @@ import { UserGradeEntity } from './entities/userGrade.Entity';
         UserEntity,
         UserImgEntity,
         BoardNotifyEntity,
-        UserGradeEntity
+        UserGradeEntity,
       ],
       synchronize: false,
       autoLoadEntities: true,
       logging: true,
+    }),
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.gmail.com',
+        port: 587,
+        auth: {
+          user: process.env.MAILER_USER,
+          pass: process.env.MAILER_PASS,
+        },
+      },
     }),
 
     //동일한 IP의 10개 요청이 1분 안에 단일 엔드포인트로 이루어질 수 있음을 의미
     ThrottlerModule.forRoot({
       ttl: 60,
       limit: 20,
-    }),//https://github.com/nestjs/throttler
-    
+    }), //https://github.com/nestjs/throttler
+
+    MailerModule.forRootAsync({
+      useFactory: () => ({
+        transport: {
+          host: 'smtp.naver.com',
+          port: 465,
+          auth: {
+            user: process.env.EMAIL_ID,
+            pass: process.env.EMAIL_PW,
+          },
+        },
+        defaults: {
+          from: '"no-reply" <email address>',
+        },
+        preview: true,
+      }),
+    }),
+
     BoardModule,
+    UserModule,
+    AuthModule,
   ],
-  
+
   controllers: [AppController],
-  providers: [AppService,{
-    provide: APP_GUARD,
-    useClass: ThrottlerGuard,
-  }],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

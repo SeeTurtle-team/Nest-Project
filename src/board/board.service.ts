@@ -397,6 +397,24 @@ export class BoardService {
     }
   }
 
+  async getRecommend(boardId, queryRunner) {
+    try {
+      const recommend = await queryRunner.query(`
+      select recommend from board where id = ${boardId}`);
+      return recommend[0].recommend;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '추천수 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
   async createRecommend(boardId, userId, queryRunner) {
     try {
       await queryRunner.query(
@@ -404,8 +422,9 @@ export class BoardService {
       );
 
       await this.changeRecommendCount(1, boardId, queryRunner);
+      const recommend = await this.getRecommend(boardId, queryRunner);
 
-      return { success: true, msg: 'create recommend' };
+      return { success: true, msg: 'create recommend', recommend: recommend };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -426,8 +445,9 @@ export class BoardService {
       );
 
       await this.changeRecommendCount(-1, boardId, queryRunner);
+      const recommend = await this.getRecommend(boardId, queryRunner);
 
-      return { success: true, msg: 'cancel recommend' };
+      return { success: true, msg: 'cancel recommend', recommend: recommend };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -448,8 +468,9 @@ export class BoardService {
       );
 
       await this.changeRecommendCount(1, boardId, queryRunner);
+      const recommend = await this.getRecommend(boardId, queryRunner);
 
-      return { success: true, msg: 'reRecommend' };
+      return { success: true, msg: 'reRecommend', recommend: recommend };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(

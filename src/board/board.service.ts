@@ -172,7 +172,7 @@ export class BoardService {
         return board;
       } else {
         this.logger.log('not same user');
-        return { success: false, msg: '유저 불일치' };
+        return { success: false, msg: '유저 불일치',status:'401.1' };
       }
     } catch (err) {
       this.logger.error(err);

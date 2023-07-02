@@ -5,6 +5,9 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { MailerService } from '@nestjs-modules/mailer';
 import { JwtService } from '@nestjs/jwt';
+import { UserStatus } from './enumType/UserStatus';
+import { userGrade } from 'src/Common/userGrade';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class UserService {
@@ -12,7 +15,8 @@ export class UserService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly mailerService: MailerService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    // private readonly authService : AuthService
   ) { }
   private readonly logger = new Logger(UserService.name);
 
@@ -165,6 +169,7 @@ export class UserService {
       user.userLoginType = createUserDto.userLoginType;
       user.userGrade = createUserDto.userGradeId;
 
+      //코드를 보니까 위에 userEntity에 매핑하기 전에 이 밑에 체크를 먼저하는게 리소스를 좀 더 아낄 수 있지 않을까 생각이 듭니다!!
       const checkUserId = await this.userIdCheck(user.userId);
       if (checkUserId.success === false) return checkUserId;
       const checkNickname = await this.nicknameCheck(user.nickname);
@@ -238,11 +243,11 @@ export class UserService {
 
   async googleLogin(googleLoginDto) {
     try {
-      const test = this.jwtService.decode(googleLoginDto.token)
-      console.log(test)
+      const googleToken = this.jwtService.decode(googleLoginDto.token)
+      console.log(googleToken)
+      const checkEmail = await this.emailCheck(googleToken['email']);
 
-      const checkEmail = await this.emailCheck(test['email']);
-
+      checkEmail.success ? await this.insertGoogle(googleToken):'로그인';
       
     } catch (err) {
       this.logger.error(err);
@@ -254,6 +259,37 @@ export class UserService {
         },
         500,
       );
+    }
+  }
+
+  /**이 부분은 수정 예정입니다. */
+  async insertGoogle(googleToken){
+    try{
+      const user = new UserEntity();
+      user.name = googleToken.name;
+      user.nickname = googleToken.name;
+      user.email = googleToken.email;
+      user.userLoginType = UserStatus.google;
+      user.userGrade.userGrade = userGrade.User;
+      user.img = googleToken.picture;
+     
+      const salt = await bcrypt.genSalt();
+      const hashedPw = await bcrypt.hash(user.password, salt);
+      user.password = hashedPw;
+
+      await this.userRepository.save(user);
+
+      return { success: true };
+    }catch(err){
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '구글 로그인 에러',
+          success: false,
+        },
+        500,
+      )
     }
   }
 }

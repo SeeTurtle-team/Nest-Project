@@ -4,6 +4,7 @@ import { UserEntity } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { MailerService } from '@nestjs-modules/mailer';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
@@ -11,7 +12,8 @@ export class UserService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly mailerService: MailerService,
-  ) {}
+    private readonly jwtService: JwtService
+  ) { }
   private readonly logger = new Logger(UserService.name);
 
   async findOne(userId) {
@@ -227,6 +229,23 @@ export class UserService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '이메일 인증 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async googleLogin(googleLoginDto) {
+    try {
+      const test = this.jwtService.decode(googleLoginDto.token)
+      console.log(test)
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '구글 로그인 에러',
           success: false,
         },
         500,

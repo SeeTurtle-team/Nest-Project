@@ -20,4 +20,10 @@ export class UserController {
   async testEmail(@Body() email: string) {
     return await this.userService.sendVerificationCode(email);
   }
+
+  @Post('/google')
+  async googleLogin(@Body() googleLoginDto){
+    this.logger.log('-----POST /user/google');
+    return await this.userService.googleLogin(googleLoginDto)
+  }
 }

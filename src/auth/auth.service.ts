@@ -46,19 +46,5 @@ export class AuthService {
     }
   }
 
-  async googleSignIn(){
-    try{
 
-    } catch (err) {
-      this.logger.error(err);
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: '로그인 중 에러 발생',
-          success: false,
-        },
-        500,
-      );
-    }
-  }
 }

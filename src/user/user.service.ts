@@ -16,7 +16,7 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
-    // private readonly authService : AuthService
+   
   ) { }
   private readonly logger = new Logger(UserService.name);
 
@@ -247,8 +247,12 @@ export class UserService {
       console.log(googleToken)
       const checkEmail = await this.emailCheck(googleToken['email']);
 
-      checkEmail.success ? await this.insertGoogle(googleToken):'로그인';
-      
+      if(checkEmail.success){
+        await this.insertGoogle(googleToken);
+      }      
+
+      return await this.googleLogin(googleToken);
+
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -269,9 +273,11 @@ export class UserService {
       user.name = googleToken.name;
       user.nickname = googleToken.name;
       user.email = googleToken.email;
+      user.userId = googleToken.email;
       user.userLoginType = UserStatus.google;
-      user.userGrade.userGrade = userGrade.User;
+      // user.userGrade = userGrade.User; ㅅㅂ
       user.img = googleToken.picture;
+      user.password=''
      
       const salt = await bcrypt.genSalt();
       const hashedPw = await bcrypt.hash(user.password, salt);
@@ -290,6 +296,37 @@ export class UserService {
         },
         500,
       )
+    }
+  }
+
+  /**리팩토링 예정 순환 종속성 발생 */
+  async getJwtToken(payload) {
+    return { access_token: await this.jwtService.signAsync(payload) };
+  }
+
+  async googleSignIn(googleToken){
+    try{
+      const payload = {
+        sub:googleToken.email,
+        username: googleToken.name,
+        nickname : googleToken.name,
+        imgUrl : googleToken.picture
+      }
+
+      const jwtToken = await this.getJwtToken(payload);
+
+      return jwtToken;
+
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '로그인 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
     }
   }
 }

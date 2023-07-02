@@ -240,6 +240,10 @@ export class UserService {
     try {
       const test = this.jwtService.decode(googleLoginDto.token)
       console.log(test)
+
+      const checkEmail = await this.emailCheck(test['email']);
+
+      
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(

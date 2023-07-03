@@ -2,6 +2,7 @@ import { Body, Controller, Get, Logger, Post } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CheckCodeDto } from './dto/check-email.dto';
 
 @Controller('user')
 @ApiTags('User API')
@@ -16,14 +17,23 @@ export class UserController {
     return this.userService.signUp(createUserDto);
   }
 
-  @Post('/testemail')
-  async testEmail(@Body() email: string) {
-    return await this.userService.sendVerificationCode(email);
+  @ApiOperation({ summary: '이메일 코드 인증' })
+  @Post('/checkcode')
+  async checkCode(@Body() checkCodeDto: CheckCodeDto) {
+    this.logger.log('-----POST /user/authemail');
+    return this.userService.checkVerificationCode(checkCodeDto);
+  }
+
+  @ApiOperation({ summary: '이메일 코드 재전송' })
+  @Post('/resendcode')
+  async resendCode(@Body() email: string) {
+    this.logger.log('-----POST /user/resnedcode');
+    return this.userService.sendVerificationCode(email);
   }
 
   @Post('/google')
-  async googleLogin(@Body() googleLoginDto){
+  async googleLogin(@Body() googleLoginDto) {
     this.logger.log('-----POST /user/google');
-    return await this.userService.googleLogin(googleLoginDto)
+    return await this.userService.googleLogin(googleLoginDto);
   }
 }

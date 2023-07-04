@@ -49,6 +49,9 @@ export class UserEntity {
   @Column({ length: 1000 })
   img: string;
 
+  @Column({ default: false })
+  emailCheck: Boolean;
+
   @ManyToOne((type) => JobEntity, (jobEntity) => jobEntity.userEntities)
   job: JobEntity;
 

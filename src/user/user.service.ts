@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { MailerService } from '@nestjs-modules/mailer';
 import { JwtService } from '@nestjs/jwt';
+import { EmailCheckCodeEntity } from 'src/entities/emailCheckCode.entity';
 import { UserStatus } from './enumType/UserStatus';
 import { userGrade } from 'src/Common/userGrade';
 import { AuthService } from 'src/auth/auth.service';
@@ -14,10 +15,11 @@ export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(EmailCheckCodeEntity)
+    private readonly emailCheckCodeRepository: Repository<EmailCheckCodeEntity>,
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
-   
-  ) { }
+  ) {}
   private readonly logger = new Logger(UserService.name);
 
   async findOne(userId) {
@@ -25,6 +27,7 @@ export class UserService {
       return this.userRepository.findOne({
         where: {
           userId: userId,
+          emailCheck: true,
         },
       });
     } catch (err) {
@@ -178,6 +181,8 @@ export class UserService {
       const checkEmail = await this.emailCheck(user.email);
       if (checkEmail.success === false) return checkEmail;
 
+      await this.sendVerificationCode({ email: user.email });
+
       const salt = await bcrypt.genSalt();
       const hashedPw = await bcrypt.hash(user.password, salt);
       user.password = hashedPw;
@@ -209,24 +214,20 @@ export class UserService {
     return str;
   }
 
-  async sendVerificationCode(body) {
+  async sendVerificationCode(email) {
     try {
       const code = this.generateFourRandomCode();
       await this.mailerService
         .sendMail({
-          to: body.email,
+          to: email.email,
           from: 'noreply@gmail.com',
           subject: 'email verification code',
           text: code,
-          // html: `
-          // click this button to signup</br>
-          // <form action="asdfasdf" method="POST">
-          // <button>confirm</button>
-          // </form>`,
         })
         .then((result) => {
           this.logger.log(result);
         });
+      await this.saveVerificationCode(email.email, code);
 
       return { success: true };
     } catch (err) {
@@ -234,7 +235,121 @@ export class UserService {
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: '이메일 인증 중 에러 발생',
+          error: '코드 전송 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async updateVerificationCode(email, code) {
+    try {
+      await this.emailCheckCodeRepository
+        .createQueryBuilder()
+        .update()
+        .set({
+          code: code,
+        })
+        .where('email = :email', { email: email })
+        .execute();
+
+      return { success: true };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '코드 업데이트 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async saveVerificationCode(email, code) {
+    try {
+      const check = await this.getVerificationCode(email);
+      if (!!check) await this.updateVerificationCode(email, code);
+      else {
+        const emailCode = new EmailCheckCodeEntity();
+        emailCode.email = email;
+        emailCode.code = code;
+
+        await this.emailCheckCodeRepository.save(emailCode);
+      }
+
+      return { success: true };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '코드 저장 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async getVerificationCode(email) {
+    try {
+      return await this.emailCheckCodeRepository.findOne({
+        where: {
+          email: email,
+        },
+      });
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '인증 코드 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async toggleEmailCheck(email) {
+    try {
+      await this.userRepository
+        .createQueryBuilder()
+        .update()
+        .set({
+          emailCheck: true,
+        })
+        .where('email = :email', { email: email })
+        .execute();
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'emailCheck 토글 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async checkVerificationCode(checkCodeDto) {
+    try {
+      const dbObj = await this.getVerificationCode(checkCodeDto.email);
+      if (dbObj.code === checkCodeDto.code) {
+        await this.toggleEmailCheck(checkCodeDto.email);
+        return { success: true };
+      } else return { success: false, msg: '코드 인증 실패' };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '코드 체크 중 에러 발생',
           success: false,
         },
         500,

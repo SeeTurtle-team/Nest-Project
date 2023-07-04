@@ -172,7 +172,7 @@ export class BoardService {
         return board;
       } else {
         this.logger.log('not same user');
-        return { success: false, msg: '유저 불일치',status:'401.1' };
+        return { success: false, msg: '유저 불일치', status: '401.1' };
       }
     } catch (err) {
       this.logger.error(err);
@@ -400,8 +400,8 @@ export class BoardService {
   async getRecommend(boardId, queryRunner) {
     try {
       const recommend = await queryRunner.query(`
-      select recommend from board where id = ${boardId}`);
-      return recommend[0].recommend;
+      select count(*) from "boardRecommend" where "boardId" = ${boardId} and "check" = true`);
+      return recommend[0].count;
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -486,14 +486,10 @@ export class BoardService {
 
   async changeRecommendCount(num, boardId, queryRunner) {
     try {
-      const count = await queryRunner.query(
-        `select recommend from board where id = ${boardId}`,
-      );
+      const count = await this.getRecommend(boardId, queryRunner);
 
       await queryRunner.query(
-        `UPDATE "board" set recommend = ${
-          count[0].recommend + num
-        } where id = ${boardId}`,
+        `UPDATE "board" set recommend = ${count + num} where id = ${boardId}`,
       );
 
       return { success: true, msg: 'change count' };

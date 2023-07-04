@@ -249,7 +249,7 @@ export class UserService {
       const checkEmail = await this.emailCheck(email);
 
       if(checkEmail.success){
-        await this.insertGoogle(googleToken);
+        await this.insertGoogle(googleToken,2);
       }      
 
       const res =  await this.googleSignIn(googleToken);
@@ -272,7 +272,7 @@ export class UserService {
   }
 
   /**이 부분은 수정 예정입니다. */
-  async insertGoogle(googleToken){
+  async insertGoogle(googleToken,defaultGrade){
     try{
       const user = new UserEntity();
       user.name = googleToken.name;
@@ -280,7 +280,7 @@ export class UserService {
       user.email = googleToken.email;
       user.userId = googleToken.email;
       user.userLoginType = UserStatus.google;
-      // user.userGrade = 
+      user.userGrade = defaultGrade
       user.img = googleToken.picture;
       user.password=''
      

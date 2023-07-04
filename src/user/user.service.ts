@@ -271,7 +271,6 @@ export class UserService {
     }
   }
 
-  /**이 부분은 수정 예정입니다. */
   async insertGoogle(googleToken,defaultGrade){
     try{
       const user = new UserEntity();

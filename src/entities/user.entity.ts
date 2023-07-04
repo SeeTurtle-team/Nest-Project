@@ -34,7 +34,7 @@ export class UserEntity {
   @Column({ length: 50 })
   name: string;
 
-  @Column()
+  @Column({default:null})
   birth: Date;
 
   @Column({ length: 50 })

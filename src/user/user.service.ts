@@ -81,6 +81,7 @@ export class UserService {
   }
 
   async getEmails() {
+    console.log("hhhhhhhhh")
     try {
       return await this.userRepository.find({
         select: {
@@ -244,15 +245,19 @@ export class UserService {
   async googleLogin(googleLoginDto) {
     try {
       const googleToken = this.jwtService.decode(googleLoginDto.token)
-      console.log(googleToken)
-      const checkEmail = await this.emailCheck(googleToken['email']);
+      const email = googleToken['email'];
+      const checkEmail = await this.emailCheck(email);
 
       if(checkEmail.success){
         await this.insertGoogle(googleToken);
       }      
 
-      return await this.googleLogin(googleToken);
-
+      const res =  await this.googleSignIn(googleToken);
+      
+      console.log(res);
+      
+      return res;
+      
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -275,7 +280,7 @@ export class UserService {
       user.email = googleToken.email;
       user.userId = googleToken.email;
       user.userLoginType = UserStatus.google;
-      // user.userGrade = userGrade.User; ㅅㅂ
+      // user.userGrade = 
       user.img = googleToken.picture;
       user.password=''
      

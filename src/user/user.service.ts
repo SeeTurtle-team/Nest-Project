@@ -5,6 +5,9 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { MailerService } from '@nestjs-modules/mailer';
 import { JwtService } from '@nestjs/jwt';
+import { UserStatus } from './enumType/UserStatus';
+import { userGrade } from 'src/Common/userGrade';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class UserService {
@@ -12,7 +15,8 @@ export class UserService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly mailerService: MailerService,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+   
   ) { }
   private readonly logger = new Logger(UserService.name);
 
@@ -165,6 +169,7 @@ export class UserService {
       user.userLoginType = createUserDto.userLoginType;
       user.userGrade = createUserDto.userGradeId;
 
+      //코드를 보니까 위에 userEntity에 매핑하기 전에 이 밑에 체크를 먼저하는게 리소스를 좀 더 아낄 수 있지 않을까 생각이 듭니다!!
       const checkUserId = await this.userIdCheck(user.userId);
       if (checkUserId.success === false) return checkUserId;
       const checkNickname = await this.nicknameCheck(user.nickname);
@@ -238,18 +243,86 @@ export class UserService {
 
   async googleLogin(googleLoginDto) {
     try {
-      const test = this.jwtService.decode(googleLoginDto.token)
-      console.log(test)
+      const googleToken = this.jwtService.decode(googleLoginDto.token)
+      console.log(googleToken)
+      const checkEmail = await this.emailCheck(googleToken['email']);
 
-      const checkEmail = await this.emailCheck(test['email']);
+      if(checkEmail.success){
+        await this.insertGoogle(googleToken);
+      }      
 
-      
+      return await this.googleLogin(googleToken);
+
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '구글 로그인 에러',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**이 부분은 수정 예정입니다. */
+  async insertGoogle(googleToken){
+    try{
+      const user = new UserEntity();
+      user.name = googleToken.name;
+      user.nickname = googleToken.name;
+      user.email = googleToken.email;
+      user.userId = googleToken.email;
+      user.userLoginType = UserStatus.google;
+      // user.userGrade = userGrade.User; ㅅㅂ
+      user.img = googleToken.picture;
+      user.password=''
+     
+      const salt = await bcrypt.genSalt();
+      const hashedPw = await bcrypt.hash(user.password, salt);
+      user.password = hashedPw;
+
+      await this.userRepository.save(user);
+
+      return { success: true };
+    }catch(err){
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '구글 로그인 에러',
+          success: false,
+        },
+        500,
+      )
+    }
+  }
+
+  /**리팩토링 예정 순환 종속성 발생 */
+  async getJwtToken(payload) {
+    return { access_token: await this.jwtService.signAsync(payload) };
+  }
+
+  async googleSignIn(googleToken){
+    try{
+      const payload = {
+        sub:googleToken.email,
+        username: googleToken.name,
+        nickname : googleToken.name,
+        imgUrl : googleToken.picture
+      }
+
+      const jwtToken = await this.getJwtToken(payload);
+
+      return jwtToken;
+
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '로그인 중 에러 발생',
           success: false,
         },
         500,

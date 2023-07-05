@@ -254,7 +254,9 @@ export class BoardService {
             "category"
           from "board" a
           left join (
-            select "boardId",count (*) as "recommendCount"
+            select 
+              "boardId",
+              count (*) as "recommendCount"
             from "boardRecommend"
             where "boardId" = ${id} 
             and "check" = true
@@ -262,12 +264,16 @@ export class BoardService {
             ) b
           on a.id = b."boardId"
           inner join (
-            select "id",nickname
+            select 
+              "id",
+               nickname
             from "user"
             ) c
           on a."userId" = c.id 
           inner join (
-            select "id","category"
+            select 
+              "id",
+              "category"
             from "boardCategory"
           ) d
           on a."boardCategoryId" = d."id"

@@ -245,7 +245,7 @@ export class BoardService {
       const board = await this.boardRepository.query(
         `select id,title,contents,"dateTime","userId","boardCategoryId","recommendCount"
          from "board" a
-         left join  (
+         inner join  (
            select "boardId",count (*) as "recommendCount"
            from "boardRecommend"
            where "boardId" = ${id} 

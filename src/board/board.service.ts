@@ -14,7 +14,7 @@ export class BoardService {
     @InjectRepository(BoardNotifyEntity)
     private readonly boardNofityRepository: Repository<BoardNotifyEntity>,
     private dataSource: DataSource,
-  ) {}
+  ) { }
 
   /**
    * get all boards with nickname
@@ -243,20 +243,38 @@ export class BoardService {
       //   .getOne();
 
       const board = await this.boardRepository.query(
-        `select id,title,contents,"dateTime","userId","boardCategoryId","recommendCount"
-         from "board" a
-         inner join  (
-           select "boardId",count (*) as "recommendCount"
-           from "boardRecommend"
-           where "boardId" = ${id} 
-           and "check" = true
-           group by "boardId"
-          ) b
-        on a.id = b."boardId"
-        where a.id=${id}
-        and a."isDeleted" = false
-        and a.ban = false` 
-      )
+          `select 
+             a."id",
+            "title",
+            "contents",
+            "dateTime",
+            "boardCategoryId",
+            "recommendCount",
+            "nickname",
+            "category"
+          from "board" a
+          left join (
+            select "boardId",count (*) as "recommendCount"
+            from "boardRecommend"
+            where "boardId" = ${id} 
+            and "check" = true
+            group by "boardId"
+            ) b
+          on a.id = b."boardId"
+          inner join (
+            select "id",nickname
+            from "user"
+            ) c
+          on a."userId" = c.id 
+          inner join (
+            select "id","category"
+            from "boardCategory"
+          ) d
+          on a."boardCategoryId" = d."id"
+          where a.id=${id}
+          and a."isDeleted" = false
+          and a.ban = false`
+        )
       return board[0];
     } catch (err) {
       this.logger.error(err);

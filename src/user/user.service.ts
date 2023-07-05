@@ -363,12 +363,6 @@ export class UserService {
       const email = googleToken['email'];
       const checkEmail = await this.emailCheck(email);
       
-      // if(checkEmail.success){
-      //   googleUser = await this.insertGoogle(googleToken,2);
-      // }else{
-      //   goo
-      // }     
-
       const googleUser = checkEmail.success ? await this.insertGoogle(googleToken,2) : await this.selectGoogleUser(email)
       const res =  await this.googleSignIn(googleUser);
       
@@ -452,6 +446,7 @@ export class UserService {
     }
   }
 
+  /**mail로 사용자 조회 */
   async selectGoogleUser(email:string){
     try{
       const res = await this.userRepository.findOne({

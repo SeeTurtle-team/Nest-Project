@@ -281,6 +281,8 @@ export class BoardService {
           and a."isDeleted" = false
           and a.ban = false`
         )
+
+      console.log(board[0])
       return board[0];
     } catch (err) {
       this.logger.error(err);
@@ -460,7 +462,7 @@ export class BoardService {
         `insert into "boardRecommend"("check", "userId", "boardId") values(TRUE, ${userId}, ${boardId})`,
       );
 
-      await this.changeRecommendCount(1, boardId, queryRunner);
+      //await this.changeRecommendCount(1, boardId, queryRunner);
       const recommend = await this.getRecommend(boardId, queryRunner);
 
       return { success: true, msg: 'create recommend', recommend: recommend };
@@ -483,7 +485,7 @@ export class BoardService {
         `UPDATE "boardRecommend" set "check" = FALSE where "boardId" = ${boardId} and "userId" = ${userId}`,
       );
 
-      await this.changeRecommendCount(-1, boardId, queryRunner);
+      //await this.changeRecommendCount(-1, boardId, queryRunner);
       const recommend = await this.getRecommend(boardId, queryRunner);
 
       return { success: true, msg: 'cancel recommend', recommend: recommend };
@@ -506,7 +508,7 @@ export class BoardService {
         `UPDATE "boardRecommend" set "check" = TRUE where "boardId" = ${boardId} and "userId" = ${userId}`,
       );
 
-      await this.changeRecommendCount(1, boardId, queryRunner);
+      //await this.changeRecommendCount(1, boardId, queryRunner);
       const recommend = await this.getRecommend(boardId, queryRunner);
 
       return { success: true, msg: 'reRecommend', recommend: recommend };
@@ -523,27 +525,27 @@ export class BoardService {
     }
   }
 
-  async changeRecommendCount(num, boardId, queryRunner) {
-    try {
-      const count = await this.getRecommend(boardId, queryRunner);
+  // async changeRecommendCount(num, boardId, queryRunner) {
+  //   try {
+  //     const count = await this.getRecommend(boardId, queryRunner);
 
-      await queryRunner.query(
-        `UPDATE "board" set recommend = ${count + num} where id = ${boardId}`,
-      );
+  //     await queryRunner.query(
+  //       `UPDATE "board" set recommend = ${count + num} where id = ${boardId}`,
+  //     );
 
-      return { success: true, msg: 'change count' };
-    } catch (err) {
-      this.logger.error(err);
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: '추천 수 수정 중 에러 발생',
-          success: false,
-        },
-        500,
-      );
-    }
-  }
+  //     return { success: true, msg: 'change count' };
+  //   } catch (err) {
+  //     this.logger.error(err);
+  //     throw new HttpException(
+  //       {
+  //         status: HttpStatus.INTERNAL_SERVER_ERROR,
+  //         error: '추천 수 수정 중 에러 발생',
+  //         success: false,
+  //       },
+  //       500,
+  //     );
+  //   }
+  // }
 
   /**신고 리스트 불러오기 */
   async getNotiList() {

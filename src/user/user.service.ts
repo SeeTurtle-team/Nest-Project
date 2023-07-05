@@ -362,12 +362,15 @@ export class UserService {
       const googleToken = this.jwtService.decode(googleLoginDto.token)
       const email = googleToken['email'];
       const checkEmail = await this.emailCheck(email);
+      
+      // if(checkEmail.success){
+      //   googleUser = await this.insertGoogle(googleToken,2);
+      // }else{
+      //   goo
+      // }     
 
-      if(checkEmail.success){
-        await this.insertGoogle(googleToken,2);
-      }      
-
-      const res =  await this.googleSignIn(googleToken);
+      const googleUser = checkEmail.success ? await this.insertGoogle(googleToken,2) : await this.selectGoogleUser(email)
+      const res =  await this.googleSignIn(googleUser);
       
       console.log(res);
       
@@ -402,9 +405,9 @@ export class UserService {
       const hashedPw = await bcrypt.hash(user.password, salt);
       user.password = hashedPw;
 
-      await this.userRepository.save(user);
+      const res = await this.userRepository.save(user);
 
-      return { success: true };
+      return res;
     }catch(err){
       this.logger.error(err);
       throw new HttpException(
@@ -423,13 +426,13 @@ export class UserService {
     return { access_token: await this.jwtService.signAsync(payload) };
   }
 
-  async googleSignIn(googleToken){
+  async googleSignIn(googleUser){
     try{
       const payload = {
-        sub:googleToken.email,
-        username: googleToken.name,
-        nickname : googleToken.name,
-        imgUrl : googleToken.picture
+        sub:googleUser.id,
+        username: googleUser.name,
+        nickname : googleUser.nickname,
+        imgUrl : googleUser.imgUrl
       }
 
       const jwtToken = await this.getJwtToken(payload);
@@ -442,6 +445,29 @@ export class UserService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '로그인 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async selectGoogleUser(email:string){
+    try{
+      const res = await this.userRepository.findOne({
+        where: {
+          email: email,
+        },
+      });
+
+      return res;
+
+    }catch(err){
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '구글 로그인 유저 조회 중 에러 발생',
           success: false,
         },
         500,

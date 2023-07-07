@@ -43,11 +43,14 @@ export class UserService {
     }
   }
 
-  async getIds() {
+  async getId(userId) {
     try {
       return await this.userRepository.find({
         select: {
           userId: true,
+        },
+        where: {
+          userId: userId,
         },
       });
     } catch (err) {
@@ -63,11 +66,14 @@ export class UserService {
     }
   }
 
-  async getNicknames() {
+  async getNickname(nickname) {
     try {
       return await this.userRepository.find({
         select: {
           nickname: true,
+        },
+        where: {
+          nickname: nickname,
         },
       });
     } catch (err) {
@@ -83,12 +89,14 @@ export class UserService {
     }
   }
 
-  async getEmails() {
-    console.log("hhhhhhhhh")
+  async getEmail(email) {
     try {
       return await this.userRepository.find({
         select: {
           email: true,
+        },
+        where: {
+          email: email,
         },
       });
     } catch (err) {
@@ -106,9 +114,8 @@ export class UserService {
 
   async userIdCheck(userId) {
     try {
-      const ids = await this.getIds();
-      const check = ids.find((e) => e.userId === userId);
-      if (check) return { success: false, msg: '아이디 중복' };
+      const check = await this.getId(userId.userId || userId);
+      if (check[0]) return { success: false, msg: '아이디 중복' };
       return { success: true };
     } catch (err) {
       this.logger.error(err);
@@ -125,9 +132,8 @@ export class UserService {
 
   async nicknameCheck(nickname) {
     try {
-      const nicknames = await this.getNicknames();
-      const check = nicknames.find((e) => e.nickname === nickname);
-      if (check) return { success: false, msg: '닉네임 중복' };
+      const check = await this.getNickname(nickname.nickname || nickname);
+      if (check[0]) return { success: false, msg: '닉네임 중복' };
       return { success: true };
     } catch (err) {
       this.logger.error(err);
@@ -144,9 +150,8 @@ export class UserService {
 
   async emailCheck(email) {
     try {
-      const emails = await this.getEmails();
-      const check = emails.find((e) => e.email === email);
-      if (check) return { success: false, msg: '이메일 중복' };
+      const check = await this.getEmail(email.email || email);
+      if (check[0]) return { success: false, msg: '이메일 중복' };
       return { success: true };
     } catch (err) {
       this.logger.error(err);
@@ -163,6 +168,13 @@ export class UserService {
 
   async signUp(createUserDto) {
     try {
+      const checkUserId = await this.userIdCheck(createUserDto.userId);
+      if (checkUserId.success === false) return checkUserId;
+      const checkNickname = await this.nicknameCheck(createUserDto.nickname);
+      if (checkNickname.success === false) return checkNickname;
+      const checkEmail = await this.emailCheck(createUserDto.email);
+      if (checkEmail.success === false) return checkEmail;
+
       const user = new UserEntity();
       user.userId = createUserDto.userId;
       user.password = createUserDto.password;
@@ -172,14 +184,6 @@ export class UserService {
       user.email = createUserDto.email;
       user.userLoginType = createUserDto.userLoginType;
       user.userGrade = createUserDto.userGradeId;
-
-      //코드를 보니까 위에 userEntity에 매핑하기 전에 이 밑에 체크를 먼저하는게 리소스를 좀 더 아낄 수 있지 않을까 생각이 듭니다!!
-      const checkUserId = await this.userIdCheck(user.userId);
-      if (checkUserId.success === false) return checkUserId;
-      const checkNickname = await this.nicknameCheck(user.nickname);
-      if (checkNickname.success === false) return checkNickname;
-      const checkEmail = await this.emailCheck(user.email);
-      if (checkEmail.success === false) return checkEmail;
 
       await this.sendVerificationCode({ email: user.email });
 
@@ -359,17 +363,18 @@ export class UserService {
 
   async googleLogin(googleLoginDto) {
     try {
-      const googleToken = this.jwtService.decode(googleLoginDto.token)
+      const googleToken = this.jwtService.decode(googleLoginDto.token);
       const email = googleToken['email'];
       const checkEmail = await this.emailCheck(email);
-      
-      const googleUser = checkEmail.success ? await this.insertGoogle(googleToken,2) : await this.selectGoogleUser(email)
-      const res =  await this.googleSignIn(googleUser);
-      
+
+      const googleUser = checkEmail.success
+        ? await this.insertGoogle(googleToken, 2)
+        : await this.selectGoogleUser(email);
+      const res = await this.googleSignIn(googleUser);
+
       console.log(res);
-      
+
       return res;
-      
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -383,18 +388,18 @@ export class UserService {
     }
   }
 
-  async insertGoogle(googleToken,defaultGrade){
-    try{
+  async insertGoogle(googleToken, defaultGrade) {
+    try {
       const user = new UserEntity();
       user.name = googleToken.name;
       user.nickname = googleToken.name;
       user.email = googleToken.email;
       user.userId = googleToken.email;
       user.userLoginType = UserStatus.google;
-      user.userGrade = defaultGrade
+      user.userGrade = defaultGrade;
       user.img = googleToken.picture;
-      user.password=''
-     
+      user.password = '';
+
       const salt = await bcrypt.genSalt();
       const hashedPw = await bcrypt.hash(user.password, salt);
       user.password = hashedPw;
@@ -402,7 +407,7 @@ export class UserService {
       const res = await this.userRepository.save(user);
 
       return res;
-    }catch(err){
+    } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
@@ -411,7 +416,7 @@ export class UserService {
           success: false,
         },
         500,
-      )
+      );
     }
   }
 
@@ -420,19 +425,18 @@ export class UserService {
     return { access_token: await this.jwtService.signAsync(payload) };
   }
 
-  async googleSignIn(googleUser){
-    try{
+  async googleSignIn(googleUser) {
+    try {
       const payload = {
-        sub:googleUser.id,
+        sub: googleUser.id,
         username: googleUser.name,
-        nickname : googleUser.nickname,
-        imgUrl : googleUser.imgUrl
-      }
+        nickname: googleUser.nickname,
+        imgUrl: googleUser.imgUrl,
+      };
 
       const jwtToken = await this.getJwtToken(payload);
 
       return jwtToken;
-
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -447,8 +451,8 @@ export class UserService {
   }
 
   /**mail로 사용자 조회 */
-  async selectGoogleUser(email:string){
-    try{
+  async selectGoogleUser(email: string) {
+    try {
       const res = await this.userRepository.findOne({
         where: {
           email: email,
@@ -456,8 +460,7 @@ export class UserService {
       });
 
       return res;
-
-    }catch(err){
+    } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {

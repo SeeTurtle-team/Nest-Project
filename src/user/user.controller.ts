@@ -36,4 +36,25 @@ export class UserController {
     this.logger.log('-----POST /user/google');
     return await this.userService.googleLogin(googleLoginDto);
   }
+
+  @ApiOperation({ summary: '아이디 중복 검사' })
+  @Post('/id')
+  async checkId(@Body() userId: string) {
+    this.logger.log('-----POST /user/id');
+    return await this.userService.userIdCheck(userId);
+  }
+
+  @ApiOperation({ summary: '닉네임 중복 검사' })
+  @Post('/nickname')
+  async checkNickname(@Body() nickname: string) {
+    this.logger.log('-----POST /user/nickname');
+    return await this.userService.nicknameCheck(nickname);
+  }
+
+  @ApiOperation({ summary: '이메일 중복 검사' })
+  @Post('/email')
+  async checkEmail(@Body() email: string) {
+    this.logger.log('-----POST /user/email');
+    return await this.userService.emailCheck(email);
+  }
 }

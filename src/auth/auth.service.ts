@@ -32,7 +32,7 @@ export class AuthService {
       };
       const jwtToken = await this.getJwtToken(payload);
 
-      return jwtToken;
+      return { success: true, ...jwtToken };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -45,6 +45,4 @@ export class AuthService {
       );
     }
   }
-
-
 }

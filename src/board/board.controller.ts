@@ -140,4 +140,11 @@ export class BoardController {
     this.logger.log('-----POST /notify/ban');
     return await this.boardService.banBoard(banBoardDto);
   }
+
+  @ApiOperation({ summary: '카테고리 조회'})
+  @Get('/category')
+  async getCategoryList(){
+    this.logger.log('-----GET /category');
+    return await this.boardService.getCategoryList();
+  }
 }

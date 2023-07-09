@@ -305,7 +305,7 @@ export class BoardService {
    * @param type
    * @returns typed board
    */
-  async getTyped(type): Promise<object> {
+  async getTyped(boardCategoryId): Promise<object> {
     try {
       const board = await this.boardRepository
         .createQueryBuilder('board')
@@ -321,7 +321,7 @@ export class BoardService {
         ])
         .where('"isDeleted" = :isDeleted', { isDeleted: false })
         .andWhere('"boardCategoryId" = :boardCategoryId', {
-          boardCategoryId: type.boardCategoryId,
+          boardCategoryId: boardCategoryId,
         })
         .leftJoin('board.user', 'user')
         .orderBy('board.dateTime', 'DESC')

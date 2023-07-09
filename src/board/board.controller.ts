@@ -79,9 +79,9 @@ export class BoardController {
 
   /**???? */
   @ApiOperation({ summary: '타입 별 게시판 조회' })
-  @Post()
-  async getTyped(@Body() boardCategoryId: number) {
-    this.logger.log('-----POST /board');
+  @Get('/categoryList/:id')
+  async getTyped(@Param('id') boardCategoryId: number) {
+    this.logger.log('-----GET /board');
     return await this.boardService.getTyped(boardCategoryId);
   }
 

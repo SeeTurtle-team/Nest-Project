@@ -4,6 +4,7 @@ import { BoardEntity } from 'src/entities/board.entity';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BoardNotifyEntity } from 'src/entities/boardNotify.entity';
+import { BoardCategoryEntity } from 'src/entities/boardCategory.entity';
 
 @Injectable()
 export class BoardService {
@@ -13,6 +14,8 @@ export class BoardService {
     private readonly boardRepository: Repository<BoardEntity>,
     @InjectRepository(BoardNotifyEntity)
     private readonly boardNofityRepository: Repository<BoardNotifyEntity>,
+    @InjectRepository(BoardCategoryEntity)
+    private readonly boardCategoryRepository: Repository<BoardCategoryEntity>,
     private dataSource: DataSource,
   ) { }
 
@@ -666,6 +669,24 @@ export class BoardService {
 
       return { success: true, msg: '신고 삭제' };
     } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '신고 삭제 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async getCategoryList(){
+    try{
+      const res = await this.boardCategoryRepository.find();
+      console.log(res)
+      return res;
+    }catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {

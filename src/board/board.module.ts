@@ -9,6 +9,7 @@ import { BoardEntity } from 'src/entities/board.entity';
 import { BoardNotifyEntity } from 'src/entities/boardNotify.entity';
 import { BoardCommentEntity } from 'src/entities/boardComment.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BoardCategoryEntity } from 'src/entities/boardCategory.entity';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     //   BoardCommentRepository,
       
     // ]),
-    TypeOrmModule.forFeature([BoardEntity,BoardNotifyEntity,BoardCommentEntity])
+    TypeOrmModule.forFeature([BoardEntity,BoardNotifyEntity,BoardCommentEntity,BoardCategoryEntity])
   ],
   controllers: [BoardController],
   providers: [BoardService, BoardCommentService],

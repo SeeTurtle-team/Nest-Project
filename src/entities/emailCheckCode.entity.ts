@@ -10,4 +10,7 @@ export class EmailCheckCodeEntity {
 
   @Column()
   code: string;
+
+  @Column()
+  check: boolean;
 }

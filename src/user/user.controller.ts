@@ -24,9 +24,9 @@ export class UserController {
     return this.userService.checkVerificationCode(checkCodeDto);
   }
 
-  @ApiOperation({ summary: '이메일 코드 재전송' })
-  @Post('/resendcode')
-  async resendCode(@Body() email: string) {
+  @ApiOperation({ summary: '이메일 인증 코드 전송' })
+  @Post('/sendcode')
+  async sendCode(@Body() email: string) {
     this.logger.log('-----POST /user/resendcode');
     return this.userService.sendVerificationCode(email);
   }
@@ -52,16 +52,21 @@ export class UserController {
     return await this.userService.emailCheck(email);
   }
 
-  @ApiOperation({ summary: '구글 로그인'})
+  @ApiOperation({ summary: '구글 로그인' })
   @Post('/google')
   async googleLogin(@Body() googleLoginDto) {
     this.logger.log('-----POST /user/google');
     return await this.userService.googleLogin(googleLoginDto);
   }
 
-  @ApiOperation({ summary: '카카오 로그인'})
+  @ApiOperation({ summary: '카카오 로그인' })
   @Post('/kakao')
   async kakaoLogin(@Body() kakaoLoginDto) {
     //return await this.userService.kakaoLogin(kakaoLoginDto);
+  }
+
+  @Post('/test')
+  async test(@Body() email: string) {
+    return await this.userService.emailCodeCheck(email);
   }
 }

@@ -20,7 +20,7 @@ export class UserService {
     private readonly emailCheckCodeRepository: Repository<EmailCheckCodeEntity>,
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
   private readonly logger = new Logger(UserService.name);
 
   async findOne(userId) {
@@ -28,7 +28,6 @@ export class UserService {
       return this.userRepository.findOne({
         where: {
           userId: userId,
-          emailCheck: true,
         },
       });
     } catch (err) {
@@ -167,6 +166,25 @@ export class UserService {
     }
   }
 
+  async emailCodeCheck(email) {
+    try {
+      const emailCheck = await this.getVerificationCode(email);
+      if (emailCheck?.check === undefined || emailCheck?.check === false) {
+        return { success: false, msg: '이메일 인증 확인 불가' };
+      } else return { success: true };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '이메일 인증 여부 체크 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
   async signUp(createUserDto) {
     try {
       const checkUserId = await this.userIdCheck(createUserDto.userId);
@@ -175,6 +193,8 @@ export class UserService {
       if (checkNickname.success === false) return checkNickname;
       const checkEmail = await this.emailCheck(createUserDto.email);
       if (checkEmail.success === false) return checkEmail;
+      const authEmail = await this.emailCodeCheck(createUserDto.email);
+      if (authEmail.success === false) return authEmail;
 
       const user = new UserEntity();
       user.userId = createUserDto.userId;
@@ -185,8 +205,6 @@ export class UserService {
       user.email = createUserDto.email;
       user.userLoginType = createUserDto.userLoginType;
       user.userGrade = createUserDto.userGradeId;
-
-      await this.sendVerificationCode({ email: user.email });
 
       const salt = await bcrypt.genSalt();
       const hashedPw = await bcrypt.hash(user.password, salt);
@@ -281,6 +299,7 @@ export class UserService {
         const emailCode = new EmailCheckCodeEntity();
         emailCode.email = email;
         emailCode.code = code;
+        emailCode.check = false;
 
         await this.emailCheckCodeRepository.save(emailCode);
       }
@@ -321,11 +340,11 @@ export class UserService {
 
   async toggleEmailCheck(email) {
     try {
-      await this.userRepository
+      await this.emailCheckCodeRepository
         .createQueryBuilder()
         .update()
         .set({
-          emailCheck: true,
+          check: true,
         })
         .where('email = :email', { email: email })
         .execute();
@@ -472,22 +491,23 @@ export class UserService {
         500,
       );
     }
-  } 
+  }
 
-  async kakaoLogin(kakaoLoginDto){
-    try{
-      const token = kakaoLoginDto.idToken
-      console.log(token)
-      const kakaoResponse = await axios.post('https://kapi.kakao.com/v2/user/me',{
-        headers:{
-          Authorization: `Bearer ${token}`
-        }
-      })
-      console.log(kakaoResponse)
-
-    }catch(err){
+  async kakaoLogin(kakaoLoginDto) {
+    try {
+      const token = kakaoLoginDto.idToken;
+      console.log(token);
+      const kakaoResponse = await axios.post(
+        'https://kapi.kakao.com/v2/user/me',
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      console.log(kakaoResponse);
+    } catch (err) {
       this.logger.error(err);
     }
-    
   }
 }

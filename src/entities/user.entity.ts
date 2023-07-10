@@ -34,7 +34,7 @@ export class UserEntity {
   @Column({ length: 50 })
   name: string;
 
-  @Column({default:null})
+  @Column({ default: null })
   birth: Date;
 
   @Column({ length: 50 })
@@ -48,9 +48,6 @@ export class UserEntity {
 
   @Column({ length: 1000 })
   img: string;
-
-  @Column({ default: false })
-  emailCheck: Boolean;
 
   @ManyToOne((type) => JobEntity, (jobEntity) => jobEntity.userEntities)
   job: JobEntity;

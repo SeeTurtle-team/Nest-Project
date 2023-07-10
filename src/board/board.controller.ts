@@ -78,10 +78,10 @@ export class BoardController {
   }
 
   @ApiOperation({ summary: '타입 별 게시판 조회' })
-  @Get('/:categoryId')
-  async getTyped(@Param('categoryId') categoryId: number) {
-    this.logger.log('-----GET /board/:categoryId');
-    return await this.boardService.getTyped(categoryId);
+  @Get('/categoryList/:id')
+  async getTyped(@Param('id') boardCategoryId: number) {
+    this.logger.log('-----GET /board');
+    return await this.boardService.getTyped(boardCategoryId);
   }
 
   @ApiOperation({ summary: '게시글 추천' })
@@ -138,5 +138,12 @@ export class BoardController {
   async banBoard(@Body() banBoardDto: BanBoardDto) {
     this.logger.log('-----POST /notify/ban');
     return await this.boardService.banBoard(banBoardDto);
+  }
+
+  @ApiOperation({ summary: '카테고리 조회'})
+  @Get('/category')
+  async getCategoryList(){
+    this.logger.log('-----GET /category');
+    return await this.boardService.getCategoryList();
   }
 }

@@ -17,7 +17,7 @@ export class BoardService {
     @InjectRepository(BoardCategoryEntity)
     private readonly boardCategoryRepository: Repository<BoardCategoryEntity>,
     private dataSource: DataSource,
-  ) { }
+  ) {}
 
   /**
    * get all boards with nickname
@@ -25,24 +25,43 @@ export class BoardService {
    */
   async getAll(): Promise<object> {
     try {
-      const board = await this.boardRepository
-        .createQueryBuilder('board')
-        .select([
-          'board.id',
-          'board.contents',
-          'board.title',
-          'board.dateTime',
-          'board.isDeleted',
-          'board.isModified',
-          'board.recommend',
-          'board.boardCategoryId',
-          'user.nickname',
-        ])
-        .where('"isDeleted" = :isDeleted', { isDeleted: false })
-        .andWhere('"ban" = :ban', { ban: false })
-        .leftJoin('board.user', 'user')
-        .orderBy('board.dateTime', 'DESC')
-        .getRawMany();
+      const board = await this.boardRepository.query(
+        `select
+          a.id,
+          title,
+          "dateTime",
+          "category",
+          "recommendCount",
+          nickname
+          from board a
+        left join (
+          select
+            "boardId",
+            count (*) as "recommendCount"
+            from "boardRecommend"
+            where "check" = true
+            group by "boardId"
+        ) b
+        on a.id = b."boardId"
+        inner join (
+          select
+            "id",
+            nickname
+            from "user"
+        ) c
+        on a."userId" = c.id
+        inner join (
+          select
+            "id",
+            "category"
+            from "boardCategory"
+        ) d
+        on a."boardCategoryId" = d.id
+        where a."isDeleted" = false
+        and a.ban = false
+        order by a."dateTime" desc
+        `,
+      );
 
       return board;
     } catch (err) {
@@ -76,22 +95,7 @@ export class BoardService {
       boardData.isModified = false;
       boardData.recommend = 0;
 
-      await this.boardRepository
-        .createQueryBuilder()
-        .insert()
-        .into('board')
-        .values({
-          title: boardData.title,
-          contents: boardData.contents,
-          dateTime: boardData.dateTime,
-          isDeleted: boardData.isDeleted,
-          isModified: boardData.isModified,
-          recommend: boardData.recommend,
-          user: boardData.user,
-          boardCategory: boardData.boardCategory,
-          ban: boardData.ban,
-        })
-        .execute();
+      await this.boardRepository.save(boardData);
 
       return { success: true };
     } catch (err) {
@@ -246,7 +250,7 @@ export class BoardService {
       //   .getOne();
 
       const board = await this.boardRepository.query(
-          `select 
+        `select 
              a."id",
             "title",
             "contents",
@@ -282,10 +286,10 @@ export class BoardService {
           on a."boardCategoryId" = d."id"
           where a.id=${id}
           and a."isDeleted" = false
-          and a.ban = false`
-        )
+          and a.ban = false`,
+      );
 
-      console.log(board[0])
+      console.log(board[0]);
       return board[0];
     } catch (err) {
       this.logger.error(err);
@@ -305,27 +309,46 @@ export class BoardService {
    * @param type
    * @returns typed board
    */
-  async getTyped(boardCategoryId): Promise<object> {
+  async getTyped(categoryId): Promise<object> {
     try {
-      const board = await this.boardRepository
-        .createQueryBuilder('board')
-        .select([
-          'board.id',
-          'board.title',
-          'board.dateTime',
-          'board.isDeleted',
-          'board.isModified',
-          'board.recommend',
-          'board.boardCategoryId',
-          'user.nickname',
-        ])
-        .where('"isDeleted" = :isDeleted', { isDeleted: false })
-        .andWhere('"boardCategoryId" = :boardCategoryId', {
-          boardCategoryId: boardCategoryId,
-        })
-        .leftJoin('board.user', 'user')
-        .orderBy('board.dateTime', 'DESC')
-        .getRawMany();
+      const board = await this.boardRepository.query(
+        `select
+          a.id,
+          title,
+          "dateTime",
+          "category",
+          "recommendCount",
+          nickname
+          from board a
+        left join (
+          select
+            "boardId",
+            count (*) as "recommendCount"
+            from "boardRecommend"
+            where "check" = true
+            group by "boardId"
+        ) b
+        on a.id = b."boardId"
+        inner join (
+          select
+            "id",
+            nickname
+            from "user"
+        ) c
+        on a."userId" = c.id
+        inner join (
+          select
+            "id",
+            "category"
+            from "boardCategory"
+        ) d
+        on a."boardCategoryId" = d.id
+        where a."isDeleted" = false
+        and a.ban = false
+        and "boardCategoryId" = ${categoryId}
+        order by a."dateTime" desc
+        `,
+      );
 
       return board;
     } catch (err) {

@@ -77,7 +77,6 @@ export class BoardController {
     return await this.boardService.getOne(id);
   }
 
-  /**???? */
   @ApiOperation({ summary: '타입 별 게시판 조회' })
   @Get('/categoryList/:id')
   async getTyped(@Param('id') boardCategoryId: number) {

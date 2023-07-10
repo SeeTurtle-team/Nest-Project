@@ -684,14 +684,14 @@ export class BoardService {
   async getCategoryList(){
     try{
       const res = await this.boardCategoryRepository.find();
-      console.log(res)
+      
       return res;
     }catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: '신고 삭제 중 에러 발생',
+          error: '카테고리 리스트 조회 중 에러 발생',
           success: false,
         },
         500,

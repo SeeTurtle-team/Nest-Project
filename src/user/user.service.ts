@@ -9,6 +9,7 @@ import { EmailCheckCodeEntity } from 'src/entities/emailCheckCode.entity';
 import { UserStatus } from './enumType/UserStatus';
 import { userGrade } from 'src/Common/userGrade';
 import { AuthService } from 'src/auth/auth.service';
+import axios from 'axios';
 
 @Injectable()
 export class UserService {
@@ -19,7 +20,7 @@ export class UserService {
     private readonly emailCheckCodeRepository: Repository<EmailCheckCodeEntity>,
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
   private readonly logger = new Logger(UserService.name);
 
   async findOne(userId) {
@@ -471,5 +472,22 @@ export class UserService {
         500,
       );
     }
+  } 
+
+  async kakaoLogin(kakaoLoginDto){
+    try{
+      const token = kakaoLoginDto.idToken
+      console.log(token)
+      const kakaoResponse = await axios.post('https://kapi.kakao.com/v2/user/me',{
+        headers:{
+          Authorization: `Bearer ${token}`
+        }
+      })
+      console.log(kakaoResponse)
+
+    }catch(err){
+      this.logger.error(err);
+    }
+    
   }
 }

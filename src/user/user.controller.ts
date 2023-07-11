@@ -27,7 +27,7 @@ export class UserController {
   @ApiOperation({ summary: '이메일 인증 코드 전송' })
   @Post('/sendcode')
   async sendCode(@Body() email: string) {
-    this.logger.log('-----POST /user/resendcode');
+    this.logger.log('-----POST /user/sendcode');
     return this.userService.sendVerificationCode(email);
   }
 

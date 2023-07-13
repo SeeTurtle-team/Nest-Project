@@ -8,6 +8,7 @@ import {
   Patch,
   Param,
   UseGuards,
+  Headers,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BoardService } from './board.service';
@@ -44,16 +45,16 @@ export class BoardController {
 
   @ApiOperation({ summary: '게시판 작성' })
   @Post('/create')
-  async create(@Body() createData: CreateBoardDto) {
+  async create(@Body() createData: CreateBoardDto, @Headers() headers) {
     this.logger.log('-----POST /board/create');
-    return await this.boardService.create(createData);
+    return await this.boardService.create(createData, headers);
   }
 
   @ApiOperation({ summary: '게시글 삭제' })
   @Delete('/delete')
-  async delete(@Body() deleteData: DeleteBoardDto) {
+  async delete(@Body() deleteData: DeleteBoardDto, @Headers() headers) {
     this.logger.log('-----DELETE /board/delete');
-    return await this.boardService.delete(deleteData);
+    return await this.boardService.delete(deleteData, headers);
   }
 
   @ApiOperation({ summary: '게시글 수정 전 가져오기' })
@@ -65,9 +66,9 @@ export class BoardController {
 
   @ApiOperation({ summary: '게시글 수정' })
   @Patch('/update')
-  async update(@Body() updateData: UpdateBoardDto) {
+  async update(@Body() updateData: UpdateBoardDto, @Headers() headers) {
     this.logger.log('-----PATCH /board/update');
-    return await this.boardService.update(updateData);
+    return await this.boardService.update(updateData, headers);
   }
 
   @ApiOperation({ summary: '게시글 열람' })
@@ -86,9 +87,12 @@ export class BoardController {
 
   @ApiOperation({ summary: '게시글 추천' })
   @Post('/recommend')
-  async recommend(@Body() recommendData: RecommendBoardDto) {
+  async recommend(
+    @Body() recommendData: RecommendBoardDto,
+    @Headers() headers,
+  ) {
     this.logger.log('-----POST /board/recommend');
-    return await this.boardService.recommend(recommendData);
+    return await this.boardService.recommend(recommendData, headers);
   }
 
   @ApiOperation({ summary: '댓글 열람' })
@@ -100,23 +104,41 @@ export class BoardController {
 
   @ApiOperation({ summary: '댓글 작성' })
   @Post('/comment/create')
-  async createComment(@Body() createCommentData: CreateCommentDto) {
+  async createComment(
+    @Body() createCommentData: CreateCommentDto,
+    @Headers() headers,
+  ) {
     this.logger.log('-----POST /comment/create');
-    return await this.boardCommentService.createComment(createCommentData);
+    return await this.boardCommentService.createComment(
+      createCommentData,
+      headers,
+    );
   }
 
   @ApiOperation({ summary: '댓글 수정' })
   @Patch('/comment/update')
-  async updateComment(@Body() updateCommentData: UpdateCommentDto) {
+  async updateComment(
+    @Body() updateCommentData: UpdateCommentDto,
+    @Headers() headers,
+  ) {
     this.logger.log('-----POST /comment/update');
-    return await this.boardCommentService.updateComment(updateCommentData);
+    return await this.boardCommentService.updateComment(
+      updateCommentData,
+      headers,
+    );
   }
 
   @ApiOperation({ summary: '댓글 삭제' })
   @Delete('/comment/delete')
-  async deleteComment(@Body() deleteCommentData: DeleteCommentDto) {
+  async deleteComment(
+    @Body() deleteCommentData: DeleteCommentDto,
+    @Headers() headers,
+  ) {
     this.logger.log('-----Delete /comment/delete');
-    return await this.boardCommentService.deleteComment(deleteCommentData);
+    return await this.boardCommentService.deleteComment(
+      deleteCommentData,
+      headers,
+    );
   }
 
   @ApiOperation({ summary: '신고 리스트 불러오기' })
@@ -140,9 +162,9 @@ export class BoardController {
     return await this.boardService.banBoard(banBoardDto);
   }
 
-  @ApiOperation({ summary: '카테고리 조회'})
+  @ApiOperation({ summary: '카테고리 조회' })
   @Get('/category')
-  async getCategoryList(){
+  async getCategoryList() {
     this.logger.log('-----GET /category');
     return await this.boardService.getCategoryList();
   }

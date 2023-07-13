@@ -5,8 +5,5 @@ export class CreateCommentDto {
   readonly contents: string;
 
   @IsNumber()
-  readonly userId: number;
-
-  @IsNumber()
   readonly boardId: number;
 }

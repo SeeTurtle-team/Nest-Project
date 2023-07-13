@@ -8,9 +8,6 @@ export class CreateBoardDto {
   readonly contents: string;
 
   @IsNumber()
-  readonly userId: number;
-
-  @IsNumber()
   readonly boardCategoryId: number;
 
   @IsOptional()

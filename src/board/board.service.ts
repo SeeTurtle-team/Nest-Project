@@ -5,6 +5,7 @@ import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BoardNotifyEntity } from 'src/entities/boardNotify.entity';
 import { BoardCategoryEntity } from 'src/entities/boardCategory.entity';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class BoardService {
@@ -17,6 +18,7 @@ export class BoardService {
     @InjectRepository(BoardCategoryEntity)
     private readonly boardCategoryRepository: Repository<BoardCategoryEntity>,
     private dataSource: DataSource,
+    private jwtService: JwtService,
   ) {}
 
   /**
@@ -82,12 +84,15 @@ export class BoardService {
    * @param createData
    * @return success: true
    */
-  async create(createData): Promise<object> {
+  async create(createData, headers): Promise<object> {
     try {
+      const token = headers.authorization.replace('Bearer ', '');
+      const verified = await this.checkToken(token);
+
       const boardData = new BoardEntity();
       boardData.title = createData.title;
       boardData.contents = createData.contents;
-      boardData.user = createData.userId;
+      boardData.user = verified.userId;
       boardData.boardCategory = createData.boardCategoryId;
       boardData.ban = false;
       boardData.dateTime = new Date();
@@ -116,19 +121,24 @@ export class BoardService {
    * @param deleteData
    * @return success: true
    */
-  async delete(deleteData): Promise<object> {
+  async delete(deleteData, headers): Promise<object> {
     try {
-      await this.boardRepository
-        .createQueryBuilder('board')
-        .update()
-        .set({
-          isDeleted: true,
-        })
-        .where('id = :id', { id: deleteData.id })
-        .andWhere('userId = :userId', { userId: deleteData.userId })
-        .execute();
+      const token = headers.authorization.replace('Bearer ', '');
+      const verified = await this.checkToken(token);
+      const check = await this.checkTokenId(deleteData.userId, verified.userId);
+      if (check) {
+        await this.boardRepository
+          .createQueryBuilder('board')
+          .update()
+          .set({
+            isDeleted: true,
+          })
+          .where('id = :id', { id: deleteData.id })
+          .andWhere('userId = :userId', { userId: deleteData.userId })
+          .execute();
 
-      return { success: true };
+        return { success: true };
+      } else return { success: false, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -199,30 +209,35 @@ export class BoardService {
    * @param updateData
    * @returns success: true
    */
-  async update(updateData): Promise<object> {
+  async update(updateData, headers): Promise<object> {
     try {
-      const boardData = new BoardEntity();
-      boardData.id = updateData.id;
-      boardData.title = updateData.title;
-      boardData.contents = updateData.contents;
-      boardData.user = updateData.userId;
-      boardData.boardCategory = updateData.boardCategoryId;
-      boardData.isModified = true;
+      const token = headers.authorization.replace('Bearer ', '');
+      const verified = await this.checkToken(token);
+      const check = await this.checkTokenId(updateData.userId, verified.userId);
+      if (check) {
+        const boardData = new BoardEntity();
+        boardData.id = updateData.id;
+        boardData.title = updateData.title;
+        boardData.contents = updateData.contents;
+        boardData.user = updateData.userId;
+        boardData.boardCategory = updateData.boardCategoryId;
+        boardData.isModified = true;
 
-      await this.boardRepository
-        .createQueryBuilder('board')
-        .update()
-        .set({
-          title: boardData.title,
-          contents: boardData.contents,
-          boardCategory: boardData.boardCategory,
-          isModified: boardData.isModified,
-        })
-        .where('id = :id', { id: boardData.id })
-        .andWhere('userId = :userId', { userId: boardData.user })
-        .execute();
+        await this.boardRepository
+          .createQueryBuilder('board')
+          .update()
+          .set({
+            title: boardData.title,
+            contents: boardData.contents,
+            boardCategory: boardData.boardCategory,
+            isModified: boardData.isModified,
+          })
+          .where('id = :id', { id: boardData.id })
+          .andWhere('userId = :userId', { userId: boardData.user })
+          .execute();
 
-      return { success: true };
+        return { success: true };
+      } else return { success: false, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -251,14 +266,15 @@ export class BoardService {
 
       const board = await this.boardRepository.query(
         `select 
-             a."id",
+            a."id",
             "title",
             "contents",
             "dateTime",
             "boardCategoryId",
             "recommendCount",
             "nickname",
-            "category"
+            "category",
+            "userId"
           from "board" a
           left join (
             select 
@@ -369,11 +385,17 @@ export class BoardService {
    * @param recommendData
    * @returns success: true, msg: 'create recommend' | 'cancle recommend' | 'reRecommend, recommend: ${recommend}'
    */
-  async recommend(recommendData): Promise<object> {
+  async recommend(recommendDto, headers): Promise<object> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
+      const token = headers.authorization.replace('Bearer ', '');
+      const verified = await this.checkToken(token);
+      const recommendData = {
+        boardId: recommendDto.boardId,
+        userId: verified.userId,
+      };
       const check = await this.checkRecommend(
         recommendData.boardId,
         recommendData.userId,
@@ -704,12 +726,12 @@ export class BoardService {
     }
   }
 
-  async getCategoryList(){
-    try{
+  async getCategoryList() {
+    try {
       const res = await this.boardCategoryRepository.find();
-      
+
       return res;
-    }catch (err) {
+    } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
@@ -720,5 +742,15 @@ export class BoardService {
         500,
       );
     }
+  }
+
+  async checkToken(token) {
+    return this.jwtService.verify(token, {
+      secret: process.env.JWT_CONSTANTS,
+    });
+  }
+
+  async checkTokenId(dtoId, tokenId) {
+    return dtoId === tokenId ? true : false;
   }
 }

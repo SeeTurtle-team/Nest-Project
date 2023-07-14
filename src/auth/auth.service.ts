@@ -25,7 +25,7 @@ export class AuthService {
         return { success: false, msg: '비밀번호가 일치하지 않습니다.' };
 
       const payload = {
-        sub: user.userId,
+        userId: user.id,
         username: user.name,
         nickname: user.nickname,
         imgUrl: user.img,

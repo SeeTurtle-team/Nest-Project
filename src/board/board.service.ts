@@ -152,14 +152,14 @@ export class BoardService {
     }
   }
 
-  async checkUser(ids) {
+  async checkUser(boardId, userId) {
     try {
       const id = await this.boardRepository
         .createQueryBuilder()
         .select('"userId"')
-        .where('id = :boardId', { boardId: ids.boardId })
+        .where('id = :boardId', { boardId: boardId })
         .getRawOne();
-      if (ids.userId === id.userId) {
+      if (userId === id.userId) {
         return true;
       } else return false;
     } catch (err) {
@@ -180,11 +180,13 @@ export class BoardService {
    * @param ids
    * @returns board
    */
-  async getUpdate(ids): Promise<object> {
+  async getUpdate(id, headers): Promise<object> {
     try {
-      const check = await this.checkUser(ids);
+      const token = headers.authorization.replace('Bearer ', '');
+      const verified = await this.checkToken(token);
+      const check = await this.checkUser(id, verified.userId);
       if (check) {
-        const board = await this.getOne(ids.boardId);
+        const board = await this.getOne(id);
 
         return board;
       } else {

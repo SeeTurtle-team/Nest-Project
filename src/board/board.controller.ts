@@ -23,7 +23,6 @@ import { RecommendBoardDto } from './dto/recommend-board.dto';
 import { Throttle, ThrottlerModule } from '@nestjs/throttler';
 import { InsertNotifyDto } from './dto/InsertNotify.dto';
 import { BanBoardDto } from './dto/BanBoard.dto';
-import { GetUpdateBoardtDto } from './dto/getupdate-board.dto';
 
 @Controller('board')
 @ApiTags('Board API')
@@ -58,10 +57,10 @@ export class BoardController {
   }
 
   @ApiOperation({ summary: '게시글 수정 전 가져오기' })
-  @Post('/getupdate')
-  async getUpdate(@Body() boardAndUserId: GetUpdateBoardtDto) {
+  @Get('/getupdate/:id')
+  async getUpdate(@Param('id') id: number, @Headers() headers) {
     this.logger.log('-----POST /board/getupdate');
-    return await this.boardService.getUpdate(boardAndUserId);
+    return await this.boardService.getUpdate(id, headers);
   }
 
   @ApiOperation({ summary: '게시글 수정' })

@@ -149,9 +149,9 @@ export class BoardController {
 
   @ApiOperation({ summary: '신고 접수' })
   @Post('/notify')
-  async insertNotify(@Body() notifyDto: InsertNotifyDto) {
+  async insertNotify(@Body() notifyDto: InsertNotifyDto, @Headers() headers) {
     this.logger.log('-----Insert /notify');
-    return await this.boardService.insertNotify(notifyDto);
+    return await this.boardService.insertNotify(notifyDto, headers);
   }
 
   @ApiOperation({ summary: '신고 확인 및 게시물 밴' })

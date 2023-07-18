@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { BoardNotifyEntity } from 'src/entities/boardNotify.entity';
 import { BoardCategoryEntity } from 'src/entities/boardCategory.entity';
 import { JwtService } from '@nestjs/jwt';
+const { generateUploadURL } = require('../Common/s3');
 
 @Injectable()
 export class BoardService {
@@ -754,5 +755,10 @@ export class BoardService {
 
   async checkTokenId(dtoId, tokenId) {
     return dtoId === tokenId ? true : false;
+  }
+
+  async s3url(){
+    const url = await generateUploadURL();
+    return { data: url };
   }
 }

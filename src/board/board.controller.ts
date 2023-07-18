@@ -167,4 +167,10 @@ export class BoardController {
     this.logger.log('-----GET /category');
     return await this.boardService.getCategoryList();
   }
+
+  @Get('/s3url')
+  async s3url(){
+    return await this.boardService.s3url();
+  }
+
 }

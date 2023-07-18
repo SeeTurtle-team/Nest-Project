@@ -621,8 +621,11 @@ export class BoardService {
   }
 
   /**신고 접수 */
-  async insertNotify(notifyDto) {
+  async insertNotify(notifyDto, headers) {
     try {
+      const token = headers.authorization.replace('Bearer ', '');
+      const verified = await this.checkToken(token);
+
       const boardNotifyEntity = new BoardNotifyEntity();
 
       boardNotifyEntity.reason = notifyDto.reason;
@@ -630,7 +633,7 @@ export class BoardService {
       boardNotifyEntity.IsChecked = false;
       boardNotifyEntity.IsDeleted = false;
       boardNotifyEntity.board = notifyDto.boardId;
-      boardNotifyEntity.user = notifyDto.userId;
+      boardNotifyEntity.user = verified.userId;
 
       await this.boardNofityRepository.save(boardNotifyEntity);
 

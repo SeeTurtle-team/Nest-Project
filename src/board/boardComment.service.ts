@@ -53,6 +53,29 @@ export class BoardCommentService {
     }
   }
 
+  async getCommentUserId(id: number) {
+    try {
+      const comment = await this.boardCommentRepository
+        .createQueryBuilder('boardComment')
+        .select(['"userId"'])
+        .where('"id" = :id', { id: id })
+        .andWhere('"isDeleted" = :isDeleted', { isDeleted: false })
+        .getRawOne();
+
+      return comment.userId;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '해당 댓글 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
   /**
    * create comment
    * @param createData
@@ -107,8 +130,9 @@ export class BoardCommentService {
     try {
       const token = headers.authorization.replace('Bearer ', '');
       const verified = await this.boardService.checkToken(token);
+      const userId = await this.getCommentUserId(updateData.id);
       const check = await this.boardService.checkTokenId(
-        updateData.userId,
+        userId,
         verified.userId,
       );
       if (check) {
@@ -155,8 +179,9 @@ export class BoardCommentService {
     try {
       const token = headers.authorization.replace('Bearer ', '');
       const verified = await this.boardService.checkToken(token);
+      const userId = await this.getCommentUserId(deleteData.id);
       const check = await this.boardService.checkTokenId(
-        deleteData.userId,
+        userId,
         verified.userId,
       );
       if (check) {
@@ -167,7 +192,6 @@ export class BoardCommentService {
             isDeleted: true,
           })
           .where('id = :id', { id: deleteData.id })
-          .andWhere('userId = :userId', { userId: deleteData.userId })
           .execute();
 
         return { success: true };

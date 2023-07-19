@@ -126,7 +126,8 @@ export class BoardService {
     try {
       const token = headers.authorization.replace('Bearer ', '');
       const verified = await this.checkToken(token);
-      const check = await this.checkTokenId(deleteData.userId, verified.userId);
+      const userId = await this.getBoardUserId(deleteData.id);
+      const check = await this.checkTokenId(userId, verified.userId);
       if (check) {
         await this.boardRepository
           .createQueryBuilder('board')
@@ -135,7 +136,7 @@ export class BoardService {
             isDeleted: true,
           })
           .where('id = :id', { id: deleteData.id })
-          .andWhere('userId = :userId', { userId: deleteData.userId })
+          .andWhere('userId = :userId', { userId: userId })
           .execute();
 
         return { success: true };
@@ -216,13 +217,14 @@ export class BoardService {
     try {
       const token = headers.authorization.replace('Bearer ', '');
       const verified = await this.checkToken(token);
-      const check = await this.checkTokenId(updateData.userId, verified.userId);
+      const userId = await this.getBoardUserId(updateData.id);
+      const check = await this.checkTokenId(userId, verified.userId);
       if (check) {
         const boardData = new BoardEntity();
         boardData.id = updateData.id;
         boardData.title = updateData.title;
         boardData.contents = updateData.contents;
-        boardData.user = updateData.userId;
+        boardData.user = userId;
         boardData.boardCategory = updateData.boardCategoryId;
         boardData.isModified = true;
 
@@ -760,8 +762,31 @@ export class BoardService {
     return dtoId === tokenId ? true : false;
   }
 
-  async s3url(){
+  async s3url() {
     const url = await generateUploadURL();
     return { data: url };
+  }
+
+  async getBoardUserId(id: number) {
+    try {
+      const board = await this.boardRepository
+        .createQueryBuilder()
+        .select(['"userId"'])
+        .where('id = :id', { id: id })
+        .andWhere('"isDeleted" = :isDeleted', { isDeleted: false })
+        .getRawOne();
+
+      return board.userId;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '해당 게시판 유저 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
   }
 }

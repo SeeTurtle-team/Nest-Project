@@ -68,7 +68,7 @@ export class BoardCommentService {
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: '해당 댓글 조회 중 에러 발생',
+          error: '해당 댓글 유저 조회 중 에러 발생',
           success: false,
         },
         500,

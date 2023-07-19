@@ -168,8 +168,10 @@ export class BoardController {
     return await this.boardService.getCategoryList();
   }
 
+  @ApiOperation({ summary: 'Get S3 presigned url' })
   @Get('/s3url')
   async s3url(){
+    this.logger.log('-----GET /s3url');
     return await this.boardService.s3url();
   }
 

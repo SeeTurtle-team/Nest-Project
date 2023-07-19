@@ -762,7 +762,9 @@ export class BoardService {
     return dtoId === tokenId ? true : false;
   }
 
-  async s3url() {
+
+  /**get s3 presigned url */
+  async s3url(){
     const url = await generateUploadURL();
     return { data: url };
   }

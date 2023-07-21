@@ -510,4 +510,97 @@ export class UserService {
       this.logger.error(err);
     }
   }
+
+  async getUser(headers) {
+    //수정 전 유저 정보 가져오기
+    const token = headers.authorization.replace('Bearer ', '');
+    const verified = await this.checkToken(token);
+    const user = await this.getUserWithId(verified.userId);
+    const res = {
+      //비밀번호는 빼고 넘기기
+      id: user.id,
+      userId: user.userId,
+      name: user.name,
+      birth: user.birth,
+      nickname: user.nickname,
+      email: user.email,
+      userLoginType: user.userLoginType,
+      img: user.img,
+    };
+    return res;
+  }
+
+  async checkToken(token) {
+    //auth.service에서 가져오면 순환종속성 발생해서 새로 작성
+    return this.jwtService.verify(token, {
+      secret: process.env.JWT_CONSTANTS,
+    });
+  }
+
+  async getUserWithId(id) {
+    try {
+      return this.userRepository.findOne({
+        where: {
+          id: id,
+        },
+      });
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '유저 수정 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async updateUser(updateUserDto, headers) {
+    try {
+      const token = headers.authorization.replace('Bearer ', '');
+      const verified = await this.checkToken(token);
+      if (verified.nickname !== updateUserDto.nickname) {
+        //닉네임에 변화가 있으면 중복 검사 실행
+        const checkNickname = await this.nicknameCheck(updateUserDto.nickname);
+        if (checkNickname.success === false) return checkNickname;
+      }
+      const salt = await bcrypt.genSalt();
+      const hashedPw = await bcrypt.hash(updateUserDto.password, salt);
+      await this.userRepository
+        .createQueryBuilder()
+        .update()
+        .set({
+          name: updateUserDto.name,
+          birth: updateUserDto.birth,
+          nickname: updateUserDto.nickname,
+          img: updateUserDto.img,
+          password: hashedPw,
+        })
+        .where('id = :id', { id: verified.userId })
+        .execute();
+
+      const payload = {
+        userId: verified.userId,
+        username: updateUserDto.name,
+        nickname: updateUserDto.nickname,
+        imgUrl: updateUserDto.img,
+      };
+
+      const jwtToken = await this.getJwtToken(payload);
+
+      return { success: true, jwtToken };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '유저 수정 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
 }

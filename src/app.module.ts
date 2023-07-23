@@ -27,6 +27,7 @@ import { UserGradeEntity } from './entities/userGrade.Entity';
 import { UserModule } from './user/user.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { AuthModule } from './auth/auth.module';
+import { EventModule } from './event/event.module';
 
 @Module({
   imports: [
@@ -101,6 +102,7 @@ import { AuthModule } from './auth/auth.module';
     BoardModule,
     UserModule,
     AuthModule,
+    EventModule,
   ],
 
   controllers: [AppController],

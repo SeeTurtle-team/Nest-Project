@@ -512,22 +512,34 @@ export class UserService {
   }
 
   async getUser(headers) {
-    //수정 전 유저 정보 가져오기
-    const token = headers.authorization.replace('Bearer ', '');
-    const verified = await this.checkToken(token);
-    const user = await this.getUserWithId(verified.userId);
-    const res = {
-      //비밀번호는 빼고 넘기기
-      id: user.id,
-      userId: user.userId,
-      name: user.name,
-      birth: user.birth,
-      nickname: user.nickname,
-      email: user.email,
-      userLoginType: user.userLoginType,
-      img: user.img,
-    };
-    return res;
+    try {
+      //수정 전 유저 정보 가져오기
+      const token = headers.authorization.replace('Bearer ', '');
+      const verified = await this.checkToken(token);
+      const user = await this.getUserWithId(verified.userId);
+      const res = {
+        //비밀번호는 빼고 넘기기
+        id: user.id,
+        userId: user.userId,
+        name: user.name,
+        birth: user.birth,
+        nickname: user.nickname,
+        email: user.email,
+        userLoginType: user.userLoginType,
+        img: user.img,
+      };
+      return res;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '유저 정보 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
   }
 
   async checkToken(token) {

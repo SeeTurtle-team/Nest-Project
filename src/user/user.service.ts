@@ -658,7 +658,7 @@ export class UserService {
       if (authEmail.success === false) return authEmail;
 
       const userId = await this.getIdWithEmail(email);
-      return this.hideUserId(userId[0].userId);
+      return { userId: this.hideUserId(userId[0].userId) };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(

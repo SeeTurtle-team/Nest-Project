@@ -310,11 +310,12 @@ export class BoardService {
           and a.ban = false`,
       );
 
-            
-      const res = board[0]==undefined ? {success:false,msg:'삭제된 게시글입니다'}:board[0];
-      
-      return res
+      const res =
+        board[0] == undefined
+          ? { success: false, msg: '삭제된 게시글입니다' }
+          : board[0];
 
+      return res;
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -418,7 +419,11 @@ export class BoardService {
       } else {
         this.logger.error('게시글 추천 중 에러 발생');
         await queryRunner.rollbackTransaction();
-        return { success: false, msg: '게시글 추천 중 에러 발생' };
+        return {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          success: false,
+          msg: '게시글 추천 중 에러 발생',
+        };
       }
     } catch (err) {
       this.logger.error(err);
@@ -765,9 +770,8 @@ export class BoardService {
     return dtoId === tokenId ? true : false;
   }
 
-
   /**get s3 presigned url */
-  async s3url(){
+  async s3url() {
     const url = await generateUploadURL();
     return { data: url };
   }

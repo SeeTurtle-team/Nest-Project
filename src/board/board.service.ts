@@ -310,12 +310,11 @@ export class BoardService {
           and a.ban = false`,
       );
 
-      //console.log(board[0]);
-      
+            
       const res = board[0]==undefined ? {success:false,msg:'삭제된 게시글입니다'}:board[0];
-      console.log(res);
-      return res
       
+      return res
+
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(

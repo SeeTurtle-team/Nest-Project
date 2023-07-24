@@ -420,7 +420,7 @@ export class BoardService {
         this.logger.error('게시글 추천 중 에러 발생');
         await queryRunner.rollbackTransaction();
         return {
-          stauts: HttpStatus.INTERNAL_SERVER_ERROR,
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
           success: false,
           msg: '게시글 추천 중 에러 발생',
         };

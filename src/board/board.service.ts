@@ -311,6 +311,10 @@ export class BoardService {
       );
 
       console.log(board[0]);
+
+      if(board[0]==undefined){
+        return {success:false, msg:'삭제된 메세지 입니다'};
+      }
       return board[0];
     } catch (err) {
       this.logger.error(err);

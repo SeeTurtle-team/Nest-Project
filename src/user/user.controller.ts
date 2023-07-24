@@ -13,6 +13,8 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CheckCodeDto } from './dto/check-email.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateForgottenPwDto } from './dto/update-forgottenPw.dto';
+import { GetForgottenIdDto } from './dto/get-forgottenId.dto';
 
 @Controller('user')
 @ApiTags('User API')
@@ -93,5 +95,19 @@ export class UserController {
   @Patch()
   async updateUser(@Body() updateUserDto: UpdateUserDto, @Headers() headers) {
     return await this.userService.updateUser(updateUserDto, headers);
+  }
+
+  @Public()
+  @ApiOperation({ summary: '분실 아이디 찾기' })
+  @Get('/help/id')
+  async getForgottenId(@Body() getForgottenIdDto: GetForgottenIdDto) {
+    return await this.userService.getForgottenId(getForgottenIdDto.email);
+  }
+
+  @Public()
+  @ApiOperation({ summary: '분실 비밀번호 재설정' })
+  @Patch('/help/pw')
+  async patchForgottenPw(@Body() updateForgottenPwDto: UpdateForgottenPwDto) {
+    return await this.userService.patchForgottenPw(updateForgottenPwDto);
   }
 }

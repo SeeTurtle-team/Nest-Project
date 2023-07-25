@@ -273,6 +273,7 @@ export class UserService {
         .update()
         .set({
           code: code,
+          check: false,
         })
         .where('email = :email', { email: email })
         .execute();
@@ -609,6 +610,91 @@ export class UserService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '유저 수정 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async getIdWithEmail(email: string) {
+    try {
+      return await this.userRepository.find({
+        select: {
+          userId: true,
+        },
+        where: {
+          email: email,
+        },
+      });
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '이메일로 유저 아이디 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  public hideUserId(userId) {
+    const idArray = userId.split('');
+    const lastIndex = idArray.length - 1;
+    return idArray
+      .map((e, i) => {
+        if (i === 0 || i === 1 || i === lastIndex) {
+          return e;
+        } else return '*';
+      })
+      .join('');
+  }
+
+  async getForgottenId(email: string) {
+    try {
+      const authEmail = await this.emailCodeCheck(email);
+      if (authEmail.success === false) return authEmail;
+
+      const userId = await this.getIdWithEmail(email);
+      return { userId: this.hideUserId(userId[0].userId) };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '분실 유저 아이디 찾기 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async patchForgottenPw(updateForgottenPwDto) {
+    try {
+      const authEmail = await this.emailCodeCheck(updateForgottenPwDto.email);
+      if (authEmail.success === false) return authEmail;
+
+      const salt = await bcrypt.genSalt();
+      const hashedPw = await bcrypt.hash(updateForgottenPwDto.password, salt);
+      await this.userRepository
+        .createQueryBuilder()
+        .update()
+        .set({
+          password: hashedPw,
+        })
+        .where('email = :email', { email: updateForgottenPwDto.email })
+        .execute();
+
+      return { success: true };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '분실 유저 비밀번호 패치 중 에러 발생',
           success: false,
         },
         500,

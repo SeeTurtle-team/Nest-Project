@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module, NestModule, } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -28,6 +28,7 @@ import { UserModule } from './user/user.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { AuthModule } from './auth/auth.module';
 import { EventModule } from './event/event.module';
+import { LoggerMiddleware } from './middlewares/logger.middleware';
 
 @Module({
   imports: [
@@ -113,6 +114,14 @@ import { EventModule } from './event/event.module';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    Logger
   ],
+
+  
 })
-export class AppModule {}
+export class AppModule implements NestModule{
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*'); //그냥 인터셉트 방식은 라우터 헨들러를 지나야되서 잘못된 요청은 로그가 찍히지 않으므로 모든 요청에 대한 기록을 하는 미들웨어 방식
+    //모든 라우트에 로거를 적용
+  }
+}

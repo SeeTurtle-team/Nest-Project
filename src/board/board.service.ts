@@ -102,7 +102,7 @@ export class BoardService {
       boardData.recommend = 0;
 
       await this.boardRepository.save(boardData);
-
+      
       return { success: true };
     } catch (err) {
       this.logger.error(err);

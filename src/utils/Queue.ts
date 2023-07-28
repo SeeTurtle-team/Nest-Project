@@ -1,4 +1,4 @@
-class Queue{
+export class QueueTalk{
     storage: {};
     front: number;
     rear: number;
@@ -45,5 +45,11 @@ class Queue{
         }
 
         return temp;
+    }
+
+
+    readAllQueue(){
+        console.log("????")
+        return this.storage;
     }
 }

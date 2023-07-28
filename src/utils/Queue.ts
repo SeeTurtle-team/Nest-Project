@@ -49,7 +49,6 @@ export class QueueTalk{
 
 
     readAllQueue(){
-        console.log("????")
         return this.storage;
     }
 }

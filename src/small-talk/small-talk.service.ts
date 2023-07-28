@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { QueueTalk } from '../utils/Queue';
 
 @Injectable()
@@ -18,6 +18,14 @@ export class SmallTalkService {
             this.queue.add(id);
         }catch(err){
             this.logger.error(err);
+            throw new HttpException(
+                {
+                  status: HttpStatus.INTERNAL_SERVER_ERROR,
+                  error: '큐 삽입 중 에러 발생',
+                  success: false,
+                },
+                500,
+            );
         }
     }
     
@@ -27,6 +35,14 @@ export class SmallTalkService {
             this.queue.popleft();
         }catch(err){
             this.logger.error(err);
+            throw new HttpException(
+                {
+                  status: HttpStatus.INTERNAL_SERVER_ERROR,
+                  error: '큐 데이터 추출 중 에러 발생',
+                  success: false,
+                },
+                500,
+            );
         }
     }
 
@@ -37,6 +53,14 @@ export class SmallTalkService {
             return res;
         }catch(err){
             this.logger.error(err);
+            throw new HttpException(
+                {
+                  status: HttpStatus.INTERNAL_SERVER_ERROR,
+                  error: '큐 조회 중 에러 발생',
+                  success: false,
+                },
+                500,
+            );
         }
        
     }

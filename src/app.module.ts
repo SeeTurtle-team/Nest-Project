@@ -29,6 +29,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { AuthModule } from './auth/auth.module';
 import { EventModule } from './event/event.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
+import { EbookModule } from './ebook/ebook.module';
 
 @Module({
   imports: [
@@ -105,6 +106,7 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
     UserModule,
     AuthModule,
     EventModule,
+    EbookModule,
   ],
 
   controllers: [AppController],

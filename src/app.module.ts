@@ -29,6 +29,9 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { AuthModule } from './auth/auth.module';
 import { EventModule } from './event/event.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
+import { SmallTalkController } from './small-talk/small-talk.controller';
+import { SmallTalkService } from './small-talk/small-talk.service';
+import { SmallTalkModule } from './small-talk/small-talk.module';
 
 @Module({
   imports: [
@@ -105,6 +108,7 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
     UserModule,
     AuthModule,
     EventModule,
+    SmallTalkModule,
   ],
 
   controllers: [AppController],
@@ -114,7 +118,8 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-    Logger
+    Logger,
+    
   ],
 
   

@@ -19,6 +19,7 @@ export class StaticTimeoutInterceptor implements NestInterceptor {
       if(timeoutValue === undefined){
         timeoutValue = 5000;
       }
+      
       return next.handle().pipe(
         timeout(timeoutValue),
         retry(retryCount),

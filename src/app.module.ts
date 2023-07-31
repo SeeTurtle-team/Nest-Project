@@ -21,7 +21,7 @@ import { UserImgEntity } from './entities/userImg.entity';
 import { BoardModule } from './board/board.module';
 import { BoardRecommendEntity } from './entities/boardRecommend.entity';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { BoardNotifyEntity } from './entities/boardNotify.entity';
 import { UserGradeEntity } from './entities/userGrade.Entity';
 import { UserModule } from './user/user.module';
@@ -32,6 +32,7 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { SmallTalkController } from './small-talk/small-talk.controller';
 import { SmallTalkService } from './small-talk/small-talk.service';
 import { SmallTalkModule } from './small-talk/small-talk.module';
+import { StaticTimeoutInterceptor } from './Interciptor/static-timeout-handle.interceptor';
 
 @Module({
   imports: [
@@ -119,7 +120,10 @@ import { SmallTalkModule } from './small-talk/small-talk.module';
       useClass: ThrottlerGuard,
     },
     Logger,
-    
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: StaticTimeoutInterceptor,
+    },
   ],
 
   

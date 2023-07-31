@@ -31,6 +31,9 @@ export class EbookEntity {
   @Column()
   isModified: boolean;
 
+  @Column()
+  adminCheck: boolean;
+
   @ManyToOne((type) => UserEntity, (userEntity) => userEntity.ebookEntities)
   user: UserEntity;
 

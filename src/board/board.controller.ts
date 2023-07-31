@@ -23,6 +23,7 @@ import { RecommendBoardDto } from './dto/recommend-board.dto';
 import { Throttle, ThrottlerModule } from '@nestjs/throttler';
 import { InsertNotifyDto } from './dto/InsertNotify.dto';
 import { BanBoardDto } from './dto/BanBoard.dto';
+import { TimeoutHandler } from 'src/auth/decorators/timeout-decorator';
 
 @Controller('board')
 @ApiTags('Board API')
@@ -37,6 +38,7 @@ export class BoardController {
   @UseGuards(ThrottlerModule)
   @Throttle(10, 60)
   @Get()
+  @TimeoutHandler(5000)
   async getAll() {
     this.logger.log('-----GET /board');
     return await this.boardService.getAll();

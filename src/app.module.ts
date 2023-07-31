@@ -21,7 +21,7 @@ import { UserImgEntity } from './entities/userImg.entity';
 import { BoardModule } from './board/board.module';
 import { BoardRecommendEntity } from './entities/boardRecommend.entity';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { BoardNotifyEntity } from './entities/boardNotify.entity';
 import { UserGradeEntity } from './entities/userGrade.Entity';
 import { UserModule } from './user/user.module';
@@ -30,6 +30,10 @@ import { AuthModule } from './auth/auth.module';
 import { EventModule } from './event/event.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { EbookModule } from './ebook/ebook.module';
+import { SmallTalkController } from './small-talk/small-talk.controller';
+import { SmallTalkService } from './small-talk/small-talk.service';
+import { SmallTalkModule } from './small-talk/small-talk.module';
+import { StaticTimeoutInterceptor } from './Interciptor/static-timeout-handle.interceptor';
 
 @Module({
   imports: [
@@ -107,6 +111,7 @@ import { EbookModule } from './ebook/ebook.module';
     AuthModule,
     EventModule,
     EbookModule,
+    SmallTalkModule,
   ],
 
   controllers: [AppController],
@@ -116,7 +121,11 @@ import { EbookModule } from './ebook/ebook.module';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-    Logger
+    Logger,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: StaticTimeoutInterceptor,
+    },
   ],
 
   

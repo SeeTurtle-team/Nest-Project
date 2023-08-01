@@ -99,7 +99,7 @@ export class UserController {
 
   @Public()
   @ApiOperation({ summary: '분실 아이디 찾기' })
-  @Get('/help/id')
+  @Post('/help/id')
   async getForgottenId(@Body() getForgottenIdDto: GetForgottenIdDto) {
     return await this.userService.getForgottenId(getForgottenIdDto.email);
   }

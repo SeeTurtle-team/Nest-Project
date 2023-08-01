@@ -42,6 +42,7 @@ export class EbookService {
     }
   }
 
+  /**ebook 전체 조회 */
   async getAll(): Promise<object> {
     try {
       const ebook = await this.ebookRepository.query(
@@ -84,6 +85,11 @@ export class EbookService {
     }
   }
 
+  /**
+   * 
+   * @param id userId:number
+   * @returns ebook getOne
+   */
   async getOne(id): Promise<object> {
     try {
       const ebook = await this.ebookRepository.query(
@@ -133,6 +139,12 @@ export class EbookService {
     }
   }
 
+  /**
+   * 
+   * @param createEbookDto
+   * @param headers 
+   * @returns object {success:true}
+   */
   async create(createEbookDto, headers) {
     try {
       const token = headers.authorization.replace('Bearer ', '');
@@ -164,6 +176,12 @@ export class EbookService {
     }
   }
 
+  /**
+   * 
+   * @param id :number
+   * @param headers 
+   * @returns 
+   */
   async getUpdate(id, headers) {
     try {
       const token = headers.authorization.replace('Bearer ', '');
@@ -187,6 +205,12 @@ export class EbookService {
     }
   }
 
+  /**
+   * 
+   * @param updateEbookDto 
+   * @param headers 
+   * @returns object {success:true}
+   */
   async update(updateEbookDto, headers) {
     try {
       const token = headers.authorization.replace('Bearer ', '');
@@ -219,6 +243,12 @@ export class EbookService {
     }
   }
 
+  /**
+   * 
+   * @param deleteEbookDto 
+   * @param headers 
+   * @returns object {success:true}
+   */
   async delete(deleteEbookDto, headers) {
     try {
       const token = headers.authorization.replace('Bearer ', '');

@@ -619,7 +619,7 @@ export class UserService {
 
   async getIdWithEmail(email: string) {
     try {
-      return await this.userRepository.find({
+      const res = await this.userRepository.find({
         select: {
           userId: true,
         },
@@ -627,6 +627,8 @@ export class UserService {
           email: email,
         },
       });
+      if (res[0]) return { success: true, userId: res[0].userId };
+      else return { success: false, msg: '해당 이메일이 없습니다.' };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -657,8 +659,8 @@ export class UserService {
       const authEmail = await this.emailCodeCheck(email);
       if (authEmail.success === false) return authEmail;
 
-      const userId = await this.getIdWithEmail(email);
-      return { userId: this.hideUserId(userId[0].userId) };
+      const res = await this.getIdWithEmail(email);
+      return { userId: this.hideUserId(res.userId) };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -695,6 +697,27 @@ export class UserService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '분실 유저 비밀번호 패치 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async checkUserIdWithEmail(checkUserIdDto) {
+    try {
+      const res = await this.getIdWithEmail(checkUserIdDto.email);
+      console.log(res);
+      if (res.success === true) {
+        if (res.userId === checkUserIdDto.userId) return { success: true };
+        else return { success: false, msg: '아이디 불일치' };
+      } else return res;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '유저 아이디와 이메일 일치 여부 체크 중 에러 발생',
           success: false,
         },
         500,

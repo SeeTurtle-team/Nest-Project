@@ -15,6 +15,7 @@ import { Public } from 'src/auth/decorators/public.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateForgottenPwDto } from './dto/update-forgottenPw.dto';
 import { GetForgottenIdDto } from './dto/get-forgottenId.dto';
+import { CheckUserIdDto } from './dto/check-userId.dto';
 
 @Controller('user')
 @ApiTags('User API')
@@ -109,5 +110,12 @@ export class UserController {
   @Patch('/help/pw')
   async patchForgottenPw(@Body() updateForgottenPwDto: UpdateForgottenPwDto) {
     return await this.userService.patchForgottenPw(updateForgottenPwDto);
+  }
+
+  @Public()
+  @ApiOperation({ summary: '분실 시 아이디와 이메일 일치 여부 확인' })
+  @Post('/help/check')
+  async checkUserIdWithEmail(@Body() checkUserIdDto: CheckUserIdDto) {
+    return await this.userService.checkUserIdWithEmail(checkUserIdDto);
   }
 }

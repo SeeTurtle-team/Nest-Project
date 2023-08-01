@@ -619,7 +619,7 @@ export class UserService {
 
   async getIdWithEmail(email: string) {
     try {
-      let res = await this.userRepository.find({
+      const res = await this.userRepository.find({
         select: {
           userId: true,
         },

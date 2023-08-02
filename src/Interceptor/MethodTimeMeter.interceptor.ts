@@ -5,9 +5,10 @@ import { Observable, tap } from "rxjs";
 //https://velog.io/@atesi/Nestjs-Interceptor
 @Injectable()
 export class MethodTimeMeterInterceptor implements NestInterceptor{
-    constructor(private readonly reflector: Reflector) {}
+    //constructor(private readonly reflector: Reflector) {}
    
     intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> | Promise<Observable<any>> {
+        console.log("func timer")
         const start = Date.now();
         return next.handle().pipe(
             tap(async () => {

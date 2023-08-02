@@ -29,7 +29,7 @@ import { MethodTimeMeterInterceptor } from 'src/Interceptor/MethodTimeMeter.inte
 
 @Controller('board')
 @ApiTags('Board API')
-@UseInterceptors(MethodTimeMeterInterceptor)
+//@UseInterceptors(MethodTimeMeterInterceptor)
 export class BoardController {
   constructor(
     private boardService: BoardService,

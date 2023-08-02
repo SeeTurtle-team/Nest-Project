@@ -5,9 +5,11 @@ import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { winstonLogger } from './utils/winston.config';
+import { MethodTimeMeterInterceptor } from './Interceptor/MethodTimeMeter.interceptor';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, { cors: true, logger:winstonLogger });
+
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -15,7 +17,8 @@ async function bootstrap() {
         transform: true,
       }),
     );
-
+    
+    
     // rateLimit({
     //   windowMs: 15 * 60 * 1000, // 15 minutes
     //   max: 100, // limit each IP to 100 requests per windowMs

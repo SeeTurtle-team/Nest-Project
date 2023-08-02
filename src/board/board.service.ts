@@ -37,29 +37,29 @@ export class BoardService {
           "recommendCount",
           nickname
           from board a
-        left join (
-          select
-            "boardId",
-            count (*) as "recommendCount"
-            from "boardRecommend"
-            where "check" = true
-            group by "boardId"
-        ) b
-        on a.id = b."boardId"
-        inner join (
-          select
-            "id",
-            nickname
-            from "user"
-        ) c
-        on a."userId" = c.id
-        inner join (
-          select
-            "id",
-            "category"
-            from "boardCategory"
-        ) d
-        on a."boardCategoryId" = d.id
+          inner join (
+            select
+              "id",
+              "category"
+              from "boardCategory"
+          ) b
+          on a."boardCategoryId" = b.id
+          inner join (
+            select
+              "id",
+              nickname
+              from "user"
+          ) c
+          on a."userId" = c.id
+          left join (
+            select
+              "boardId",
+              count (*) as "recommendCount"
+              from "boardRecommend"
+              where "check" = true
+              group by "boardId"
+          ) d
+          on a.id = d."boardId"
         where a."isDeleted" = false
         and a.ban = false
         order by a."dateTime" desc
@@ -102,7 +102,7 @@ export class BoardService {
       boardData.recommend = 0;
 
       await this.boardRepository.save(boardData);
-      
+
       return { success: true };
     } catch (err) {
       this.logger.error(err);

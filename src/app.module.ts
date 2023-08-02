@@ -33,7 +33,7 @@ import { EbookModule } from './ebook/ebook.module';
 import { SmallTalkController } from './small-talk/small-talk.controller';
 import { SmallTalkService } from './small-talk/small-talk.service';
 import { SmallTalkModule } from './small-talk/small-talk.module';
-import { StaticTimeoutInterceptor } from './Interciptor/static-timeout-handle.interceptor';
+import { StaticTimeoutInterceptor } from './Interceptor/static-timeout-handle.interceptor';
 
 @Module({
   imports: [

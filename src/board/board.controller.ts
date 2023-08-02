@@ -9,6 +9,7 @@ import {
   Param,
   UseGuards,
   Headers,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BoardService } from './board.service';
@@ -24,9 +25,11 @@ import { Throttle, ThrottlerModule } from '@nestjs/throttler';
 import { InsertNotifyDto } from './dto/InsertNotify.dto';
 import { BanBoardDto } from './dto/BanBoard.dto';
 import { TimeoutHandler } from 'src/auth/decorators/timeout-decorator';
+import { MethodTimeMeterInterceptor } from 'src/Interceptor/MethodTimeMeter.interceptor';
 
 @Controller('board')
 @ApiTags('Board API')
+@UseInterceptors(MethodTimeMeterInterceptor)
 export class BoardController {
   constructor(
     private boardService: BoardService,
@@ -38,8 +41,7 @@ export class BoardController {
   @UseGuards(ThrottlerModule)
   @Throttle(10, 60)
   @Get()
-  @TimeoutHandler(5000)
-  async getAll() {
+   async getAll() {
     this.logger.log('-----GET /board');
     return await this.boardService.getAll();
   }

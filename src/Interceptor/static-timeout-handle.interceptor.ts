@@ -1,4 +1,4 @@
-import { CallHandler, ExecutionContext, HttpException, HttpStatus, Injectable, NestInterceptor } from "@nestjs/common";
+import { CallHandler, ExecutionContext, HttpException, HttpStatus, Injectable, Logger, NestInterceptor } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { catchError, delay, Observable, retry, tap, throwError, timeout } from "rxjs";
 import { TIMEOUT_METADATA_KEY } from "../auth/decorators/timeout-decorator";
@@ -13,6 +13,8 @@ export class StaticTimeoutInterceptor implements NestInterceptor {
       let timeoutValue = this.reflector.get<number>(TIMEOUT_METADATA_KEY, context.getHandler());
       // retry-options
       const retryCount = 3;
+
+      const logger = new Logger();
       
       console.log("timeoutValue : " + timeoutValue)
 
@@ -27,14 +29,14 @@ export class StaticTimeoutInterceptor implements NestInterceptor {
           console.log("DASfasfd")  
           console.log(error)
           if (error.name === 'TimeoutError') {
-            console.log(`Timeout of ${timeoutValue}ms exceeded`);
+            logger.log(`Timeout of ${timeoutValue}ms exceeded`);
             return throwError(() => new HttpException('Request Timeout', HttpStatus.REQUEST_TIMEOUT));
           } else {
             return throwError(() => error)
           }
         }),
         tap(() => {
-          console.log('Request completed');
+          logger.log('Request completed');
         }),
       );
   }

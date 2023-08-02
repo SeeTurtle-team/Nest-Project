@@ -30,10 +30,9 @@ import { AuthModule } from './auth/auth.module';
 import { EventModule } from './event/event.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { EbookModule } from './ebook/ebook.module';
-import { SmallTalkController } from './small-talk/small-talk.controller';
-import { SmallTalkService } from './small-talk/small-talk.service';
 import { SmallTalkModule } from './small-talk/small-talk.module';
 import { StaticTimeoutInterceptor } from './Interceptor/static-timeout-handle.interceptor';
+import { MethodTimeMeterInterceptor } from './Interceptor/MethodTimeMeter.interceptor';
 
 @Module({
   imports: [
@@ -122,9 +121,16 @@ import { StaticTimeoutInterceptor } from './Interceptor/static-timeout-handle.in
       useClass: ThrottlerGuard,
     },
     Logger,
+  
     {
       provide: APP_INTERCEPTOR,
       useClass: StaticTimeoutInterceptor,
+     
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MethodTimeMeterInterceptor,
+     
     },
   ],
 

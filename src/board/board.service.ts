@@ -62,7 +62,7 @@ export class BoardService {
           on a.id = d."boardId"
         where a."isDeleted" = false
         and a.ban = false
-        order by a."dateTime" desc
+        order by a."id" desc
         `,
       );
 

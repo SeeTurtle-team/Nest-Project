@@ -339,6 +339,20 @@ export class BoardService {
           "recommendCount",
           nickname
           from board a
+          inner join (
+            select
+              "id",
+              "category"
+              from "boardCategory"
+          ) b
+          on a."boardCategoryId" = b.id
+          inner join (
+            select
+              "id",
+              nickname
+              from "user"
+          ) c
+          on a."userId" = c.id
         left join (
           select
             "boardId",
@@ -346,26 +360,12 @@ export class BoardService {
             from "boardRecommend"
             where "check" = true
             group by "boardId"
-        ) b
-        on a.id = b."boardId"
-        inner join (
-          select
-            "id",
-            nickname
-            from "user"
-        ) c
-        on a."userId" = c.id
-        inner join (
-          select
-            "id",
-            "category"
-            from "boardCategory"
         ) d
-        on a."boardCategoryId" = d.id
+        on a.id = d."boardId"
         where a."isDeleted" = false
         and a.ban = false
         and "boardCategoryId" = ${categoryId}
-        order by a."dateTime" desc
+        order by a."id" desc
         `,
       );
 

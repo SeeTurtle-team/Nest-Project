@@ -1,5 +1,9 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { QueueTalk } from '../utils/Queue';
+import { InjectRepository } from '@nestjs/typeorm';
+import { SmallSubjectEntity } from 'src/entities/smallSubject.entity';
+import { Repository } from 'typeorm';
+import { SmallTalkEntity } from 'src/entities/smallTalk.entity';
 
 @Injectable()
 export class SmallTalkService {
@@ -7,10 +11,12 @@ export class SmallTalkService {
     private readonly logger = new Logger(SmallTalkService.name);
 
     constructor(
-        private queue : QueueTalk
-    ){
-
-    }
+        private queue : QueueTalk,
+        @InjectRepository(SmallSubjectEntity)
+        private readonly smallSubjectRepository : Repository<SmallSubjectEntity>,
+        @InjectRepository(SmallTalkEntity)
+        private readonly smallTalkRepository : Repository<SmallTalkEntity>,
+    ){}
 
     queueInsert(id:number){
         try{

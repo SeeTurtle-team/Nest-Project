@@ -37,32 +37,32 @@ export class BoardService {
           "recommendCount",
           nickname
           from board a
-        left join (
-          select
-            "boardId",
-            count (*) as "recommendCount"
-            from "boardRecommend"
-            where "check" = true
-            group by "boardId"
-        ) b
-        on a.id = b."boardId"
-        inner join (
-          select
-            "id",
-            nickname
-            from "user"
-        ) c
-        on a."userId" = c.id
-        inner join (
-          select
-            "id",
-            "category"
-            from "boardCategory"
-        ) d
-        on a."boardCategoryId" = d.id
+          inner join (
+            select
+              "id",
+              "category"
+              from "boardCategory"
+          ) b
+          on a."boardCategoryId" = b.id
+          inner join (
+            select
+              "id",
+              nickname
+              from "user"
+          ) c
+          on a."userId" = c.id
+          left join (
+            select
+              "boardId",
+              count (*) as "recommendCount"
+              from "boardRecommend"
+              where "check" = true
+              group by "boardId"
+          ) d
+          on a.id = d."boardId"
         where a."isDeleted" = false
         and a.ban = false
-        order by a."dateTime" desc
+        order by a."id" desc
         `,
       );
 
@@ -102,7 +102,7 @@ export class BoardService {
       boardData.recommend = 0;
 
       await this.boardRepository.save(boardData);
-      
+
       return { success: true };
     } catch (err) {
       this.logger.error(err);
@@ -275,30 +275,30 @@ export class BoardService {
             "category",
             "userId"
           from "board" a
-          left join (
+          inner join (
             select 
-              "boardId",
-              count (*) as "recommendCount"
-            from "boardRecommend"
-            where "boardId" = ${id} 
-            and "check" = true
-            group by "boardId"
-            ) b
-          on a.id = b."boardId"
+              "id",
+              "category"
+            from "boardCategory"
+          ) b
+          on a."boardCategoryId" = b."id"
           inner join (
             select 
               "id",
                nickname
             from "user"
             ) c
-          on a."userId" = c.id 
-          inner join (
+          on a."userId" = c.id
+          left join (
             select 
-              "id",
-              "category"
-            from "boardCategory"
-          ) d
-          on a."boardCategoryId" = d."id"
+              "boardId",
+              count (*) as "recommendCount"
+            from "boardRecommend"
+            where "boardId" = ${id}
+            and "check" = true
+            group by "boardId"
+            ) d
+          on a.id = d."boardId"
           where a.id=${id}
           and a."isDeleted" = false
           and a.ban = false`,
@@ -339,6 +339,20 @@ export class BoardService {
           "recommendCount",
           nickname
           from board a
+          inner join (
+            select
+              "id",
+              "category"
+              from "boardCategory"
+          ) b
+          on a."boardCategoryId" = b.id
+          inner join (
+            select
+              "id",
+              nickname
+              from "user"
+          ) c
+          on a."userId" = c.id
         left join (
           select
             "boardId",
@@ -346,26 +360,12 @@ export class BoardService {
             from "boardRecommend"
             where "check" = true
             group by "boardId"
-        ) b
-        on a.id = b."boardId"
-        inner join (
-          select
-            "id",
-            nickname
-            from "user"
-        ) c
-        on a."userId" = c.id
-        inner join (
-          select
-            "id",
-            "category"
-            from "boardCategory"
         ) d
-        on a."boardCategoryId" = d.id
+        on a.id = d."boardId"
         where a."isDeleted" = false
         and a.ban = false
         and "boardCategoryId" = ${categoryId}
-        order by a."dateTime" desc
+        order by a."id" desc
         `,
       );
 

@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { BoardNotifyEntity } from 'src/entities/boardNotify.entity';
 import { BoardCategoryEntity } from 'src/entities/boardCategory.entity';
 import { JwtService } from '@nestjs/jwt';
+import { Page } from 'src/utils/Page';
 const { generateUploadURL } = require('../Common/s3');
 
 @Injectable()
@@ -22,51 +23,84 @@ export class BoardService {
     private jwtService: JwtService,
   ) {}
 
+  async getTotalCount() {
+    try {
+      const count = await this.boardRepository.query(`
+      select
+        count(*)
+        from board
+        where "isDeleted" = false
+        and ban = false`);
+      return count[0].count;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '게시판 개수 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
   /**
    * get all boards with nickname
    * @return board
    */
-  async getAll(): Promise<object> {
+  async getAll(page): Promise<object> {
     try {
+      const count = await this.getTotalCount();
+      const offset = page.getOffset();
+      const limit = page.getLimit();
       const board = await this.boardRepository.query(
         `select
-          a.id,
-          title,
-          "dateTime",
-          "category",
-          "recommendCount",
-          nickname
-          from board a
-          inner join (
-            select
-              "id",
-              "category"
-              from "boardCategory"
-          ) b
-          on a."boardCategoryId" = b.id
-          inner join (
-            select
-              "id",
-              nickname
-              from "user"
-          ) c
-          on a."userId" = c.id
-          left join (
-            select
-              "boardId",
-              count (*) as "recommendCount"
-              from "boardRecommend"
-              where "check" = true
-              group by "boardId"
-          ) d
-          on a.id = d."boardId"
-        where a."isDeleted" = false
-        and a.ban = false
-        order by a."id" desc
+        a.id,
+        title,
+        "dateTime",
+        "category",
+        "recommendCount",
+        nickname
+        from board as a
+        join (
+          select
+            "id"
+            from board
+            where board."isDeleted" = false
+            and board.ban = false
+            order by board.id desc
+            offset ${offset}
+            limit ${limit}
+        ) as temp
+        on temp.id = a.id
+        inner join (
+          select
+            "id",
+            "category"
+            from "boardCategory"
+        ) b
+        on a."boardCategoryId" = b.id
+        inner join (
+          select
+            "id",
+            nickname
+            from "user"
+        ) c
+        on a."userId" = c.id
+        left join (
+          select
+            "boardId",
+            count (*) as "recommendCount"
+            from "boardRecommend"
+            where "check" = true
+            group by "boardId"
+        ) d
+        on a.id = d."boardId"
         `,
       );
-
-      return board;
+      
+      return new Page(count, page.pageSize, board);
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(

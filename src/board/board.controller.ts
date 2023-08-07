@@ -48,6 +48,13 @@ export class BoardController {
     return await this.boardService.getAll(page);
   }
 
+  @ApiOperation({ summary: '게시판 전체 개수 조회' })
+  @Get('/count')
+  async getTotalCount() {
+    this.logger.log('-----GET /board/count');
+    return await this.boardService.getTotalCount();
+  }
+
   @ApiOperation({ summary: '게시판 작성' })
   @Post('/create')
   async create(@Body() createData: CreateBoardDto, @Headers() headers) {

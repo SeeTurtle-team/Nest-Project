@@ -22,6 +22,7 @@ export class SmallTalkService {
         try{
             this.logger.log('add');
             this.queue.add(id);
+            return {success:true};
         }catch(err){
             this.logger.error(err);
             throw new HttpException(
@@ -69,6 +70,32 @@ export class SmallTalkService {
             );
         }
        
+    }
+
+    async insertSmallTalkSub(createSmallSub){
+        try{
+            const smallTalkSub = new SmallSubjectEntity();
+
+            smallTalkSub.date = new Date();
+            smallTalkSub.isDeleted = false;
+            smallTalkSub.isModified = false;
+            smallTalkSub.title = createSmallSub.title;
+            smallTalkSub.detail = createSmallSub.detail;
+
+            await this.smallSubjectRepository.save(smallTalkSub);
+
+            return {success:false};
+        }catch(err){
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                  status: HttpStatus.INTERNAL_SERVER_ERROR,
+                  error: '스몰 톡 주제 생성 중 에러 발생',
+                  success: false,
+                },
+                500,
+            );
+        }
     }
 
    

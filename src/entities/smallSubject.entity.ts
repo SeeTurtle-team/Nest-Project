@@ -13,7 +13,7 @@ export class SmallSubjectEntity {
   detail: string;
 
   @Column()
-  date: number;
+  date: Date;
 
   @Column()
   isDeleted: Boolean;

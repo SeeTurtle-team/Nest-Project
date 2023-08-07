@@ -1,7 +1,8 @@
-import { Controller, Get, Logger, Param } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { SmallTalkService } from './small-talk.service';
 import { Public } from 'src/auth/decorators/public.decorator';
+import { CreateSmallSub } from './dto/createSmallSub.dto';
 
 @Controller('small-talk')
 @ApiTags('Small Talk API')
@@ -30,6 +31,12 @@ export class SmallTalkController {
         this.logger.log('-----GET /small-talk/read');
         const res = this.smallTalkService.readAll();
         return res;
+    }
+
+    @Post('/create')
+    async createSmallTalkSub(@Body() createSmallSub : CreateSmallSub){
+        this.logger.log('-----POST /small-talk/create');
+        return await this.smallTalkService.insertSmallTalkSub(createSmallSub);
     }
  
 }

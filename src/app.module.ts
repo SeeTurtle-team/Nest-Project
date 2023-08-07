@@ -117,12 +117,6 @@ import { MethodTimeMeterInterceptor } from './Interceptor/MethodTimeMeter.interc
   providers: [
     AppService,
     {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-    Logger,
-  
-    {
       provide: APP_INTERCEPTOR,
       useClass: StaticTimeoutInterceptor,
      
@@ -132,6 +126,13 @@ import { MethodTimeMeterInterceptor } from './Interceptor/MethodTimeMeter.interc
       useClass: MethodTimeMeterInterceptor,
      
     },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    Logger,
+  
+   
   ],
 
   

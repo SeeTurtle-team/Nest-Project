@@ -449,7 +449,7 @@ export class UserService {
   async googleSignIn(googleUser) {
     try {
       const payload = {
-        sub: googleUser.id,
+        userId: googleUser.id,
         username: googleUser.name,
         nickname: googleUser.nickname,
         imgUrl: googleUser.imgUrl,

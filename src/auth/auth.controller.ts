@@ -1,4 +1,4 @@
-import { Controller, Logger, Post, Body, Get, UseGuards } from '@nestjs/common';
+import { Controller, Logger, Post, Body, Get, UseGuards, Headers } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/signIn.dto';
@@ -17,4 +17,13 @@ export class AuthController {
     this.logger.log('-----POST /auth');
     return this.authService.signIn(signInDto);
   }
+
+  // @Public()
+  // @ApiOperation({ summary : '구글 로그인 후 토근 생성'})
+  // @Get('/google')
+  // async getGoogleLoginToken(@Headers() header){
+  //   this.logger.log('-----GET /auth/google');
+  //   return await this.authService.getGoogleLoginToken(header);
+  // }
+
 }

@@ -6,6 +6,8 @@ import { Repository } from 'typeorm';
 import { SmallTalkEntity } from 'src/entities/smallTalk.entity';
 import { JwtService } from '@nestjs/jwt';
 import { GetToken } from 'src/utils/GetToken';
+import { checkTokenId } from 'src/utils/CheckToken';
+import { DeleteSmallSubDto } from './dto/deleteSmallSub.dto';
 
 @Injectable()
 export class SmallTalkService {
@@ -23,7 +25,9 @@ export class SmallTalkService {
         
     ){}
 
-    async checkToken(token) {
+    async checkToken(headers) {
+        const token = headers.authorization.replace('Bearer ', '');
+
         return this.jwtService.verify(token, {
           secret: process.env.JWT_CONSTANTS,
         });
@@ -86,8 +90,7 @@ export class SmallTalkService {
     async insertSmallTalkSub(createSmallSub,headers){
         try{
             //const getToken = new GetToken(this.jwtService);
-            const token = headers.authorization.replace('Bearer ', '');
-            const verified = await this.checkToken(token);
+            const verified = await this.checkToken(headers);
 
             //const verified = await this.getToken.getToken(headers)
 
@@ -161,9 +164,27 @@ export class SmallTalkService {
         }
     }
 
-    async deleteSub(id:number) {
+    async deleteSub(deleteData:DeleteSmallSubDto, headers) {
         try {
+            const verified = await this.checkToken(headers);
 
+            const checkUser = checkTokenId(deleteData.userId,verified.userId)
+
+            if(!checkUser){
+                await this.smallSubjectRepository
+                .createQueryBuilder()
+                .update()
+                .set({
+                    isDeleted:true,
+                })
+                .where('id = :id',{id:deleteData.id})
+                .execute();
+
+                return {success :true};
+            }else{
+                return {success:false,msg:'유저 불일치'};
+            }
+           
         }catch(err){
             this.logger.error(err);
             throw new HttpException(

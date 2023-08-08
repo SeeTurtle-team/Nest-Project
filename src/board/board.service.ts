@@ -7,6 +7,7 @@ import { BoardNotifyEntity } from 'src/entities/boardNotify.entity';
 import { BoardCategoryEntity } from 'src/entities/boardCategory.entity';
 import { JwtService } from '@nestjs/jwt';
 import { Page } from 'src/utils/Page';
+import { checkTokenId } from 'src/utils/CheckToken';
 const { generateUploadURL } = require('../Common/s3');
 
 @Injectable()
@@ -161,7 +162,7 @@ export class BoardService {
       const token = headers.authorization.replace('Bearer ', '');
       const verified = await this.checkToken(token);
       const userId = await this.getBoardUserId(deleteData.id);
-      const check = await this.checkTokenId(userId, verified.userId);
+      const check = checkTokenId(userId, verified.userId);
       if (check) {
         await this.boardRepository
           .createQueryBuilder('board')
@@ -252,7 +253,7 @@ export class BoardService {
       const token = headers.authorization.replace('Bearer ', '');
       const verified = await this.checkToken(token);
       const userId = await this.getBoardUserId(updateData.id);
-      const check = await this.checkTokenId(userId, verified.userId);
+      const check = checkTokenId(userId, verified.userId);
       if (check) {
         const boardData = new BoardEntity();
         boardData.id = updateData.id;
@@ -769,9 +770,6 @@ export class BoardService {
     });
   }
 
-  async checkTokenId(dtoId, tokenId) {
-    return dtoId === tokenId ? true : false;
-  }
 
   /**get s3 presigned url */
   async s3url() {

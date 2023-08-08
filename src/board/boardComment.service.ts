@@ -4,6 +4,7 @@ import { BoardCommentEntity } from 'src/entities/boardComment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BoardService } from './board.service';
+import { checkTokenId } from 'src/utils/CheckToken';
 
 @Injectable()
 export class BoardCommentService {
@@ -131,7 +132,7 @@ export class BoardCommentService {
       const token = headers.authorization.replace('Bearer ', '');
       const verified = await this.boardService.checkToken(token);
       const userId = await this.getCommentUserId(updateData.id);
-      const check = await this.boardService.checkTokenId(
+      const check = checkTokenId(
         userId,
         verified.userId,
       );
@@ -180,7 +181,7 @@ export class BoardCommentService {
       const token = headers.authorization.replace('Bearer ', '');
       const verified = await this.boardService.checkToken(token);
       const userId = await this.getCommentUserId(deleteData.id);
-      const check = await this.boardService.checkTokenId(
+      const check = checkTokenId(
         userId,
         verified.userId,
       );

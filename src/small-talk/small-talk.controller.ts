@@ -3,7 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { SmallTalkService } from './small-talk.service';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { CreateSmallSub } from './dto/createSmallSub.dto';
-import { DeleteBoardDto } from 'src/board/dto/delete-board.dto';
+import { DeleteSmallSubDto } from './dto/deleteSmallSub.dto';
 
 @Controller('small-talk')
 @ApiTags('Small Talk API')
@@ -40,10 +40,10 @@ export class SmallTalkController {
         return await this.smallTalkService.insertSmallTalkSub(createSmallSub,header);
     }
 
-    @Delete('/delete')
-    async deleteSmallTalkSub(@Body() deleteData:DeleteBoardDto) {
+    @Post('/delete')
+    async deleteSmallTalkSub(@Body() deleteData:DeleteSmallSubDto, @Headers() header) {
         this.logger.log('-----DELETE /small-talk/delete');
-
+        return await this.smallTalkService.deleteSub(deleteData, header);
     }
     
  

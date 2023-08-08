@@ -10,6 +10,7 @@ import {
   UseGuards,
   Headers,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BoardService } from './board.service';
@@ -26,6 +27,7 @@ import { InsertNotifyDto } from './dto/InsertNotify.dto';
 import { BanBoardDto } from './dto/BanBoard.dto';
 import { TimeoutHandler } from 'src/auth/decorators/timeout-decorator';
 import { MethodTimeMeterInterceptor } from 'src/Interceptor/MethodTimeMeter.interceptor';
+import { PageRequest } from 'src/utils/PageRequest';
 
 @Controller('board')
 @ApiTags('Board API')
@@ -41,9 +43,16 @@ export class BoardController {
   @UseGuards(ThrottlerModule)
   @Throttle(10, 60)
   @Get()
-   async getAll() {
+  async getAll(@Query() page: PageRequest) {
     this.logger.log('-----GET /board');
-    return await this.boardService.getAll();
+    return await this.boardService.getAll(page);
+  }
+
+  @ApiOperation({ summary: '게시판 전체 개수 조회' })
+  @Get('/count')
+  async getTotalCount() {
+    this.logger.log('-----GET /board/count');
+    return await this.boardService.getTotalCount();
   }
 
   @ApiOperation({ summary: '게시판 작성' })
@@ -174,9 +183,8 @@ export class BoardController {
 
   @ApiOperation({ summary: 'Get S3 presigned url' })
   @Get('/s3url')
-  async s3url(){
+  async s3url() {
     this.logger.log('-----GET /s3url');
     return await this.boardService.s3url();
   }
-
 }

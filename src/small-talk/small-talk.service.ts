@@ -74,6 +74,9 @@ export class SmallTalkService {
 
     async insertSmallTalkSub(createSmallSub){
         try{
+            const checkSubTitle = await this.checkSubTitle(createSmallSub.title);
+            if(checkSubTitle[0]) return {success:false, msg:'타이틀 중복'}
+            
             const smallTalkSub = new SmallSubjectEntity();
 
             smallTalkSub.date = new Date();
@@ -84,7 +87,29 @@ export class SmallTalkService {
 
             await this.smallSubjectRepository.save(smallTalkSub);
 
-            return {success:false};
+            return {success:true};
+        }catch(err){
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                  status: HttpStatus.INTERNAL_SERVER_ERROR,
+                  error: '스몰 톡 주제 생성 중 에러 발생',
+                  success: false,
+                },
+                500,
+            );
+        }
+    }
+
+    async checkSubTitle(title:string){
+        try{
+            const res = await this.smallSubjectRepository.find({
+                where:{
+                    title:title
+                }
+            });
+
+            return res;
         }catch(err){
             this.logger.error(err);
             throw new HttpException(

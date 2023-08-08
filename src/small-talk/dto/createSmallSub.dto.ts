@@ -1,4 +1,4 @@
-import { IsString } from "class-validator";
+import { IsNumber, IsString } from "class-validator";
 
 export class CreateSmallSub{
     @IsString()
@@ -6,4 +6,5 @@ export class CreateSmallSub{
 
     @IsString()
     readonly detail : string;
+
 }

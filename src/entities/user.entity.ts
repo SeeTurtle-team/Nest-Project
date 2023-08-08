@@ -19,6 +19,7 @@ import { SmallTalkEntity } from './smallTalk.entity';
 import { BoardRecommendEntity } from './boardRecommend.entity';
 import { BoardNotifyEntity } from './boardNotify.entity';
 import { UserGradeEntity } from './userGrade.Entity';
+import { SmallSubjectEntity } from './smallSubject.entity';
 
 @Entity('user')
 export class UserEntity {
@@ -111,4 +112,10 @@ export class UserEntity {
     (userGradeEntity) => userGradeEntity.userEntities,
   )
   userGrade: UserGradeEntity;
+
+  @OneToMany(
+    (type) => SmallSubjectEntity,
+    (smallSubjectEntity) => smallSubjectEntity.user, 
+  )
+  smallSubjectEntities: SmallSubjectEntity[];
 }

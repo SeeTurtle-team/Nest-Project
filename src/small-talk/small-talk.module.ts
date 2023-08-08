@@ -5,13 +5,15 @@ import { QueueTalk } from 'src/utils/Queue';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SmallTalkEntity } from 'src/entities/smallTalk.entity';
 import { SmallSubjectEntity } from 'src/entities/smallSubject.entity';
+import { GetToken } from 'src/utils/GetToken';
 
 @Module({
     imports:[
-        TypeOrmModule.forFeature([SmallTalkEntity,SmallSubjectEntity])
+        TypeOrmModule.forFeature([SmallTalkEntity,SmallSubjectEntity]),
+        
     ],
     controllers:[SmallTalkController],
-    providers:[SmallTalkService,QueueTalk],
+    providers:[SmallTalkService,QueueTalk,GetToken,],
     
 })
 export class SmallTalkModule {}

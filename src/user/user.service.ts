@@ -457,6 +457,7 @@ export class UserService {
 
       const jwtToken = await this.getJwtToken(payload);
 
+      console.log("sadfsdafsdaf " + jwtToken)
       return jwtToken;
     } catch (err) {
       this.logger.error(err);

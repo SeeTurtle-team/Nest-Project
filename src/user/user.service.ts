@@ -10,6 +10,7 @@ import { UserStatus } from './enumType/UserStatus';
 import { userGrade } from 'src/Common/userGrade';
 import { AuthService } from 'src/auth/auth.service';
 import axios from 'axios';
+import { GetToken } from 'src/utils/GetToken';
 
 @Injectable()
 export class UserService {
@@ -20,6 +21,7 @@ export class UserService {
     private readonly emailCheckCodeRepository: Repository<EmailCheckCodeEntity>,
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
+    private readonly getToken : GetToken,
   ) {}
   private readonly logger = new Logger(UserService.name);
 
@@ -457,6 +459,7 @@ export class UserService {
 
       const jwtToken = await this.getJwtToken(payload);
 
+      console.log("sadfsdafsdaf " + jwtToken)
       return jwtToken;
     } catch (err) {
       this.logger.error(err);
@@ -515,8 +518,8 @@ export class UserService {
   async getUser(headers) {
     try {
       //수정 전 유저 정보 가져오기
-      const token = headers.authorization.replace('Bearer ', '');
-      const verified = await this.checkToken(token);
+      
+      const verified = await this.getToken.getToken(headers);
       const user = await this.getUserWithId(verified.userId);
       const res = {
         //비밀번호는 빼고 넘기기
@@ -543,13 +546,6 @@ export class UserService {
     }
   }
 
-  async checkToken(token) {
-    //auth.service에서 가져오면 순환종속성 발생해서 새로 작성
-    return this.jwtService.verify(token, {
-      secret: process.env.JWT_CONSTANTS,
-    });
-  }
-
   async getUserWithId(id) {
     try {
       return this.userRepository.findOne({
@@ -572,8 +568,7 @@ export class UserService {
 
   async updateUser(updateUserDto, headers) {
     try {
-      const token = headers.authorization.replace('Bearer ', '');
-      const verified = await this.checkToken(token);
+      const verified = await this.getToken.getToken(headers);
       if (verified.nickname !== updateUserDto.nickname) {
         //닉네임에 변화가 있으면 중복 검사 실행
         const checkNickname = await this.nicknameCheck(updateUserDto.nickname);

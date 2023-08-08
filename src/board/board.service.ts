@@ -7,6 +7,8 @@ import { BoardNotifyEntity } from 'src/entities/boardNotify.entity';
 import { BoardCategoryEntity } from 'src/entities/boardCategory.entity';
 import { JwtService } from '@nestjs/jwt';
 import { Page } from 'src/utils/Page';
+import { checkTokenId } from 'src/utils/CheckToken';
+import { GetToken } from 'src/utils/GetToken';
 const { generateUploadURL } = require('../Common/s3');
 
 @Injectable()
@@ -21,6 +23,7 @@ export class BoardService {
     private readonly boardCategoryRepository: Repository<BoardCategoryEntity>,
     private dataSource: DataSource,
     private jwtService: JwtService,
+    private readonly getToken : GetToken
   ) {}
 
   async getTotalCount() {
@@ -121,8 +124,7 @@ export class BoardService {
    */
   async create(createData, headers): Promise<object> {
     try {
-      const token = headers.authorization.replace('Bearer ', '');
-      const verified = await this.checkToken(token);
+      const verified = await this.getToken.getToken(headers);
 
       const boardData = new BoardEntity();
       boardData.title = createData.title;
@@ -158,10 +160,9 @@ export class BoardService {
    */
   async delete(deleteData, headers): Promise<object> {
     try {
-      const token = headers.authorization.replace('Bearer ', '');
-      const verified = await this.checkToken(token);
+      const verified = await this.getToken.getToken(headers);
       const userId = await this.getBoardUserId(deleteData.id);
-      const check = await this.checkTokenId(userId, verified.userId);
+      const check = checkTokenId(userId, verified.userId);
       if (check) {
         await this.boardRepository
           .createQueryBuilder('board')
@@ -218,8 +219,7 @@ export class BoardService {
    */
   async getUpdate(id, headers): Promise<object> {
     try {
-      const token = headers.authorization.replace('Bearer ', '');
-      const verified = await this.checkToken(token);
+      const verified = await this.getToken.getToken(headers);
       const check = await this.checkUser(id, verified.userId);
       if (check) {
         const board = await this.getOne(id);
@@ -249,10 +249,9 @@ export class BoardService {
    */
   async update(updateData, headers): Promise<object> {
     try {
-      const token = headers.authorization.replace('Bearer ', '');
-      const verified = await this.checkToken(token);
+      const verified = await this.getToken.getToken(headers);
       const userId = await this.getBoardUserId(updateData.id);
-      const check = await this.checkTokenId(userId, verified.userId);
+      const check = checkTokenId(userId, verified.userId);
       if (check) {
         const boardData = new BoardEntity();
         boardData.id = updateData.id;
@@ -427,8 +426,7 @@ export class BoardService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const token = headers.authorization.replace('Bearer ', '');
-      const verified = await this.checkToken(token);
+      const verified = await this.getToken.getToken(headers);
       const recommendData = {
         boardId: recommendDto.boardId,
         userId: verified.userId,
@@ -637,8 +635,7 @@ export class BoardService {
   /**신고 접수 */
   async insertNotify(notifyDto, headers) {
     try {
-      const token = headers.authorization.replace('Bearer ', '');
-      const verified = await this.checkToken(token);
+      const verified = await this.getToken.getToken(headers);
 
       const boardNotifyEntity = new BoardNotifyEntity();
 
@@ -763,15 +760,8 @@ export class BoardService {
     }
   }
 
-  async checkToken(token) {
-    return this.jwtService.verify(token, {
-      secret: process.env.JWT_CONSTANTS,
-    });
-  }
 
-  async checkTokenId(dtoId, tokenId) {
-    return dtoId === tokenId ? true : false;
-  }
+
 
   /**get s3 presigned url */
   async s3url() {

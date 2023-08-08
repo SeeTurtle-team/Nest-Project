@@ -4,6 +4,8 @@ import { BoardCommentEntity } from 'src/entities/boardComment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BoardService } from './board.service';
+import { checkTokenId } from 'src/utils/CheckToken';
+import { GetToken } from 'src/utils/GetToken';
 
 @Injectable()
 export class BoardCommentService {
@@ -12,6 +14,7 @@ export class BoardCommentService {
     @InjectRepository(BoardCommentEntity)
     private readonly boardCommentRepository: Repository<BoardCommentEntity>,
     private readonly boardService: BoardService,
+    private readonly getToken : GetToken,
   ) {}
 
   /**
@@ -83,8 +86,7 @@ export class BoardCommentService {
    */
   async createComment(createData, headers): Promise<object> {
     try {
-      const token = headers.authorization.replace('Bearer ', '');
-      const verified = await this.boardService.checkToken(token);
+      const verified = await this.getToken.getToken(headers);
       const commentData = new BoardCommentEntity();
       commentData.contents = createData.contents;
       commentData.user = verified.userId;
@@ -128,10 +130,9 @@ export class BoardCommentService {
    */
   async updateComment(updateData, headers): Promise<object> {
     try {
-      const token = headers.authorization.replace('Bearer ', '');
-      const verified = await this.boardService.checkToken(token);
+      const verified = await this.getToken.getToken(headers);
       const userId = await this.getCommentUserId(updateData.id);
-      const check = await this.boardService.checkTokenId(
+      const check = checkTokenId(
         userId,
         verified.userId,
       );
@@ -177,10 +178,9 @@ export class BoardCommentService {
    */
   async deleteComment(deleteData, headers): Promise<object> {
     try {
-      const token = headers.authorization.replace('Bearer ', '');
-      const verified = await this.boardService.checkToken(token);
+      const verified = await this.getToken.getToken(headers);
       const userId = await this.getCommentUserId(deleteData.id);
-      const check = await this.boardService.checkTokenId(
+      const check = checkTokenId(
         userId,
         verified.userId,
       );

@@ -7,6 +7,7 @@ import { EmailCheckCodeEntity } from 'src/entities/emailCheckCode.entity';
 import { AuthService } from 'src/auth/auth.service';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { GetToken } from 'src/utils/GetToken';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { JwtModule } from '@nestjs/jwt';
     TypeOrmModule.forFeature([UserEntity, EmailCheckCodeEntity])
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService,GetToken],
   exports: [UserService],
 })
 export class UserModule {}

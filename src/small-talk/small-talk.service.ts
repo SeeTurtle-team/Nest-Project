@@ -90,15 +90,8 @@ export class SmallTalkService {
     async insertSmallTalkSub(createSmallSub,headers){
         try{
             
-            const verified = await this.checkToken(headers);
-
-            /**문제가 되는 부분은 여기인데 util 폴더에 있는
-             * GetToken을 의존성 주입 시켜서 사용하려고 했습니다.
-             * 그래서 헤더만 넘겨서 거기서 처리를 하면 코드 중복 사용을 막을 수 있어서요
-             * 해당 코드가 같은 파일 안에 작성되어있을 때는 문제가 없는데 다른 파일로 분리만 하면
-             * invaild 토큰 에러가 떠버리는 이슈가 있습니다
-             */
-            //const verified = await this.getToken.getToken(headers)
+            //const verified = await this.checkToken(headers);
+            const verified = await this.getToken.getToken(headers)
 
             const checkSubTitle = await this.checkSubTitle(createSmallSub.title);
             if(checkSubTitle[0]) return {success:false, msg:'타이틀 중복'}
@@ -172,7 +165,7 @@ export class SmallTalkService {
 
     async deleteSub(deleteData:DeleteSmallSubDto, headers) {
         try {
-            const verified = await this.checkToken(headers);
+            const verified = await this.getToken.getToken(headers)
 
             const checkUser = checkTokenId(deleteData.userId,verified.userId)
 

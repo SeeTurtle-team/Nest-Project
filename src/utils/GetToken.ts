@@ -9,6 +9,7 @@ export class GetToken {
 
     async checkToken(token) {
         //const jwtService = new JwtService();
+        console.log(token)
         console.log(process.env.JWT_CONSTANTS)
         return this.jwtService.verifyAsync(token, {
           secret: process.env.JWT_CONSTANTS,
@@ -17,7 +18,7 @@ export class GetToken {
     
     async getToken(header){
         console.log(header.authorization)
-        const token = header.authorization.replace('Bearer','');
+        const token = header.authorization.replace('Bearer ','');
         const verified = await this.checkToken(token);
     
         return verified;

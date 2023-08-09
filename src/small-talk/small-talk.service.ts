@@ -197,5 +197,38 @@ export class SmallTalkService {
         }
     }
 
+    async getAllList() {
+        try{    
+            const res = await this.smallSubjectRepository.createQueryBuilder('smallSubject')
+                        .select('smallSubject.id', 'id')
+                        .addSelect('smallSubject.title','title')
+                        .addSelect('smallSubject.detail','detail')
+                        .addSelect('smallSubject.isDeleted','isDeleted')
+                        .addSelect('smallSubject.isModified','isModified')
+                        .addSelect('smallSubject.imgUrl','imgUrl')
+                        .addSelect('smallSubject.date','date')
+                        .addSelect('user.id','userId')
+                        .addSelect('user.name','name')
+                        .addSelect('user.nickname','nickname')
+                        .addSelect('user.img','userImg')
+                        .leftJoin("smallSubject.user",'user')
+                        .where('smallSubject.isDeleted = false')
+                        .orderBy('smallSubject.date','DESC')
+                        .getRawMany();
+
+            return res;
+        }catch(err){
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                  status: HttpStatus.INTERNAL_SERVER_ERROR,
+                  error: '스몰 톡 리스트 불러오는 중 에러 발생',
+                  success: false,
+                },
+                500,
+            );
+        }
+    }
+
    
 }

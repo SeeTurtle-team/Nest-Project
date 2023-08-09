@@ -22,6 +22,9 @@ export class SmallSubjectEntity {
   @Column()
   isModified: Boolean;
 
+  @Column({ length: 500, nullable:true })
+  imgUrl : string;
+
   @OneToMany(
     (type) => SmallTalkEntity,
     (smallTalkEntity) => smallTalkEntity.smallSubject,

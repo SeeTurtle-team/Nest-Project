@@ -206,6 +206,7 @@ export class SmallTalkService {
                         .addSelect('smallSubject.isDeleted','isDeleted')
                         .addSelect('smallSubject.isModified','isModified')
                         .addSelect('smallSubject.imgUrl','imgUrl')
+                        .addSelect('smallSubject.date','date')
                         .addSelect('user.id','userId')
                         .addSelect('user.name','name')
                         .addSelect('user.nickname','nickname')

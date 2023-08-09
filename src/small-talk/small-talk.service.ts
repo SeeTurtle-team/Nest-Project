@@ -212,6 +212,8 @@ export class SmallTalkService {
                         .addSelect('user.nickname','nickname')
                         .addSelect('user.img','userImg')
                         .leftJoin("smallSubject.user",'user')
+                        .where('smallSubject.isDeleted = false')
+                        .orderBy('smallSubject.date','DESC')
                         .getRawMany();
 
             return res;

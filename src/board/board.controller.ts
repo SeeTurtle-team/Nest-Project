@@ -92,9 +92,12 @@ export class BoardController {
 
   @ApiOperation({ summary: '타입 별 게시판 조회' })
   @Get('/categoryList/:id')
-  async getTyped(@Param('id') boardCategoryId: number) {
+  async getTyped(
+    @Param('id') boardCategoryId: number,
+    @Query() page: PageRequest,
+  ) {
     this.logger.log('-----GET /board');
-    return await this.boardService.getTyped(boardCategoryId);
+    return await this.boardService.getTyped(boardCategoryId, page);
   }
 
   @ApiOperation({ summary: '게시글 추천' })

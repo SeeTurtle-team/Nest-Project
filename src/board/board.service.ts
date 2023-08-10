@@ -23,7 +23,7 @@ export class BoardService {
     private readonly boardCategoryRepository: Repository<BoardCategoryEntity>,
     private dataSource: DataSource,
     private jwtService: JwtService,
-    private readonly getToken : GetToken
+    private readonly getToken: GetToken,
   ) {}
 
   async getTotalCount() {
@@ -41,6 +41,30 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '게시판 개수 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async getTypedTotalCount(categoryId) {
+    try {
+      const count = await this.boardRepository.query(`
+      select
+        count(*)
+        from board
+        where "isDeleted" = false
+        and ban = false
+        and "boardCategoryId" = ${categoryId}
+    `);
+      return count[0].count;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '타입별 게시판 개수 조회 중 에러 발생',
           success: false,
         },
         500,
@@ -102,7 +126,7 @@ export class BoardService {
         on a.id = d."boardId"
         `,
       );
-      
+
       return new Page(count, page.pageSize, board);
     } catch (err) {
       this.logger.error(err);
@@ -361,8 +385,11 @@ export class BoardService {
    * @param type
    * @returns typed board
    */
-  async getTyped(categoryId): Promise<object> {
+  async getTyped(categoryId, page): Promise<object> {
     try {
+      const count = await this.getTypedTotalCount(categoryId);
+      const offset = page.getOffset();
+      const limit = page.getLimit();
       const board = await this.boardRepository.query(
         `select
           a.id,
@@ -371,7 +398,19 @@ export class BoardService {
           "category",
           "recommendCount",
           nickname
-          from board a
+          from board as a
+          join (
+            select
+              "id"
+              from board
+              where board."isDeleted" = false
+              and board.ban = false
+              and board."boardCategoryId" = ${categoryId}
+              order by board.id desc
+              offset ${offset}
+              limit ${limit}
+          ) as temp
+          on temp.id = a.id
           inner join (
             select
               "id",
@@ -395,14 +434,10 @@ export class BoardService {
             group by "boardId"
         ) d
         on a.id = d."boardId"
-        where a."isDeleted" = false
-        and a.ban = false
-        and "boardCategoryId" = ${categoryId}
-        order by a."id" desc
         `,
       );
 
-      return board;
+      return new Page(count, page.pageSize, board);
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -760,12 +795,9 @@ export class BoardService {
     }
   }
 
-
-
-
   /**get s3 presigned url */
   async s3url() {
-    this.logger.log('s3url')
+    this.logger.log('s3url');
     const url = await generateUploadURL();
     return { data: url };
   }

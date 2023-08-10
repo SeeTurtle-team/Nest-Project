@@ -240,7 +240,7 @@ export class SmallTalkService {
                         .addSelect('smallTalk.smallSubjectId','smallSubjectId')
                         .addSelect('smallTalk.contents','contents')
                         .addSelect('user.name','name')
-                        .addSelect('user.nickname','nickname')
+                        .addSelect('user.nickname','userName')
                         .addSelect('user.img','userImg')
                         .leftJoin('smallTalk.user','user')
                         .where('smallTalk.smallSubjectId = :id',{id:id})

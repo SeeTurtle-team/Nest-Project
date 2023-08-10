@@ -1,12 +1,13 @@
-import { Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
+import { InsertSmallTalkDto } from 'src/small-talk/dto/insertSmallTalk.dto';
 import { SmallTalkService } from 'src/small-talk/small-talk.service';
 
 interface MessagePayload {
   roomId: string;
   message: string;
-  headers: string;
+  headers: any;
 }
 
 let createdRooms: string[] = [];
@@ -65,14 +66,35 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 
   @SubscribeMessage('message')
-  handleMessage(
+  async handleMessage(
     @ConnectedSocket() socket: Socket,
-    @MessageBody(){ roomId, message }: MessagePayload,
+    @MessageBody(){ roomId, message ,headers}: MessagePayload,
   ) {
-    console.log(roomId);
-    console.log(message)
-    socket.broadcast.to(roomId).emit('message', { userId: socket.id,contents: message,userName:'fff',id:2,isDeleted:false,smallSujectId:roomId });
-    return { userId: socket.id,contents: message,userName:'fff' };
+    console.log('roomId '+roomId);
+    console.log('msg '+message);
+    console.log(headers);
+
+    const insertSmallTalkDto = new InsertSmallTalkDto();
+
+    insertSmallTalkDto.contents = message;
+    insertSmallTalkDto.smallSubjectId = Number(roomId);
+
+    const res = await this.smallTalkService.insertSmallTalk(insertSmallTalkDto,headers);
+
+    if(res.success){
+      socket.broadcast.to(roomId).emit('message', { userId: socket.id,contents: message,userName:'fff',id:2,isDeleted:false,smallSujectId:roomId });
+      return { userId: socket.id,contents: message,userName:'fff' };
+    } else{
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '스몰 톡 삽입 중 에러 발생',
+          success: false,
+        },
+        500,
+    );
+    }
+    
   }
 
   @SubscribeMessage('room-list')

@@ -265,8 +265,8 @@ export class SmallTalkService {
 
     async insertSmallTalk(insertSmallTalkDto, headers) {
         try{
-
-            const verified = await this.getToken.getToken(headers)
+            console.log('dsfsd '+headers)
+            const verified = await this.getToken.getSmallTalkToken(headers);
 
             const smallTalkEntity = new SmallTalkEntity();
 

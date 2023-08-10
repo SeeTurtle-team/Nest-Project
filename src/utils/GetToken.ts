@@ -17,8 +17,16 @@ export class GetToken {
     }
     
     async getToken(header){
-        console.log(header.authorization)
+        //console.log(header.Authorization)
         const token = header.authorization.replace('Bearer ','');
+        const verified = await this.checkToken(token);
+    
+        return verified;
+    }
+
+    async getSmallTalkToken(header){
+        //console.log(header.Authorization)
+        const token = header.Authorization.replace('Bearer ','');
         const verified = await this.checkToken(token);
     
         return verified;

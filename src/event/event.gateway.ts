@@ -44,7 +44,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
 
     socket.broadcast.emit('message', {
-      message: `${socket.id}가 들어왔습니다.`,
+      smallChat: `${socket.id}가 들어왔습니다.`,
     });
   }
 
@@ -59,7 +59,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     @ConnectedSocket() socket: Socket,
     @MessageBody() message: string,
   ) {
-    socket.broadcast.emit('message', { username: socket.id, message });
-    return { username: socket.id, message };
+    socket.broadcast.emit('message', { userId: socket.id,smallChat: message,userName:'fff' });
+    return { userId: socket.id,smallChat: message,userName:'fff' };
   }
 }

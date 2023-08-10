@@ -7,4 +7,7 @@ export class CreateSmallSub{
     @IsString()
     readonly detail : string;
 
+    @IsString()
+    readonly imgUrl : string;
+
 }

@@ -765,6 +765,7 @@ export class BoardService {
 
   /**get s3 presigned url */
   async s3url() {
+    this.logger.log('s3url')
     const url = await generateUploadURL();
     return { data: url };
   }

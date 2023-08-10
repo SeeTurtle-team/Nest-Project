@@ -124,6 +124,7 @@ export class SmallTalkService {
             smallTalkSub.title = createSmallSub.title;
             smallTalkSub.detail = createSmallSub.detail;
             smallTalkSub.user = verified.userId;
+            smallTalkSub.imgUrl = createSmallSub.imgUrl;
 
             await this.smallSubjectRepository.save(smallTalkSub);
 

@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, Logger, Param, Post, Headers } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Logger, Param, Post, Headers, Patch, Head } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SmallTalkService } from './small-talk.service';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { CreateSmallSub } from './dto/createSmallSub.dto';
 import { DeleteSmallSubDto } from './dto/deleteSmallSub.dto';
+import { InsertSmallTalkDto } from './dto/insertSmallTalk.dto';
 
 @Controller('small-talk')
 @ApiTags('Small Talk API')
@@ -54,6 +55,21 @@ export class SmallTalkController {
     async getAllList() {
         this.logger.log('-----GET /small-talk/getAllList');
         return await this.smallTalkService.getAllList();
+    }
+
+    @ApiOperation({ summary: '스몰 톡 내용 가져오기'})
+    @Get('/getSmallTalk/:id')
+    async getSmallTalkList(@Param('id') id :number) {
+        this.logger.log('-----GET /small-talk/getSmallList/:id');
+        return await this.smallTalkService.getSmallTalkList(id);
+    }
+    
+    @ApiOperation({ summary: '스몰 톡 내용 입력하기'})
+    @Patch('/insertSmallTalk')
+    async insertSmallTalk(@Body() insertSmallTalk: InsertSmallTalkDto ,@Headers() headers){
+        this.logger.log('-----PATCH /small-talk/insertSmallTalk');
+        return await this.smallTalkService.insertSmallTalk(insertSmallTalk, headers);
+
     }
     
  

@@ -49,7 +49,7 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
 
     // socket.broadcast.emit('message', {
     //   contents: `${socket.id}가 들어왔습니다.`,
-    // });
+    // }); 
   }
 
 

@@ -14,6 +14,6 @@ import { GetToken } from 'src/utils/GetToken';
     ],
     controllers:[SmallTalkController],
     providers:[SmallTalkService,QueueTalk,GetToken,],
-    
+    exports:[SmallTalkService]
 })
 export class SmallTalkModule {}

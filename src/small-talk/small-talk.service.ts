@@ -231,5 +231,65 @@ export class SmallTalkService {
         }
     }
 
+    
+    async getSmallTalkList(id) {
+        try{
+            const res = await this.smallTalkRepository.createQueryBuilder('smallTalk')
+                        .select('smallTalk.id','id')
+                        .addSelect('smallTalk.isDeleted','isDeleted')
+                        .addSelect('smallTalk.smallSubjectId','smallSubjectId')
+                        .addSelect('smallTalk.contents','contents')
+                        .addSelect('user.name','name')
+                        .addSelect('user.nickname','userName')
+                        .addSelect('user.img','userImg')
+                        .leftJoin('smallTalk.user','user')
+                        .where('smallTalk.smallSubjectId = :id',{id:id})
+                        .andWhere('smallTalk.isDeleted = false')
+                        .getRawMany();
+
+            return res;
+
+        }catch(err){
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                  status: HttpStatus.INTERNAL_SERVER_ERROR,
+                  error: '스몰 톡 내용 불러오는 중 에러 발생',
+                  success: false,
+                },
+                500,
+            );
+        }
+    }
+
+
+    async insertSmallTalk(insertSmallTalkDto, headers) {
+        try{
+            console.log('dsfsd '+headers)
+            const verified = await this.getToken.getSmallTalkToken(headers);
+
+            const smallTalkEntity = new SmallTalkEntity();
+
+            smallTalkEntity.contents = insertSmallTalkDto.contents;
+            smallTalkEntity.smallSubject = insertSmallTalkDto.smallSubjectId ;
+            smallTalkEntity.isDeleted = false;
+            smallTalkEntity.user = verified.userId;
+
+            await this.smallTalkRepository.save(smallTalkEntity);
+
+            return {success : true, verified};
+             
+        }catch(err){
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                  status: HttpStatus.INTERNAL_SERVER_ERROR,
+                  error: '스몰 톡 삽입 중 에러 발생',
+                  success: false,
+                },
+                500,
+            );
+        }
+    }
    
 }

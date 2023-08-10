@@ -82,8 +82,18 @@ export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
     const res = await this.smallTalkService.insertSmallTalk(insertSmallTalkDto,headers);
 
     if(res.success){
-      socket.broadcast.to(roomId).emit('message', { userId: socket.id,contents: message,userName:'fff',id:2,isDeleted:false,smallSujectId:roomId });
-      return { userId: socket.id,contents: message,userName:'fff' };
+      socket.broadcast.to(roomId).emit('message', { 
+        userId: res.verified.userId,
+        contents: message,
+        userName:res.verified.nickname });
+      
+      return { 
+        userId: res.verified.userId,
+        contents: message,
+        userName:res.verified.nickname
+      };
+
+
     } else{
       throw new HttpException(
         {

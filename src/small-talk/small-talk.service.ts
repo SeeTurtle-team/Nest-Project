@@ -277,7 +277,7 @@ export class SmallTalkService {
 
             await this.smallTalkRepository.save(smallTalkEntity);
 
-            return {success : true};
+            return {success : true, verified};
              
         }catch(err){
             this.logger.error(err);

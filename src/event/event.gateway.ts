@@ -1,10 +1,12 @@
 import { Logger } from '@nestjs/common';
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
+import { SmallTalkService } from 'src/small-talk/small-talk.service';
 
 interface MessagePayload {
   roomId: string;
   message: string;
+  headers: string;
 }
 
 let createdRooms: string[] = [];
@@ -21,6 +23,10 @@ let createdRooms: string[] = [];
 export class EventGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect{
   private logger = new Logger('Gateway');
   
+  constructor(
+    private readonly smallTalkService :  SmallTalkService,
+  ){}
+
   @WebSocketServer() nsp: Namespace;
 
 

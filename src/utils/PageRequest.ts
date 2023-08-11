@@ -9,6 +9,10 @@ export class PageRequest {
   @IsOptional()
   pageSize?: number | 10;
 
+  @IsString()
+  @IsOptional()
+  keyword?: string;
+
   getOffset(): number {
     if (this.pageNo < 1 || this.pageNo === null || this.pageNo === undefined)
       this.pageNo = 1;

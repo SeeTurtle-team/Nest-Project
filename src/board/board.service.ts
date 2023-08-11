@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Page } from 'src/utils/Page';
 import { checkTokenId } from 'src/utils/CheckToken';
 import { GetToken } from 'src/utils/GetToken';
+import { GetSearchSql } from 'src/utils/GetSearchSql';
 const { generateUploadURL } = require('../Common/s3');
 
 @Injectable()
@@ -24,6 +25,7 @@ export class BoardService {
     private dataSource: DataSource,
     private jwtService: JwtService,
     private readonly getToken: GetToken,
+    private readonly getSearchSql: GetSearchSql,
   ) {}
 
   async getTotalCount() {
@@ -900,7 +902,11 @@ export class BoardService {
     try {
       const offset = page.getOffset();
       const limit = page.getLimit();
-      const whiteSpaceSql = this.getWhiteSpaceOrSQLAll(page.keyword);
+      const whiteSpaceSql = this.getSearchSql.getWhiteSpaceOrSql(
+        'board',
+        { title: 'title', contents: 'contents' },
+        page.keyword,
+      );
       const count = await this.getAllSearchCount(whiteSpaceSql);
       const board = await this.boardRepository.query(
         `select
@@ -967,7 +973,11 @@ export class BoardService {
     try {
       const offset = page.getOffset();
       const limit = page.getLimit();
-      const whiteSpaceSql = this.getWhiteSpaceOrSQLTitle(page.keyword);
+      const whiteSpaceSql = this.getSearchSql.getWhiteSpaceOrSql(
+        'board',
+        'title',
+        page.keyword,
+      );
       const count = await this.getTitleSearchCount(whiteSpaceSql);
       const board = await this.boardRepository.query(
         `select
@@ -1032,10 +1042,14 @@ export class BoardService {
 
   async searchContent(page) {
     try {
-      const count = await this.getTotalCount();
       const offset = page.getOffset();
       const limit = page.getLimit();
-      const whiteSpaceSql = this.getWhiteSpaceOrSQLContent(page.keyword);
+      const whiteSpaceSql = this.getSearchSql.getWhiteSpaceOrSql(
+        'board',
+        'contents',
+        page.keyword,
+      );
+      const count = await this.getContentSearchCount(whiteSpaceSql);
       const board = await this.boardRepository.query(
         `select
         a.id,
@@ -1095,36 +1109,5 @@ export class BoardService {
         500,
       );
     }
-  }
-
-  public getWhiteSpaceOrSQLTitle(keyword) {
-    const arr = keyword.split(' ');
-    const whiteSpace = arr.map((e, i) => {
-      if (i === 0) return `and board.title like '%${e}%'`;
-      else return `or board.title like '%${e}%'`;
-    });
-    return whiteSpace.join(' ');
-  }
-
-  public getWhiteSpaceOrSQLContent(keyword) {
-    const arr = keyword.split(' ');
-    const whiteSpace = arr.map((e, i) => {
-      if (i === 0) return `and board.contents like '%${e}%'`;
-      else return `or board.contents like '%${e}%'`;
-    });
-    return whiteSpace.join(' ');
-  }
-
-  public getWhiteSpaceOrSQLAll(keyword) {
-    const arr = keyword.split(' ');
-    const whiteSpace = arr.map((e, i) => {
-      if (i === 0)
-        return `and board.title like '%${e}%'
-        or board.contents like '%${e}%'`;
-      else
-        return `or board.title like '%${e}%'
-      or board.contents like '%${e}%'`;
-    });
-    return whiteSpace.join(' ');
   }
 }

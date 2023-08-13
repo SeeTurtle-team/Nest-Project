@@ -11,17 +11,23 @@ import { BoardCommentEntity } from 'src/entities/boardComment.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BoardCategoryEntity } from 'src/entities/boardCategory.entity';
 import { GetToken } from 'src/utils/GetToken';
+import { GetSearchSql } from 'src/utils/GetSearchSql';
 
 @Module({
   imports: [
     // TypeOrmExModule.forCustomRepository([
     //   BoardRepository,
     //   BoardCommentRepository,
-      
+
     // ]),
-    TypeOrmModule.forFeature([BoardEntity,BoardNotifyEntity,BoardCommentEntity,BoardCategoryEntity])
+    TypeOrmModule.forFeature([
+      BoardEntity,
+      BoardNotifyEntity,
+      BoardCommentEntity,
+      BoardCategoryEntity,
+    ]),
   ],
   controllers: [BoardController],
-  providers: [BoardService, BoardCommentService,GetToken],
+  providers: [BoardService, BoardCommentService, GetToken, GetSearchSql],
 })
 export class BoardModule {}

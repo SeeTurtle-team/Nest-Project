@@ -190,4 +190,25 @@ export class BoardController {
     this.logger.log('-----GET /s3url');
     return await this.boardService.s3url();
   }
+
+  @ApiOperation({ summary: '검색 기능: 제목 + 내용' })
+  @Get('/searchAll')
+  async searchAll(@Query() page: PageRequest) {
+    this.logger.log('----GET /searchAll');
+    return await this.boardService.searchAll(page);
+  }
+
+  @ApiOperation({ summary: '검색 기능: 제목' })
+  @Get('/searchTitle')
+  async searchTitle(@Query() page: PageRequest) {
+    this.logger.log('----GET /searchTitle');
+    return await this.boardService.searchTitle(page);
+  }
+
+  @ApiOperation({ summary: '검색 기능: 내용' })
+  @Get('/searchContent')
+  async searchContent(@Query() page: PageRequest) {
+    this.logger.log('----GET /searchContent');
+    return await this.boardService.searchContent(page);
+  }
 }

@@ -8,7 +8,6 @@ import { InsertSmallTalkDto } from './dto/insertSmallTalk.dto';
 
 @Controller('small-talk')
 @ApiTags('Small Talk API')
-@Public()
 export class SmallTalkController {
     constructor(
         private smallTalkService : SmallTalkService,

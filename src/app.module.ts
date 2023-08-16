@@ -33,6 +33,8 @@ import { EbookModule } from './ebook/ebook.module';
 import { SmallTalkModule } from './small-talk/small-talk.module';
 import { StaticTimeoutInterceptor } from './Interceptor/static-timeout-handle.interceptor';
 import { MethodTimeMeterInterceptor } from './Interceptor/MethodTimeMeter.interceptor';
+import { AdminController } from './admin/admin.controller';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -111,21 +113,23 @@ import { MethodTimeMeterInterceptor } from './Interceptor/MethodTimeMeter.interc
     EventModule,
     EbookModule,
     SmallTalkModule,
+    AdminModule,
   ],
 
-  controllers: [AppController],
+  controllers: [AppController, AdminController],
   providers: [
     AppService,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: StaticTimeoutInterceptor,
-     
-    },
     {
       provide: APP_INTERCEPTOR,
       useClass: MethodTimeMeterInterceptor,
      
     },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: StaticTimeoutInterceptor,
+     
+    },
+    
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

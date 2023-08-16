@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EbookEntity } from 'src/entities/ebook.entity';
+import { GetToken } from 'src/utils/GetToken';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -11,13 +12,8 @@ export class EbookService {
     @InjectRepository(EbookEntity)
     private readonly ebookRepository: Repository<EbookEntity>,
     private readonly jwtService: JwtService,
+    private readonly getToken: GetToken,
   ) {}
-
-  async checkToken(token) {
-    return this.jwtService.verify(token, {
-      secret: process.env.JWT_CONSTANTS,
-    });
-  }
 
   async getEbookUserId(id: number) {
     try {
@@ -86,7 +82,7 @@ export class EbookService {
   }
 
   /**
-   * 
+   *
    * @param id userId:number
    * @returns ebook getOne
    */
@@ -140,15 +136,14 @@ export class EbookService {
   }
 
   /**
-   * 
+   *
    * @param createEbookDto
-   * @param headers 
+   * @param headers
    * @returns object {success:true}
    */
   async create(createEbookDto, headers) {
     try {
-      const token = headers.authorization.replace('Bearer ', '');
-      const verified = await this.checkToken(token);
+      const verified = await this.getToken.getToken(headers);
 
       const ebookData = new EbookEntity();
       ebookData.title = createEbookDto.title;
@@ -177,15 +172,14 @@ export class EbookService {
   }
 
   /**
-   * 
+   *
    * @param id :number
-   * @param headers 
-   * @returns 
+   * @param headers
+   * @returns
    */
   async getUpdate(id, headers) {
     try {
-      const token = headers.authorization.replace('Bearer ', '');
-      const verified = await this.checkToken(token);
+      const verified = await this.getToken.getToken(headers);
 
       const userId = await this.getEbookUserId(id);
 
@@ -206,15 +200,14 @@ export class EbookService {
   }
 
   /**
-   * 
-   * @param updateEbookDto 
-   * @param headers 
+   *
+   * @param updateEbookDto
+   * @param headers
    * @returns object {success:true}
    */
   async update(updateEbookDto, headers) {
     try {
-      const token = headers.authorization.replace('Bearer ', '');
-      const verified = await this.checkToken(token);
+      const verified = await this.getToken.getToken(headers);
 
       await this.ebookRepository
         .createQueryBuilder()
@@ -244,15 +237,14 @@ export class EbookService {
   }
 
   /**
-   * 
-   * @param deleteEbookDto 
-   * @param headers 
+   *
+   * @param deleteEbookDto
+   * @param headers
    * @returns object {success:true}
    */
   async delete(deleteEbookDto, headers) {
     try {
-      const token = headers.authorization.replace('Bearer ', '');
-      const verified = await this.checkToken(token);
+      const verified = await this.getToken.getToken(headers);
 
       await this.ebookRepository
         .createQueryBuilder()

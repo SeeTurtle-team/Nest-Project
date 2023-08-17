@@ -10,6 +10,7 @@ import { BoardCategoryEntity } from './boardCategory.entity';
 import { EbookCommentEntity } from './ebookComment.entity';
 import { EbookRatingEntity } from './ebookRating.entity';
 import { EbookFileEntity } from './ebookFile.entity';
+import { EbookStarRatingEntity } from './ebookStarRating.entity';
 
 @Entity('ebook')
 export class EbookEntity {
@@ -60,4 +61,10 @@ export class EbookEntity {
     (ebookFileEntity) => ebookFileEntity.ebook,
   )
   ebookFileEntities: EbookFileEntity[];
+
+  @OneToMany(
+    (type) => EbookStarRatingEntity,
+    (ebookStarRatingEntity) => ebookStarRatingEntity.ebook,
+  )
+  ebookStarRatingEntities: EbookStarRatingEntity[];
 }

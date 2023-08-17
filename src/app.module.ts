@@ -1,4 +1,4 @@
-import { Logger, MiddlewareConsumer, Module, NestModule, } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -35,6 +35,7 @@ import { StaticTimeoutInterceptor } from './Interceptor/static-timeout-handle.in
 import { MethodTimeMeterInterceptor } from './Interceptor/MethodTimeMeter.interceptor';
 import { AdminController } from './admin/admin.controller';
 import { AdminModule } from './admin/admin.module';
+import { EbookStarRatingEntity } from './entities/ebookStarRating.entity';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { AdminModule } from './admin/admin.module';
         UserImgEntity,
         BoardNotifyEntity,
         UserGradeEntity,
+        EbookStarRatingEntity,
       ],
       synchronize: false,
       autoLoadEntities: true,
@@ -106,7 +108,6 @@ import { AdminModule } from './admin/admin.module';
       }),
     }),
 
-    
     BoardModule,
     UserModule,
     AuthModule,
@@ -122,26 +123,20 @@ import { AdminModule } from './admin/admin.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: MethodTimeMeterInterceptor,
-     
     },
     {
       provide: APP_INTERCEPTOR,
       useClass: StaticTimeoutInterceptor,
-     
     },
-    
+
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
     Logger,
-  
-   
   ],
-
-  
 })
-export class AppModule implements NestModule{
+export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware).forRoutes('*'); //그냥 인터셉트 방식은 라우터 헨들러를 지나야되서 잘못된 요청은 로그가 찍히지 않으므로 모든 요청에 대한 기록을 하는 미들웨어 방식
     //모든 라우트에 로거를 적용

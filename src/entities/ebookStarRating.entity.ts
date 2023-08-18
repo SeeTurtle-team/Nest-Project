@@ -8,7 +8,7 @@ export class EbookStarRatingEntity {
   id: number;
 
   @Column()
-  starRate: number;
+  starRating: number;
 
   @ManyToOne(
     (type) => UserEntity,

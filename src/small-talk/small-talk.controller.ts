@@ -72,8 +72,10 @@ export class SmallTalkController {
 
     }
 
-    @Get('/test/:id')
-    async test(@Param('id') id:number){
+    @ApiOperation({ summary: '해당 스몰 톡 주제 가져오기'})
+    @Get('/getOneSub/:id')
+    async getSmallTalkSubOne(@Param('id') id:number){
+        this.logger.log('-----GET /small-talk/getOneSub/:id');
         return await this.smallTalkService.getSmallTalkSubOne(id);
     }
     

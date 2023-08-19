@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EbookEntity } from 'src/entities/ebook.entity';
 import { GetToken } from 'src/utils/GetToken';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 @Injectable()
 export class EbookService {
@@ -13,6 +13,7 @@ export class EbookService {
     private readonly ebookRepository: Repository<EbookEntity>,
     private readonly jwtService: JwtService,
     private readonly getToken: GetToken,
+    private dataSource: DataSource,
   ) {}
 
   async getEbookUserId(id: number) {
@@ -263,6 +264,158 @@ export class EbookService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: 'ebook 삭제 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**
+   *
+   * @param starRateDto
+   * @param headers
+   * @returns object {success: true, msg: 'create starRating' || 'update StarRating'}
+   */
+  async starRate(starRateDto, headers) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const verified = await this.getToken.getToken(headers);
+      const starRateData = {
+        starRating: starRateDto.starRating,
+        userId: verified.userId,
+        ebookId: starRateDto.ebookId,
+      };
+      const check = await this.checkStarRating(
+        starRateData.userId,
+        starRateData.ebookId,
+        queryRunner,
+      );
+      console.log(typeof check[0].count);
+      const res = await this.checkAndCall(
+        check[0].count,
+        starRateData,
+        queryRunner,
+      );
+
+      if (res['success']) {
+        await queryRunner.commitTransaction();
+        return res;
+      } else {
+        this.logger.error('별점 부여 중 에러 발생');
+        await queryRunner.rollbackTransaction();
+        return {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          success: false,
+          msg: '별점 부여 중 에러 발생',
+        };
+      }
+    } catch (err) {
+      this.logger.error(err);
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'ebook 별점 부여 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async checkStarRating(userId, ebookId, queryRunner) {
+    try {
+      const res = await queryRunner.query(
+        `select
+          count(*) from "ebookStarRating"
+          where "userId" = ${userId}
+          and "ebookId" = ${ebookId}`,
+      );
+      return res;
+    } catch (err) {
+      this.logger.error(err);
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'ebook 별점 체크 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async checkAndCall(check, starRateData, queryRunner) {
+    try {
+      let res;
+      if (check === '1') {
+        res = await this.updateStarRating(starRateData, queryRunner);
+      } else {
+        res = await this.createStarRating(starRateData, queryRunner);
+      }
+      return res;
+    } catch (err) {
+      this.logger.error(err);
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'ebook 별점 체크 후 함수 호출 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async createStarRating(starRateData, queryRunner) {
+    try {
+      await queryRunner.query(`
+        insert into "ebookStarRating"
+        ("starRating", "userId", "ebookId")
+        values (${starRateData.starRating},
+          ${starRateData.userId},
+          ${starRateData.ebookId})
+      `);
+
+      return { success: true, msg: 'create starRating' };
+    } catch (err) {
+      this.logger.error(err);
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'ebook 별점 생성 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+  async updateStarRating(starRateData, queryRunner) {
+    try {
+      await queryRunner.query(`
+        update "ebookStarRating"
+          set
+            "starRating" = ${starRateData.starRating}
+          where
+            "userId" = ${starRateData.userId}
+          and
+            "ebookId" = ${starRateData.ebookId}
+      `);
+
+      return { success: true, msg: 'update starRating' };
+    } catch (err) {
+      this.logger.error(err);
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'ebook 별점 업데이트 중 에러 발생',
           success: false,
         },
         500,

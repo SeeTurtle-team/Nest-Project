@@ -61,7 +61,7 @@ export class SmallTalkController {
     @Get('/getSmallTalk/:id')
     async getSmallTalkList(@Param('id') id :number) {
         this.logger.log('-----GET /small-talk/getSmallList/:id');
-        return await this.smallTalkService.getSmallTalkList(id);
+        return await this.smallTalkService.getSmallOne(id);
     }
     
     @ApiOperation({ summary: '스몰 톡 내용 입력하기'})

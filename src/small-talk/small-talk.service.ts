@@ -231,7 +231,34 @@ export class SmallTalkService {
         }
     }
 
-    
+
+    /**스몰 톡 주제랑 내용 가져오기 */
+    async getSmallOne(id:number) {
+        try{
+            const sub = await this.getSmallTalkSubOne(id);
+            const list = await this.getSmallTalkList(id);
+
+            const res = {
+                sub,
+                list,
+            }
+
+            return res;
+
+        }catch(err){
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                  status: HttpStatus.INTERNAL_SERVER_ERROR,
+                  error: '스몰 톡 내용 불러오는 중 에러 발생',
+                  success: false,
+                },
+                500,
+            );
+        }
+    }
+
+    /**스몰 톡 내용 가져오기 */
     async getSmallTalkList(id) {
         try{
             const res = await this.smallTalkRepository.createQueryBuilder('smallTalk')
@@ -262,7 +289,7 @@ export class SmallTalkService {
         }
     }
 
-
+    /**스몰 톡 주제 불러오기 */
     async insertSmallTalk(insertSmallTalkDto, headers) {
         try{
             console.log('dsfsd '+headers)

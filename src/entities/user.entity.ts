@@ -20,6 +20,7 @@ import { BoardRecommendEntity } from './boardRecommend.entity';
 import { BoardNotifyEntity } from './boardNotify.entity';
 import { UserGradeEntity } from './userGrade.Entity';
 import { SmallSubjectEntity } from './smallSubject.entity';
+import { EbookStarRatingEntity } from './ebookStarRating.entity';
 
 @Entity('user')
 export class UserEntity {
@@ -115,7 +116,13 @@ export class UserEntity {
 
   @OneToMany(
     (type) => SmallSubjectEntity,
-    (smallSubjectEntity) => smallSubjectEntity.user, 
+    (smallSubjectEntity) => smallSubjectEntity.user,
   )
   smallSubjectEntities: SmallSubjectEntity[];
+
+  @OneToMany(
+    (type) => EbookStarRatingEntity,
+    (ebookStarRatingEntity) => ebookStarRatingEntity.user,
+  )
+  ebookStarRatingEntities: EbookStarRatingEntity[];
 }

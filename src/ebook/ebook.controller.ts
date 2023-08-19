@@ -15,6 +15,7 @@ import { Public } from 'src/auth/decorators/public.decorator';
 import { CreateEbookDto } from './dto/create-ebook.dto';
 import { UpdateEbookDto } from './dto/update-ebook.dto';
 import { DeleteEbookDto } from './dto/delete-ebook.dto';
+import { StarRateDto } from './dto/starRate-ebook.dto';
 
 @Public()
 @Controller('ebook')
@@ -63,5 +64,12 @@ export class EbookController {
   async delete(@Body() deleteEbookDto: DeleteEbookDto, @Headers() headers) {
     this.logger.log('-----DELETE /ebook');
     return await this.ebookService.delete(deleteEbookDto, headers);
+  }
+
+  @ApiOperation({ summary: '별점 부여' })
+  @Post('/starRating')
+  async starRate(@Body() starRateDto: StarRateDto, @Headers() headers) {
+    this.logger.log('-----POST /ebook/starRating');
+    return await this.ebookService.starRate(starRateDto, headers);
   }
 }

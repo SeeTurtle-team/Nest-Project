@@ -8,6 +8,7 @@ import { InsertSmallTalkDto } from './dto/insertSmallTalk.dto';
 
 @Controller('small-talk')
 @ApiTags('Small Talk API')
+@Public()
 export class SmallTalkController {
     constructor(
         private smallTalkService : SmallTalkService,
@@ -69,6 +70,11 @@ export class SmallTalkController {
         this.logger.log('-----PATCH /small-talk/insertSmallTalk');
         return await this.smallTalkService.insertSmallTalk(insertSmallTalk, headers);
 
+    }
+
+    @Get('/test/:id')
+    async test(@Param('id') id:number){
+        return await this.smallTalkService.getSmallTalkSubOne(id);
     }
     
  

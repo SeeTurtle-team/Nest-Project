@@ -291,5 +291,27 @@ export class SmallTalkService {
             );
         }
     }
+
+    async getSmallTalkSubOne(id:number) {
+        try{
+            const res = await this.smallSubjectRepository.find({
+                where:{
+                    id:id
+                }
+            });
+
+            return res;
+        }catch(err){
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                  status: HttpStatus.INTERNAL_SERVER_ERROR,
+                  error: '스몰 톡 주제 가져오는 중 에러 발생',
+                  success: false,
+                },
+                500,
+            );
+        }
+    }
    
 }

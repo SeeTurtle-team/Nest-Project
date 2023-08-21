@@ -48,22 +48,31 @@ export class EbookService {
           title,
           "dateTime",
           nickname,
-          "category"
-          from ebook a
-          inner join (
-            select
-              "id",
-              nickname
-              from "user"
+          "category",
+          "starRating"
+        from ebook a
+        inner join (
+          select
+            "id",
+            nickname
+            from "user"
         ) b
         on a."userId" = b.id
         inner join (
-            select
-              "id",
-              "category"
-              from "boardCategory"
+          select
+            "id",
+            "category"
+            from "boardCategory"
         ) c
         on a."boardCategoryId" = c.id
+        left join (
+          select
+            "ebookId",
+            round(avg("starRating"), 2) as "starRating"
+          from "ebookStarRating"
+          group by "ebookId"
+        ) d
+        on a.id = d."ebookId"
         where "isDeleted" = false
         and "adminCheck" = true
         `,
@@ -96,7 +105,8 @@ export class EbookService {
             "dateTime",
             nickname,
             "category",
-            contents
+            contents,
+            "starRating"
             from ebook a
             inner join (
               select
@@ -112,6 +122,14 @@ export class EbookService {
                 from "boardCategory"
           ) c
           on a."boardCategoryId" = c.id
+          left join (
+            select
+              "ebookId",
+              round(avg("starRating"), 2) as "starRating"
+            from "ebookStarRating"
+            group by "ebookId"
+          ) d
+          on a.id = d."ebookId"
           where "isDeleted" = false
           and "adminCheck" = true
           and a.id = ${id}
@@ -382,7 +400,16 @@ export class EbookService {
           ${starRateData.ebookId})
       `);
 
-      return { success: true, msg: 'create starRating' };
+      const starRatingAvg = await this.getStarRatingAvg(
+        starRateData.ebookId,
+        queryRunner,
+      );
+
+      return {
+        success: true,
+        msg: 'create starRating',
+        starRatingAvg: starRatingAvg,
+      };
     } catch (err) {
       this.logger.error(err);
       await queryRunner.rollbackTransaction();
@@ -408,7 +435,16 @@ export class EbookService {
             "ebookId" = ${starRateData.ebookId}
       `);
 
-      return { success: true, msg: 'update starRating' };
+      const starRatingAvg = await this.getStarRatingAvg(
+        starRateData.ebookId,
+        queryRunner,
+      );
+
+      return {
+        success: true,
+        msg: 'update starRating',
+        starRatingAvg: starRatingAvg,
+      };
     } catch (err) {
       this.logger.error(err);
       await queryRunner.rollbackTransaction();
@@ -416,6 +452,26 @@ export class EbookService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: 'ebook 별점 업데이트 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async getStarRatingAvg(ebookId, queryRunner) {
+    try {
+      const starRating = await queryRunner.query(`
+        select round(avg("starRating"), 2) as "starRating" from "ebookStarRating" where "ebookId" = ${ebookId}
+      `);
+      return starRating[0].starRating;
+    } catch (err) {
+      this.logger.error(err);
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'ebook 별점 조회 중 에러 발생',
           success: false,
         },
         500,

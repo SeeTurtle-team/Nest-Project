@@ -1,7 +1,9 @@
-import { IsNumber } from 'class-validator';
+import { IsInt, IsNumber, Max, Min } from 'class-validator';
 
 export class StarRateDto {
-  @IsNumber()
+  @IsInt()
+  @Min(1)
+  @Max(10)
   readonly starRating: number;
 
   @IsNumber()

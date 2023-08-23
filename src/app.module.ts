@@ -36,6 +36,7 @@ import { MethodTimeMeterInterceptor } from './Interceptor/MethodTimeMeter.interc
 import { AdminController } from './admin/admin.controller';
 import { AdminModule } from './admin/admin.module';
 import { EbookStarRatingEntity } from './entities/ebookStarRating.entity';
+import { EbookSeriesEntity } from './entities/ebookSeries.entity';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { EbookStarRatingEntity } from './entities/ebookStarRating.entity';
         BoardNotifyEntity,
         UserGradeEntity,
         EbookStarRatingEntity,
+        EbookSeriesEntity,
       ],
       synchronize: false,
       autoLoadEntities: true,

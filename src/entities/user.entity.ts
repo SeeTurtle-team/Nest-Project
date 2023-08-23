@@ -21,6 +21,7 @@ import { BoardNotifyEntity } from './boardNotify.entity';
 import { UserGradeEntity } from './userGrade.Entity';
 import { SmallSubjectEntity } from './smallSubject.entity';
 import { EbookStarRatingEntity } from './ebookStarRating.entity';
+import { EbookSeriesEntity } from './ebookSeries.entity';
 
 @Entity('user')
 export class UserEntity {
@@ -125,4 +126,10 @@ export class UserEntity {
     (ebookStarRatingEntity) => ebookStarRatingEntity.user,
   )
   ebookStarRatingEntities: EbookStarRatingEntity[];
+
+  @OneToMany(
+    (type) => EbookSeriesEntity,
+    (ebookSeriesEntity) => ebookSeriesEntity.user,
+  )
+  ebookSeriesEntities: EbookSeriesEntity[];
 }

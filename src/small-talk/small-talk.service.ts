@@ -322,12 +322,6 @@ export class SmallTalkService {
     /**스몰 톡 주제 불러오기 */
     async getSmallTalkSubOne(id:number) {
         try{
-            // const res = await this.smallSubjectRepository.find({
-            //     where:{
-            //         id:id
-            //     }
-            // });
-
             const res = await this.smallSubjectRepository.createQueryBuilder('smallSubject')
             .select('smallSubject.id', 'id')
             .addSelect('smallSubject.title','title')
@@ -344,8 +338,9 @@ export class SmallTalkService {
             .where('smallSubject.isDeleted = false')
             .andWhere('smallSubject.id = :id',{id:id})
             .orderBy('smallSubject.date','DESC')
-            .getRawMany();
+            .getRawOne();
 
+            console.log(res);
             return res;
         }catch(err){
             this.logger.error(err);

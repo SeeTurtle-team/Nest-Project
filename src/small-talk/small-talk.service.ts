@@ -289,7 +289,7 @@ export class SmallTalkService {
         }
     }
 
-    /**스몰 톡 주제 불러오기 */
+    /**스몰 톡 저장 */
     async insertSmallTalk(insertSmallTalkDto, headers) {
         try{
             console.log('dsfsd '+headers)
@@ -319,13 +319,32 @@ export class SmallTalkService {
         }
     }
 
+    /**스몰 톡 주제 불러오기 */
     async getSmallTalkSubOne(id:number) {
         try{
-            const res = await this.smallSubjectRepository.find({
-                where:{
-                    id:id
-                }
-            });
+            // const res = await this.smallSubjectRepository.find({
+            //     where:{
+            //         id:id
+            //     }
+            // });
+
+            const res = await this.smallSubjectRepository.createQueryBuilder('smallSubject')
+            .select('smallSubject.id', 'id')
+            .addSelect('smallSubject.title','title')
+            .addSelect('smallSubject.detail','detail')
+            .addSelect('smallSubject.isDeleted','isDeleted')
+            .addSelect('smallSubject.isModified','isModified')
+            .addSelect('smallSubject.imgUrl','imgUrl')
+            .addSelect('smallSubject.date','date')
+            .addSelect('user.id','userId')
+            .addSelect('user.name','name')
+            .addSelect('user.nickname','nickname')
+            .addSelect('user.img','userImg')
+            .leftJoin("smallSubject.user",'user')
+            .where('smallSubject.isDeleted = false')
+            .andWhere('smallSubject.id = :id',{id:id})
+            .orderBy('smallSubject.date','DESC')
+            .getRawMany();
 
             return res;
         }catch(err){

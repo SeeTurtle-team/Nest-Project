@@ -87,6 +87,7 @@ export class SmallTalkService {
        
     }
 
+    /**주제 저장 */
     async insertSmallTalkSub(createSmallSub,headers){
         try{
             
@@ -114,6 +115,7 @@ export class SmallTalkService {
         }
     }
 
+    /**주제 디비 저장 */
     async insertSubDB(verified,createSmallSub){
         try{
             const smallTalkSub = new SmallSubjectEntity();
@@ -142,6 +144,7 @@ export class SmallTalkService {
         }
     }
 
+    /**이미 있는 주제인지 확인 */
     async checkSubTitle(title:string){
         try{
             const res = await this.smallSubjectRepository.find({
@@ -164,6 +167,7 @@ export class SmallTalkService {
         }
     }
 
+    /**주제 삭제 */
     async deleteSub(deleteData:DeleteSmallSubDto, headers) {
         try {
             const verified = await this.getToken.getToken(headers)
@@ -198,6 +202,7 @@ export class SmallTalkService {
         }
     }
 
+    /**스몰톡 주제 리스트 가져오기 */
     async getAllList() {
         try{    
             const res = await this.smallSubjectRepository.createQueryBuilder('smallSubject')
@@ -340,7 +345,6 @@ export class SmallTalkService {
             .orderBy('smallSubject.date','DESC')
             .getRawOne();
 
-            console.log(res);
             return res;
         }catch(err){
             this.logger.error(err);

@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EbookEntity } from 'src/entities/ebook.entity';
+import { EbookSeriesEntity } from 'src/entities/ebookSeries.entity';
 import { GetToken } from 'src/utils/GetToken';
 import { DataSource, Repository } from 'typeorm';
 
@@ -11,6 +12,8 @@ export class EbookService {
   constructor(
     @InjectRepository(EbookEntity)
     private readonly ebookRepository: Repository<EbookEntity>,
+    @InjectRepository(EbookSeriesEntity)
+    private readonly ebookSeriesRepository: Repository<EbookSeriesEntity>,
     private readonly jwtService: JwtService,
     private readonly getToken: GetToken,
     private dataSource: DataSource,
@@ -472,6 +475,27 @@ export class EbookService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: 'ebook 별점 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  //series 관련
+  async getSeries(headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+      const series = await this.ebookSeriesRepository.query(`
+        select * from "ebookSeries" where "userId" = ${verified.userId}
+      `);
+      return series;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '해당 유저 시리즈 조회 중 에러 발생',
           success: false,
         },
         500,

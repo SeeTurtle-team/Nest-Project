@@ -32,7 +32,7 @@ export class EbookController {
   }
 
   @ApiOperation({ summary: 'ebook 열람' })
-  @Get('/:id')
+  @Get('/one/:id')
   async getOne(@Param('id') id: number) {
     this.logger.log('-----GET /ebook/:id');
     return await this.ebookService.getOne(id);
@@ -71,5 +71,13 @@ export class EbookController {
   async starRate(@Body() starRateDto: StarRateDto, @Headers() headers) {
     this.logger.log('-----POST /ebook/starRating');
     return await this.ebookService.starRate(starRateDto, headers);
+  }
+
+  //series 관련
+  @ApiOperation({ summary: '해당 유저 시리즈 조회' })
+  @Get('/series')
+  async getSeries(@Headers() headers) {
+    this.logger.log('-----GET /ebook/getrSeries');
+    return await this.ebookService.getSeries(headers);
   }
 }

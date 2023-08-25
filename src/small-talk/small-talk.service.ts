@@ -358,5 +358,23 @@ export class SmallTalkService {
             );
         }
     }
+
+
+    /**small talk search */
+    async searchSmalltalkSub() {
+        try{
+
+        }catch(err){
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                  status: HttpStatus.INTERNAL_SERVER_ERROR,
+                  error: '스몰 톡 주제 검색 중 에러 발생',
+                  success: false,
+                },
+                500,
+            );
+        }
+    }
    
 }

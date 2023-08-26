@@ -22,6 +22,9 @@ export class EbookSeriesEntity {
   )
   user: UserEntity;
 
+  @Column({ nullable: false })
+  isDeleted: boolean;
+
   @OneToMany((type) => EbookEntity, (ebookEntity) => ebookEntity.ebookSeries)
   ebookEntities: EbookEntity[];
 }

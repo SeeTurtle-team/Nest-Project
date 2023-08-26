@@ -487,7 +487,7 @@ export class EbookService {
     try {
       const verified = await this.getToken.getToken(headers);
       const series = await this.ebookSeriesRepository.query(`
-        select * from "ebookSeries" where "userId" = ${verified.userId}
+        select id, "seriesName", "userId" from "ebookSeries" where "userId" = ${verified.userId} and "isDeleted" = false
       `);
       return series;
     } catch (err) {
@@ -496,6 +496,30 @@ export class EbookService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '해당 유저 시리즈 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async createSeries(createSeriesDto, headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+      const series = new EbookSeriesEntity();
+      series.user = verified.userId;
+      series.seriesName = createSeriesDto.seriesName;
+      series.isDeleted = false;
+
+      await this.ebookSeriesRepository.save(series);
+      const allSeries = await this.getSeries(headers);
+      return { success: true, series: allSeries };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '시리즈 생성 중 에러 발생',
           success: false,
         },
         500,

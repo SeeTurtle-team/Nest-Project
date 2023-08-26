@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EbookService } from './ebook.service';
@@ -17,6 +18,7 @@ import { UpdateEbookDto } from './dto/update-ebook.dto';
 import { DeleteEbookDto } from './dto/delete-ebook.dto';
 import { StarRateDto } from './dto/starRate-ebook.dto';
 import { CreateSeriesDto } from './dto/create-series.dto';
+import { PageRequest } from 'src/utils/PageRequest';
 
 @Public()
 @Controller('ebook')
@@ -72,6 +74,13 @@ export class EbookController {
   async starRate(@Body() starRateDto: StarRateDto, @Headers() headers) {
     this.logger.log('-----POST /ebook/starRating');
     return await this.ebookService.starRate(starRateDto, headers);
+  }
+
+  @ApiOperation({ summary: '별점 순으로 ebook 조회' })
+  @Get('/starRating')
+  async getEbookOrderByStarRating(@Query() page: PageRequest) {
+    this.logger.log('-----GET /ebook/starRating');
+    return await this.ebookService.getEbookOrderByStarRating(page);
   }
 
   //series 관련

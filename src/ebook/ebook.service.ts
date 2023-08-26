@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EbookEntity } from 'src/entities/ebook.entity';
 import { EbookSeriesEntity } from 'src/entities/ebookSeries.entity';
 import { GetToken } from 'src/utils/GetToken';
+import { Page } from 'src/utils/Page';
 import { DataSource, Repository } from 'typeorm';
 
 @Injectable()
@@ -18,6 +19,29 @@ export class EbookService {
     private readonly getToken: GetToken,
     private dataSource: DataSource,
   ) {}
+
+  async getTotalCount() {
+    try {
+      const count = await this.ebookRepository.query(`
+        select
+          count(*)
+        from ebook
+        where "isDeleted" = false
+        and "adminCheck" = true
+      `);
+      return count[0].count;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'ebook 개수 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
 
   async getEbookUserId(id: number) {
     try {
@@ -475,6 +499,70 @@ export class EbookService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: 'ebook 별점 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async getEbookOrderByStarRating(page) {
+    try {
+      const count = await this.getTotalCount();
+      const offset = page.getOffset();
+      const limit = page.getLimit();
+      const ebook = await this.ebookRepository.query(
+        `select
+          a.id,
+          title,
+          "dateTime",
+          nickname,
+          "category",
+          "starRating"
+        from ebook as a
+        join (
+          select
+            "id"
+            from ebook
+            where ebook."isDeleted" = false
+            and ebook."adminCheck" = true
+            offset ${offset}
+            limit ${limit}
+        ) as temp
+        on temp.id = a.id
+        inner join (
+          select
+            "id",
+            nickname
+            from "user"
+        ) b
+        on a."userId" = b.id
+        inner join (
+          select
+            "id",
+            "category"
+            from "boardCategory"
+        ) c
+        on a."boardCategoryId" = c.id
+        left join (
+          select
+            "ebookId",
+            round(avg("starRating"), 2) as "starRating"
+          from "ebookStarRating"
+          group by "ebookId"
+        ) d
+        on a.id = d."ebookId"
+        order by "starRating" desc
+        `,
+      );
+
+      return new Page(count, page.pageSize, ebook);
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '별점순 ebook 조회 중 에러 발생',
           success: false,
         },
         500,

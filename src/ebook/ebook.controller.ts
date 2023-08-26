@@ -16,6 +16,7 @@ import { CreateEbookDto } from './dto/create-ebook.dto';
 import { UpdateEbookDto } from './dto/update-ebook.dto';
 import { DeleteEbookDto } from './dto/delete-ebook.dto';
 import { StarRateDto } from './dto/starRate-ebook.dto';
+import { CreateSeriesDto } from './dto/create-series.dto';
 
 @Public()
 @Controller('ebook')
@@ -77,7 +78,17 @@ export class EbookController {
   @ApiOperation({ summary: '해당 유저 시리즈 조회' })
   @Get('/series')
   async getSeries(@Headers() headers) {
-    this.logger.log('-----GET /ebook/getrSeries');
+    this.logger.log('-----GET /ebook/series');
     return await this.ebookService.getSeries(headers);
+  }
+
+  @ApiOperation({ summary: '시리즈 생성' })
+  @Post('/series')
+  async createSeries(
+    @Body() createSeriesDto: CreateSeriesDto,
+    @Headers() headers,
+  ) {
+    this.logger.log('----POST /ebook/series');
+    return await this.ebookService.createSeries(createSeriesDto, headers);
   }
 }

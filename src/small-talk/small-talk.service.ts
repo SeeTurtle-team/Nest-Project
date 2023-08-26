@@ -203,25 +203,31 @@ export class SmallTalkService {
     }
 
     /**스몰톡 주제 리스트 가져오기 */
-    async getAllList() {
+    async getAllList(title?:string) {
         try{    
-            const res = await this.smallSubjectRepository.createQueryBuilder('smallSubject')
-                        .select('smallSubject.id', 'id')
-                        .addSelect('smallSubject.title','title')
-                        .addSelect('smallSubject.detail','detail')
-                        .addSelect('smallSubject.isDeleted','isDeleted')
-                        .addSelect('smallSubject.isModified','isModified')
-                        .addSelect('smallSubject.imgUrl','imgUrl')
-                        .addSelect('smallSubject.date','date')
-                        .addSelect('user.id','userId')
-                        .addSelect('user.name','name')
-                        .addSelect('user.nickname','nickname')
-                        .addSelect('user.img','userImg')
-                        .leftJoin("smallSubject.user",'user')
-                        .where('smallSubject.isDeleted = false')
-                        .orderBy('smallSubject.date','DESC')
+            console.log('???????????');
+            
+            const qb = this.smallSubjectRepository.createQueryBuilder('smallSubject')
+                    .select('smallSubject.id', 'id')
+                    .addSelect('smallSubject.title','title')
+                    .addSelect('smallSubject.detail','detail')
+                    .addSelect('smallSubject.isDeleted','isDeleted')
+                    .addSelect('smallSubject.isModified','isModified')
+                    .addSelect('smallSubject.imgUrl','imgUrl')
+                    .addSelect('smallSubject.date','date')
+                    .addSelect('user.id','userId')
+                    .addSelect('user.name','name')
+                    .addSelect('user.nickname','nickname')
+                    .addSelect('user.img','userImg')
+                    .leftJoin("smallSubject.user",'user')
+                    .where('smallSubject.isDeleted = false')
+            
+            if(title!==undefined) qb.andWhere("smallSubject.title = :title" ,{title:title});
+            
+            const res = await qb.orderBy('smallSubject.date','DESC')
                         .getRawMany();
-
+                        
+            console.log(res);
             return res;
         }catch(err){
             this.logger.error(err);

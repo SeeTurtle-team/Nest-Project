@@ -79,5 +79,11 @@ export class SmallTalkController {
         return await this.smallTalkService.getSmallTalkSubOne(id);
     }
     
+    @ApiOperation({ summary: '스몰 톡 주제 제목 검색'})
+    @Post('/searchTitle')
+    async searchSmallTalkSubTitle(){
+        this.logger.log('-----POST /small-talk/searchTitle');
+        
+    }
  
 }

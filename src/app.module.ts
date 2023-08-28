@@ -37,6 +37,9 @@ import { AdminController } from './admin/admin.controller';
 import { AdminModule } from './admin/admin.module';
 import { EbookStarRatingEntity } from './entities/ebookStarRating.entity';
 import { EbookSeriesEntity } from './entities/ebookSeries.entity';
+import { QnaController } from './qna/qna.controller';
+import { QnaService } from './qna/qna.service';
+import { QnaModule } from './qna/qna.module';
 
 @Module({
   imports: [
@@ -117,9 +120,10 @@ import { EbookSeriesEntity } from './entities/ebookSeries.entity';
     EbookModule,
     SmallTalkModule,
     AdminModule,
+    QnaModule,
   ],
 
-  controllers: [AppController, AdminController],
+  controllers: [AppController, AdminController,  QnaController],
   providers: [
     AppService,
     {
@@ -136,6 +140,7 @@ import { EbookSeriesEntity } from './entities/ebookSeries.entity';
       useClass: ThrottlerGuard,
     },
     Logger,
+    QnaService,
   ],
 })
 export class AppModule implements NestModule {

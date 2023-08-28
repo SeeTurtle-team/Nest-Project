@@ -17,12 +17,14 @@ export class SmallTalkController {
 
     private readonly logger = new Logger(SmallTalkController.name);
 
+    @ApiOperation({ summary: '큐 데이터 삽입' })
     @Get('/insert/:id')
     add(@Param('id') id:number){
         this.logger.log('-----GET /small-talk/insert/:id');
         this.smallTalkService.queueInsert(id); 
     }
 
+    @ApiOperation({ summary: '큐 데이터 가져오기' })
     @Get('/pop')
     async pop(){
         this.logger.log('-----GET /small-talk/pop');
@@ -51,14 +53,14 @@ export class SmallTalkController {
         return await this.smallTalkService.deleteSub(deleteData, header);
     }
 
-    @ApiOperation({ summary: '스몰 톡 주제 삭제' })
+    @ApiOperation({ summary: '스몰 톡 주제 리스트 가져오기' })
     @Get('/getAllList')
     async getAllList() {
         this.logger.log('-----GET /small-talk/getAllList');
         return await this.smallTalkService.getAllList();
     }
 
-    @ApiOperation({ summary: '스몰 톡 내용 가져오기'})
+    @ApiOperation({ summary: '스몰 톡 채팅 리스트 조회'})
     @Get('/getSmallTalk/:id')
     async getSmallTalkList(@Param('id') id :number) {
         this.logger.log('-----GET /small-talk/getSmallList/:id');

@@ -205,7 +205,6 @@ export class SmallTalkService {
     /**스몰톡 주제 리스트 가져오기 */
     async getAllList(title?:string) {
         try{    
-            console.log('???????????');
             
             const qb = this.smallSubjectRepository.createQueryBuilder('smallSubject')
                     .select('smallSubject.id', 'id')
@@ -234,7 +233,7 @@ export class SmallTalkService {
             throw new HttpException(
                 {
                   status: HttpStatus.INTERNAL_SERVER_ERROR,
-                  error: '스몰 톡 리스트 불러오는 중 에러 발생',
+                  error: '스몰 톡 리스트 조회 중 에러 발생',
                   success: false,
                 },
                 500,

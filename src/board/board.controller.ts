@@ -28,6 +28,7 @@ import { BanBoardDto } from './dto/BanBoard.dto';
 import { TimeoutHandler } from 'src/auth/decorators/timeout-decorator';
 import { MethodTimeMeterInterceptor } from 'src/Interceptor/MethodTimeMeter.interceptor';
 import { PageRequest } from 'src/utils/PageRequest';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('board')
 @ApiTags('Board API')
@@ -210,5 +211,13 @@ export class BoardController {
   async searchContent(@Query() page: PageRequest) {
     this.logger.log('----GET /searchContent');
     return await this.boardService.searchContent(page);
+  }
+
+  @Public()
+  @ApiOperation({ summary: '최근 업로드 된 게시글 불러오기'})
+  @Get('/lastBoard')
+  async lastBoard(){
+    this.logger.log('----GET /lastBoard');
+    return await this.boardService.lastBoard();
   }
 }

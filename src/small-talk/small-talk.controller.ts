@@ -5,6 +5,7 @@ import { Public } from 'src/auth/decorators/public.decorator';
 import { CreateSmallSub } from './dto/createSmallSub.dto';
 import { DeleteSmallSubDto } from './dto/deleteSmallSub.dto';
 import { InsertSmallTalkDto } from './dto/insertSmallTalk.dto';
+import { SearchSmallSubTitle } from './dto/searchSmallSubTitle.dto';
 
 @Controller('small-talk')
 @ApiTags('Small Talk API')
@@ -79,5 +80,12 @@ export class SmallTalkController {
         return await this.smallTalkService.getSmallTalkSubOne(id);
     }
     
+    @ApiOperation({ summary: '스몰 톡 주제 제목 검색'})
+    @Post('/searchTitle')
+    async searchSmallTalkSubTitle(@Body() searchSmallSubTitle : SearchSmallSubTitle){
+        this.logger.log('-----POST /small-talk/searchTitle');
+        return await this.smallTalkService.getAllList(searchSmallSubTitle.title);
+
+    }
  
 }

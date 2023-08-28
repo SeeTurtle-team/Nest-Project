@@ -1110,4 +1110,27 @@ export class BoardService {
       );
     }
   }
+
+
+  /**최근 업로드 된 게시글 불러오기 */
+  async lastBoard() {
+    try{
+      const res = await this.boardRepository.find({
+        take:5,
+        order: { id: 'DESC' }
+      });
+
+      return res;
+    } catch(err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '최근 업로드 게시판 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
 }

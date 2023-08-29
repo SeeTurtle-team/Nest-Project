@@ -205,7 +205,7 @@ export class SmallTalkService {
     /**스몰톡 주제 리스트 가져오기 */
     async getAllList(title?:string) {
         try{    
-            
+            console.log('title : '+title);
             const qb = this.smallSubjectRepository.createQueryBuilder('smallSubject')
                     .select('smallSubject.id', 'id')
                     .addSelect('smallSubject.title','title')
@@ -221,7 +221,14 @@ export class SmallTalkService {
                     .leftJoin("smallSubject.user",'user')
                     .where('smallSubject.isDeleted = false')
             
-            if(title!==undefined) qb.andWhere("smallSubject.title = :title" ,{title:title});
+            //리팩토링 예정
+            if(title!==undefined) {
+                if(title!==''){
+                    const searchKey = `%${title}%`
+                    qb.andWhere("smallSubject.title LIKE :title" ,{title:searchKey});
+                }
+               
+            }
             
             const res = await qb.orderBy('smallSubject.date','DESC')
                         .getRawMany();

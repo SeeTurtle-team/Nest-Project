@@ -9,7 +9,6 @@ import { SearchSmallSubTitle } from './dto/searchSmallSubTitle.dto';
 
 @Controller('small-talk')
 @ApiTags('Small Talk API')
-@Public()
 export class SmallTalkController {
     constructor(
         private smallTalkService : SmallTalkService,

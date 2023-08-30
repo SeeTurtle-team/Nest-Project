@@ -123,7 +123,7 @@ import { QnaModule } from './qna/qna.module';
     QnaModule,
   ],
 
-  controllers: [AppController, AdminController,  QnaController],
+  controllers: [AppController, ],
   providers: [
     AppService,
     {

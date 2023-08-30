@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EbookEntity } from 'src/entities/ebook.entity';
 import { EbookSeriesEntity } from 'src/entities/ebookSeries.entity';
+import { checkTokenId } from 'src/utils/CheckToken';
 import { GetToken } from 'src/utils/GetToken';
 import { Page } from 'src/utils/Page';
 import { DataSource, Repository } from 'typeorm';
@@ -608,6 +609,63 @@ export class EbookService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '시리즈 생성 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async getSeriesUserId(id) {
+    try {
+      const series = await this.ebookSeriesRepository
+        .createQueryBuilder()
+        .select(['"userId"'])
+        .where('id = :id', { id: id })
+        .andWhere('"isDeleted" = :isDeleted', { isDeleted: false })
+        .getRawOne();
+
+      return series.userId;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '해당 시리즈 유저 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async updateSeries(updateSeriesDto, headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+      const userId = await this.getSeriesUserId(updateSeriesDto.id);
+      const check = checkTokenId(userId, verified.userId);
+      if (check) {
+        const seriesData = new EbookSeriesEntity();
+        seriesData.seriesName = updateSeriesDto.seriesName;
+
+        await this.ebookSeriesRepository
+          .createQueryBuilder()
+          .update()
+          .set({
+            seriesName: seriesData.seriesName,
+          })
+          .where('id = :id', { id: updateSeriesDto.id })
+          .andWhere('userId = :userId', { userId: userId })
+          .execute();
+
+        return { success: true };
+      } else return { success: false, msg: '유저 불일치' };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '시리즈 수정 중 에러 발생',
           success: false,
         },
         500,

@@ -19,6 +19,7 @@ import { DeleteEbookDto } from './dto/delete-ebook.dto';
 import { StarRateDto } from './dto/starRate-ebook.dto';
 import { CreateSeriesDto } from './dto/create-series.dto';
 import { PageRequest } from 'src/utils/PageRequest';
+import { UpdateSeriesDto } from './dto/update-series.dto';
 
 @Public()
 @Controller('ebook')
@@ -99,5 +100,15 @@ export class EbookController {
   ) {
     this.logger.log('----POST /ebook/series');
     return await this.ebookService.createSeries(createSeriesDto, headers);
+  }
+
+  @ApiOperation({ summary: '시리즈 수정' })
+  @Patch('/series')
+  async updateSeries(
+    @Body() updateSeriesDto: UpdateSeriesDto,
+    @Headers() headers,
+  ) {
+    this.logger.log('-----Patch /ebook/series');
+    return await this.ebookService.updateSeries(updateSeriesDto, headers);
   }
 }

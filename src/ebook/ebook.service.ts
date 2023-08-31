@@ -672,4 +672,36 @@ export class EbookService {
       );
     }
   }
+
+  async deleteSeries(deleteSeriesDto, headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+      const userId = await this.getSeriesUserId(deleteSeriesDto.id);
+      const check = checkTokenId(userId, verified.userId);
+
+      if (check) {
+        await this.ebookSeriesRepository
+          .createQueryBuilder()
+          .update()
+          .set({
+            isDeleted: true,
+          })
+          .where('id = :id', { id: deleteSeriesDto.id })
+          .andWhere('userId = :userId', { userId: userId })
+          .execute();
+
+        return { success: true };
+      } else return { success: false, msg: '유저 불일치' };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '시리즈 삭제 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
 }

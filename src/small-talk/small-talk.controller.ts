@@ -88,5 +88,20 @@ export class SmallTalkController {
         return await this.smallTalkService.getAllList(searchSmallSubTitle.title);
 
     }
+
+    @ApiOperation({ summary: '랜덤 톡 주제 랜덤으로 가져오기' })
+    @Get('/getRandomSub')
+    async getRandomSub() {
+        this.logger.log('-----GET /small-talk/getRandomSub');
+        return await this.smallTalkService.getRandomSub();
+    }
+
+    @ApiOperation({ summary: '랜덤 톡 큐 삽입' })
+    @Get('/insertQueue')
+    async randomQueueAdd(@Headers() headers) {
+        this.logger.log('-----GET /small-talk/insertQueue');
+        return await this.smallTalkService.randomQueueAdd(headers);
+    }
+
  
 }

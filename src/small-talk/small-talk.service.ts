@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { GetToken } from 'src/utils/GetToken';
 import { checkTokenId } from 'src/utils/CheckToken';
 import { DeleteSmallSubDto } from './dto/deleteSmallSub.dto';
+import { RandomSubjectEntity } from 'src/entities/randomSubject.entity';
 
 @Injectable()
 export class SmallTalkService {
@@ -15,13 +16,17 @@ export class SmallTalkService {
     private readonly logger = new Logger(SmallTalkService.name);
 
     constructor(
-        private queue : QueueTalk,
         @InjectRepository(SmallSubjectEntity)
         private readonly smallSubjectRepository : Repository<SmallSubjectEntity>,
         @InjectRepository(SmallTalkEntity)
         private readonly smallTalkRepository : Repository<SmallTalkEntity>,
+        @InjectRepository(RandomSubjectEntity)
+        private readonly randomSubjectRepository : Repository<RandomSubjectEntity>,
+        
         private readonly jwtService : JwtService,
         private getToken : GetToken,
+        private queue : QueueTalk,
+
         
     ){}
 
@@ -84,7 +89,6 @@ export class SmallTalkService {
                 500,
             );
         }
-       
     }
 
     /**주제 저장 */
@@ -278,7 +282,8 @@ export class SmallTalkService {
     /**스몰 톡 내용 가져오기 */
     async getSmallTalkList(id) {
         try{
-            const res = await this.smallTalkRepository.createQueryBuilder('smallTalk')
+            const res = await this.smallTalkRepository
+                        .createQueryBuilder('smallTalk')
                         .select('smallTalk.id','id')
                         .addSelect('smallTalk.isDeleted','isDeleted')
                         .addSelect('smallTalk.smallSubjectId','smallSubjectId')
@@ -339,23 +344,24 @@ export class SmallTalkService {
     /**스몰 톡 주제 불러오기 */
     async getSmallTalkSubOne(id:number) {
         try{
-            const res = await this.smallSubjectRepository.createQueryBuilder('smallSubject')
-            .select('smallSubject.id', 'id')
-            .addSelect('smallSubject.title','title')
-            .addSelect('smallSubject.detail','detail')
-            .addSelect('smallSubject.isDeleted','isDeleted')
-            .addSelect('smallSubject.isModified','isModified')
-            .addSelect('smallSubject.imgUrl','imgUrl')
-            .addSelect('smallSubject.date','date')
-            .addSelect('user.id','userId')
-            .addSelect('user.name','name')
-            .addSelect('user.nickname','nickname')
-            .addSelect('user.img','userImg')
-            .leftJoin("smallSubject.user",'user')
-            .where('smallSubject.isDeleted = false')
-            .andWhere('smallSubject.id = :id',{id:id})
-            .orderBy('smallSubject.date','DESC')
-            .getRawOne();
+            const res = await this.smallSubjectRepository
+                .createQueryBuilder('smallSubject')
+                .select('smallSubject.id', 'id')
+                .addSelect('smallSubject.title','title')
+                .addSelect('smallSubject.detail','detail')
+                .addSelect('smallSubject.isDeleted','isDeleted')
+                .addSelect('smallSubject.isModified','isModified')
+                .addSelect('smallSubject.imgUrl','imgUrl')
+                .addSelect('smallSubject.date','date')
+                .addSelect('user.id','userId')
+                .addSelect('user.name','name')
+                .addSelect('user.nickname','nickname')
+                .addSelect('user.img','userImg')
+                .leftJoin("smallSubject.user",'user')
+                .where('smallSubject.isDeleted = false')
+                .andWhere('smallSubject.id = :id',{id:id})
+                .orderBy('smallSubject.date','DESC')
+                .getRawOne();
 
             return res;
         }catch(err){
@@ -371,22 +377,50 @@ export class SmallTalkService {
         }
     }
 
+    /**랜덤으로 랜덤 톡 주제 가져오기 */
+    async getRandomSub() {
+        try{
+            const res = await this.randomSubjectRepository
+                        .createQueryBuilder('randomSubject')
+                        .select()
+                        .orderBy('RANDOM()')
+                        .getOne();
 
-    /**small talk search */
-    // async searchSmalltalkSub() {
-    //     try{
+            return res;
 
-    //     }catch(err){
-    //         this.logger.error(err);
-    //         throw new HttpException(
-    //             {
-    //               status: HttpStatus.INTERNAL_SERVER_ERROR,
-    //               error: '스몰 톡 주제 검색 중 에러 발생',
-    //               success: false,
-    //             },
-    //             500,
-    //         );
-    //     }
-    // }
+        }catch(err){
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                  status: HttpStatus.INTERNAL_SERVER_ERROR,
+                  error: '랜덤 톡 주제 가져오는 중 에러 발생',
+                  success: false,
+                },
+                500,
+            );
+        }
+    }
+
+    /**랜덤 톡 insert */
+    async randomQueueAdd(headers){
+        try{
+            const verified = await this.getToken.getToken(headers);
+
+            console.log(verified);
+            this.queue.add(verified);
+
+            return {success:true};
+        }catch(err){
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                  status: HttpStatus.INTERNAL_SERVER_ERROR,
+                  error: '랜덤 톡 큐 삽입 중 에러 발생',
+                  success: false,
+                },
+                500,
+            );
+        }
+    }
    
 }

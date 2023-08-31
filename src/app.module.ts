@@ -40,6 +40,7 @@ import { EbookSeriesEntity } from './entities/ebookSeries.entity';
 import { QnaController } from './qna/qna.controller';
 import { QnaService } from './qna/qna.service';
 import { QnaModule } from './qna/qna.module';
+import { RandomSubjectEntity } from './entities/randomSubject.entity';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { QnaModule } from './qna/qna.module';
         NotifyEntity,
         SmallSubjectEntity,
         SmallTalkEntity,
+        RandomSubjectEntity,
         SubscribeEntity,
         UserEntity,
         UserImgEntity,

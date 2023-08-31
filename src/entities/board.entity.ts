@@ -20,7 +20,7 @@ export class BoardEntity {
   @Column({ length: 100 })
   title: string;
 
-  @Column({ length: 1000, nullable: false })
+  @Column({ length: 1000, nullable: true })
   contents: string;
 
   @Column()

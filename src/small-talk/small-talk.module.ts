@@ -6,10 +6,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SmallTalkEntity } from 'src/entities/smallTalk.entity';
 import { SmallSubjectEntity } from 'src/entities/smallSubject.entity';
 import { GetToken } from 'src/utils/GetToken';
+import { RandomSubjectEntity } from 'src/entities/randomSubject.entity';
 
 @Module({
     imports:[
-        TypeOrmModule.forFeature([SmallTalkEntity,SmallSubjectEntity]),
+        TypeOrmModule.forFeature([SmallTalkEntity,SmallSubjectEntity,RandomSubjectEntity]),
         
     ],
     controllers:[SmallTalkController],

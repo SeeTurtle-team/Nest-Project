@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { GetToken } from 'src/utils/GetToken';
 import { checkTokenId } from 'src/utils/CheckToken';
 import { DeleteSmallSubDto } from './dto/deleteSmallSub.dto';
+import { RandomSubjectEntity } from 'src/entities/randomSubject.entity';
 
 @Injectable()
 export class SmallTalkService {
@@ -15,13 +16,17 @@ export class SmallTalkService {
     private readonly logger = new Logger(SmallTalkService.name);
 
     constructor(
-        private queue : QueueTalk,
         @InjectRepository(SmallSubjectEntity)
         private readonly smallSubjectRepository : Repository<SmallSubjectEntity>,
         @InjectRepository(SmallTalkEntity)
         private readonly smallTalkRepository : Repository<SmallTalkEntity>,
+        @InjectRepository(RandomSubjectEntity)
+        private readonly randomSubjectRepository : Repository<RandomSubjectEntity>,
+        
         private readonly jwtService : JwtService,
         private getToken : GetToken,
+        private queue : QueueTalk,
+
         
     ){}
 

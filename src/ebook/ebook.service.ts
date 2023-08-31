@@ -554,6 +554,7 @@ export class EbookService {
         ) d
         on a.id = d."ebookId"
         order by "starRating" desc
+        nulls last
         `,
       );
 

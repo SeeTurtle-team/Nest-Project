@@ -553,8 +553,7 @@ export class EbookService {
           group by "ebookId"
         ) d
         on a.id = d."ebookId"
-        order by "starRating" desc
-        nulls last
+        order by "starRating" desc nulls last, "dateTime" desc
         `,
       );
 

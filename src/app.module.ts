@@ -37,10 +37,10 @@ import { AdminController } from './admin/admin.controller';
 import { AdminModule } from './admin/admin.module';
 import { EbookStarRatingEntity } from './entities/ebookStarRating.entity';
 import { EbookSeriesEntity } from './entities/ebookSeries.entity';
-import { QnaController } from './qna/qna.controller';
-import { QnaService } from './qna/qna.service';
 import { QnaModule } from './qna/qna.module';
 import { RandomSubjectEntity } from './entities/randomSubject.entity';
+import { QnaEntity } from './entities/qna/qna.entity';
+import { QnaCommentEntity } from './entities/qna/qnacomment.entity';
 
 @Module({
   imports: [
@@ -76,6 +76,8 @@ import { RandomSubjectEntity } from './entities/randomSubject.entity';
         UserGradeEntity,
         EbookStarRatingEntity,
         EbookSeriesEntity,
+        QnaEntity,
+        QnaCommentEntity,
       ],
       synchronize: false,
       autoLoadEntities: true,
@@ -142,7 +144,6 @@ import { RandomSubjectEntity } from './entities/randomSubject.entity';
       useClass: ThrottlerGuard,
     },
     Logger,
-    QnaService,
   ],
 })
 export class AppModule implements NestModule {

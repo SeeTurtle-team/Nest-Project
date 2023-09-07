@@ -11,23 +11,22 @@ import {
     Query,
   } from '@nestjs/common';
   import { ApiOperation, ApiTags } from '@nestjs/swagger';
-  import { QnaService } from './Qna.service';
+  import { QnaService } from './qna.service';
   import { CreateQnaDto,DeleteQnaDto,UpdateQnaDto } from './dto/qna.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { UseGuards } from '@nestjs/common';
   @Controller('Qna')
   @ApiTags('Qna API')
   export class QnaController {
-    constructor(private readonly QnaService: QnaService) {}
+    constructor(private qnaService: QnaService) {}
     private readonly logger = new Logger(QnaController.name);
   
     @ApiOperation({ summary: 'Qna 전체 조회' })
-
     @Get()
     async getAll(@Headers() headers) 
     {
       this.logger.log('-----GET /Qna');
-      return await this.QnaService.getAll(headers);
+      return await this.qnaService.getAll(headers);
     }
   
     // @ApiOperation({ summary: 'Qna 열람' })

@@ -9,11 +9,11 @@ import { UserService } from 'src/user/user.service';
 import { UserGradeEntity } from 'src/entities/userGrade.Entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { EmailCheckCodeEntity } from 'src/entities/emailCheckCode.entity';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from 'src/user/user.module';
-@Module({imports: [UserModule,TypeOrmModule.forFeature(
-    [QnaEntity, QnaCommentEntity,UserGradeEntity,UserEntity,EmailCheckCodeEntity]),],
+@Module({imports: [TypeOrmModule.forFeature([QnaEntity,UserEntity]),
+    ],
     controllers: [QnaController],
-    providers: [QnaService,GetToken,UserService],})
+    providers: [QnaService],})
 export class QnaModule {}

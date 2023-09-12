@@ -15,6 +15,8 @@ import {
   import { CreateQnaDto,DeleteQnaDto,UpdateQnaDto } from './dto/qna.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { UseGuards } from '@nestjs/common';
+import { Throttle, ThrottlerModule } from '@nestjs/throttler';
+import { PageRequest } from 'src/utils/PageRequest';
   @Controller('Qna')
   @ApiTags('Qna API')
   export class QnaController {
@@ -22,11 +24,13 @@ import { UseGuards } from '@nestjs/common';
     private readonly logger = new Logger(QnaController.name);
   
     @ApiOperation({ summary: 'Qna 전체 조회' })
+    @UseGuards(ThrottlerModule)
+    @Throttle(10, 60)
     @Get()
-    async getAll(@Headers() headers) 
+    async getAll(@Query() page: PageRequest,@Headers() header) 
     {
       this.logger.log('-----GET /Qna');
-      return await this.qnaService.getAll(headers);
+      return await this.qnaService.getAll(page,header);
     }
   
     // @ApiOperation({ summary: 'Qna 열람' })

@@ -22,10 +22,10 @@ import { UserEntity } from '../user.entity';
     isanswered: boolean
     @Column({default:"anonymous"})
     username: string
-    @ManyToOne((Type)=>QnaEntity,(Qnaentities)=>Qnaentities.QnaCommentEntity)
-    QnaEntity:QnaEntity
+    @ManyToOne((Type)=>QnaEntity,(Qnaentities)=>Qnaentities.QnaComments)
+    Qna:QnaEntity
     @ManyToOne((type) => UserEntity, (userentity) => userentity.QnacommentEntities)
-    user: UserEntity;
+    user: UserEntity|null;
     @Column()
     userId:number
     @TreeParent()

@@ -68,8 +68,11 @@ export class EbookService {
   }
 
   /**ebook 전체 조회 */
-  async getAll(): Promise<object> {
+  async getAll(page): Promise<object> {
     try {
+      const count = await this.getTotalCount();
+      const offset = page.getOffset();
+      const limit = page.getLimit();
       const ebook = await this.ebookRepository.query(
         `select
           a.id,
@@ -78,7 +81,17 @@ export class EbookService {
           nickname,
           "category",
           "starRating"
-        from ebook a
+        from ebook as a
+        join (
+          select
+            "id"
+            from ebook
+            where ebook."isDeleted" = false
+            and ebook."adminCheck" = true
+            offset ${offset}
+            limit ${limit}
+        ) as temp
+        on temp.id = a.id
         inner join (
           select
             "id",
@@ -101,11 +114,11 @@ export class EbookService {
           group by "ebookId"
         ) d
         on a.id = d."ebookId"
-        where "isDeleted" = false
-        and "adminCheck" = true
+        order by "dateTime" desc
         `,
       );
-      return ebook;
+
+      return new Page(count, page.pageSize, ebook);
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(

@@ -25,7 +25,7 @@ import { UserEntity } from '../user.entity';
     @ManyToOne((Type)=>QnaEntity,(Qnaentities)=>Qnaentities.QnaComments)
     Qna:QnaEntity
     @ManyToOne((type) => UserEntity, (userentity) => userentity.QnacommentEntities)
-    user: UserEntity|null;
+    user: UserEntity;
     @Column()
     userId:number
     @TreeParent()

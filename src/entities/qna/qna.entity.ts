@@ -8,7 +8,7 @@ import {
   import { abstractEntity } from '../abstract.entity';
 import { QnaCommentEntity } from './qnacomment.entity';
 import { UserEntity } from '../user.entity';  
-@Entity('qna')
+@Entity('Qna')
   export class QnaEntity extends abstractEntity
   {
     @Column({default:false})
@@ -18,9 +18,7 @@ import { UserEntity } from '../user.entity';
     @Column({default:"anonymous"})
     username: string
     @ManyToOne((type) => UserEntity, (userentity) => userentity.Qnaentities)
-    user: UserEntity|null;
-    @Column()
-    userId:number
+    user: UserEntity;
     @OneToMany((type)=>QnaCommentEntity,(qnaCommentEntities)=>qnaCommentEntities.Qna)
     QnaComments: QnaCommentEntity[]
   }

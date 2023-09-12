@@ -95,7 +95,7 @@ import { RandomSubjectEntity } from './entities/randomSubject.entity';
     //동일한 IP의 10개 요청이 1분 안에 단일 엔드포인트로 이루어질 수 있음을 의미
     ThrottlerModule.forRoot({
       ttl: 60,
-      limit: 20,
+      limit: 120,
     }), //https://github.com/nestjs/throttler
 
     MailerModule.forRootAsync({

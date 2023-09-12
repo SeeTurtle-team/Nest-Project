@@ -240,10 +240,10 @@ export class EbookService {
   async getUpdate(id, headers) {
     try {
       const verified = await this.getToken.getToken(headers);
-
       const userId = await this.getEbookUserId(id);
+      const check = checkTokenId(userId, verified.userId);
 
-      if (userId === verified.userId) {
+      if (check) {
         return await this.getOne(id);
       } else return { success: false, msg: '유저 불일치' };
     } catch (err) {

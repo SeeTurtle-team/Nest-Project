@@ -25,8 +25,10 @@ export class QnaService
      */ 
 async verifying(headers):Promise<any>
 {
+  try{
     const [type, token] = headers.authorization?.split(' ') ?? [];
-    if(type === 'Bearer')
+    console.log(type,token);
+    if(!token)
     {
         try {
             const payload = await this.jwtService.verifyAsync(token, {
@@ -37,12 +39,23 @@ async verifying(headers):Promise<any>
             return { usergrade:user.ug_userGrade, userId:payload.userId,username:payload.username};
           } catch(err)
           {
+            
             throw new UnauthorizedException();
           }
     }
     else
-    {
+    { console.log(type,token,'?');
         return {usergrade:undefined,userId:null,username:'Anonymous'};
+    }}
+    catch (err)
+    {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status:HttpStatus.INTERNAL_SERVER_ERROR,
+          error:'Qna 인증중 오류발생',
+          success:false,
+        },HttpStatus.INTERNAL_SERVER_ERROR)
     }
     }
     /**
@@ -64,21 +77,26 @@ async verifying(headers):Promise<any>
       const limit=1;
         const user=await this.verifying(headers);
         console.log(user,'\n user');
-        let result,count;
+        let qb,result,count;
         if(user.usergrade===userGrade.Admin)
         {
           console.log('hi');
-          result=await this.qnaRepository.createQueryBuilder('qna').select(['qna.id','qna.title','qna.dateTime','qna.isModified','qna.issecret','qna.userId']).where('qna.isDeleted=:deleted').andWhere('qna.ban=:isbanned').setParameters({'deleted':false,'isbanned':false}).orderBy('qna.isanswered','ASC').addOrderBy('qna.dateTime').limit(limit).offset(offset).getRawOne();
-          count=await this.qnaRepository.createQueryBuilder('qnacount').where('qnacount.isDeleted=:deleted').andWhere('qnacount.ban=:isbanned').setParameters({'deleted':false,'isbanned':false}).getCount();
+          qb=await this.qnaRepository.createQueryBuilder('qna').select(['qna.id','qna.title','qna.dateTime','qna.isModified','qna.issecret','qna.userId']).where('qna.isDeleted=:deleted').andWhere('qna.ban=:isbanned').setParameters({'deleted':false,'isbanned':false});
+          result=await qb.orderBy('qna.isanswered','ASC').addOrderBy('qna.dateTime').limit(limit).offset(offset).getMany();
+          count=await qb.getCount();
         console.log(result,count);
         }
         else if(user.usergrade===userGrade.User)
         {
-          result=await this.qnaRepository.createQueryBuilder('qna').select(['qna.id','qna.title','qna.dateTime','qna.isModified','qna.issecret','qna.userId']).where('qna.isDeleted=:deleted').andWhere('qna.userId=:normalid OR qna.issecret=:normalsecret').andWhere('qna.ban=:isbanned').setParameters({'deleted':false,'isbanned':false,'normalid':user.userId,'normalsecret':false}).orderBy('qna.userId=:normalid').addOrderBy('qna.dateTime').limit(limit).offset(offset).getMany();
+          qb=await this.qnaRepository.createQueryBuilder('qna').select(['qna.id','qna.title','qna.dateTime','qna.isModified','qna.issecret','qna.userId']).where('qna.isDeleted=:deleted').andWhere('qna.userId=:normalid OR qna.issecret=:normalsecret').andWhere('qna.ban=:isbanned').setParameters({'deleted':false,'isbanned':false,'normalid':user.userId,'normalsecret':false});
+          result=await qb.orderBy('qna.userId=:normalid',{'normalid':user.userId}).addOrderBy('qna.dateTime').limit(limit).offset(offset).getMany();
+          count=await qb.getCount();
         }
         else
         {
-          result=await this.qnaRepository.createQueryBuilder('qna').select(['qna.id','qna.title','qna.dateTime','qna.isModified','qna.issecret','qna.userId']).where('qna.isDeleted=:deleted').andWhere('qna.issecret=:normalsecret').andWhere('qna.ban=:isbanned').setParameters({'deleted':false,'isbanned':false,'normalsecret':false}).orderBy('qna.isanswerd','DESC').addOrderBy('qna.dateTime').limit(limit).offset(offset).getMany();
+          qb=await this.qnaRepository.createQueryBuilder('qna').select(['qna.id','qna.title','qna.dateTime','qna.isModified','qna.issecret','qna.userId']).where('qna.isDeleted=:deleted').andWhere('qna.issecret=:normalsecret').andWhere('qna.ban=:isbanned').setParameters({'deleted':false,'isbanned':false,'normalsecret':false});
+          result=await qb.orderBy('qna.dateTime').limit(limit).offset(offset).getMany();
+          count=await qb.getCount();
         }
         return new Page(count,page.pageSize,result);
       }

@@ -86,7 +86,7 @@ export class EbookController {
   }
 
   //series 관련
-  @ApiOperation({ summary: '해당 유저 시리즈 조회' })
+  @ApiOperation({ summary: '본인 시리즈 조회' })
   @Get('/series')
   async getSeries(@Headers() headers) {
     this.logger.log('-----GET /ebook/series');

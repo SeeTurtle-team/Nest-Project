@@ -305,18 +305,22 @@ export class EbookService {
   async delete(deleteEbookDto, headers) {
     try {
       const verified = await this.getToken.getToken(headers);
+      const userId = await this.getEbookUserId(deleteEbookDto.id);
+      const check = checkTokenId(userId, verified.userId);
 
-      await this.ebookRepository
-        .createQueryBuilder()
-        .update()
-        .set({
-          isDeleted: true,
-        })
-        .where('id = :id', { id: deleteEbookDto.id })
-        .andWhere('userId = :userId', { userId: verified.userId })
-        .execute();
+      if (check) {
+        await this.ebookRepository
+          .createQueryBuilder()
+          .update()
+          .set({
+            isDeleted: true,
+          })
+          .where('id = :id', { id: deleteEbookDto.id })
+          .andWhere('userId = :userId', { userId: verified.userId })
+          .execute();
 
-      return { success: true };
+        return { success: true };
+      } else return { success: false, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(

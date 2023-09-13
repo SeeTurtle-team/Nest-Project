@@ -41,6 +41,7 @@ import { QnaController } from './qna/qna.controller';
 import { QnaService } from './qna/qna.service';
 import { QnaModule } from './qna/qna.module';
 import { RandomSubjectEntity } from './entities/randomSubject.entity';
+import { EbookImgEntity } from './entities/ebookImg.entity';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { RandomSubjectEntity } from './entities/randomSubject.entity';
         UserGradeEntity,
         EbookStarRatingEntity,
         EbookSeriesEntity,
+        EbookImgEntity,
       ],
       synchronize: false,
       autoLoadEntities: true,
@@ -125,7 +127,7 @@ import { RandomSubjectEntity } from './entities/randomSubject.entity';
     QnaModule,
   ],
 
-  controllers: [AppController, ],
+  controllers: [AppController],
   providers: [
     AppService,
     {

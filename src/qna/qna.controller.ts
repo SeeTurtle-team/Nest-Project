@@ -18,12 +18,13 @@ import { Throttle, ThrottlerModule } from '@nestjs/throttler';
 import { PageRequest } from 'src/utils/PageRequest';
 import { Public } from 'src/auth/decorators/public.decorator';
 
-@Public()
+
 @Controller('Qna')
   @ApiTags('Qna API')
   export class QnaController {
     constructor(private QnaService: QnaService) {}
     private readonly logger = new Logger(QnaController.name);
+    @Public()
     @ApiOperation({ summary: 'Qna 전체 조회' })
     @UseGuards(ThrottlerModule)
     @Throttle(10, 60)
@@ -31,11 +32,11 @@ import { Public } from 'src/auth/decorators/public.decorator';
     async getAll(@Query() page: PageRequest,@Headers() headers) 
     {
       this.logger.log('-----GET /Qna');
-      return await this.QnaService.getAll(page,headers);
+      return await this.QnaService.getAll(page);
     }
   
     @ApiOperation({ summary: 'Qna 열람' })
-    @Get('/one/:id')
+    @Post('/one/:id')
     async getOne(@Param('id') id: number,@Headers() headers) {
       this.logger.log('-----GET /Qna/:id');
       return await this.QnaService.getOne(id,headers);
@@ -47,25 +48,25 @@ import { Public } from 'src/auth/decorators/public.decorator';
       this.logger.log('-----POST /Qna');
       return await this.QnaService.create(createQnaDto, headers);
     }
-    // @ApiOperation({ summary: 'Qna 수정 전 가져오기' })
-    // @Get('/getupdate/:id')
-    // async getUpdate(@Param('id') id: number, @Headers() headers) {
-    //   this.logger.log('-----GET /Qna/getupdate');
-    //   return await this.QnaService.getUpdate(id, headers);
-    // }
+    @ApiOperation({ summary: 'Qna 수정 전 가져오기' })
+    @Post('/getupdate/:id')
+    async getUpdate(@Param('id') id: number, @Headers() headers) {
+      this.logger.log('-----GET /Qna/getupdate');
+      return await this.QnaService.getUpdate(id, headers);
+    }
   
-    // @ApiOperation({ summary: 'Qna 수정' })
-    // @Patch()
-    // async update(@Body() updateQnaDto: UpdateQnaDto, @Headers() headers) {
-    //   this.logger.log('-----PATCH /Qna');
-    //   return await this.QnaService.update(updateQnaDto, headers);
-    // }
+    @ApiOperation({ summary: 'Qna 수정' })
+    @Patch()
+    async update(@Body() updateQnaDto: UpdateQnaDto, @Headers() headers) {
+      this.logger.log('-----PATCH /Qna');
+      return await this.QnaService.update(updateQnaDto, headers);
+    }
   
-    // @ApiOperation({ summary: 'Qna 삭제' })
-    // @Delete()
-    // async delete(@Body() deleteQnaDto: DeleteQnaDto, @Headers() headers) {
-    //   this.logger.log('-----DELETE /Qna');
-    //   return await this.QnaService.delete(deleteQnaDto, headers);
-    // }
+    @ApiOperation({ summary: 'Qna 삭제' })
+    @Delete()
+    async delete(@Body() deleteQnaDto: DeleteQnaDto, @Headers() headers) {
+      this.logger.log('-----DELETE /Qna');
+      return await this.QnaService.delete(deleteQnaDto, headers);
+    }
   }
   

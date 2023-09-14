@@ -25,6 +25,6 @@ import {
     @Column()
     isModified: Boolean;
   
-    @Column({ type: 'boolean', nullable: false})
+    @Column({ type: 'boolean',default:false, nullable: false})
     ban: boolean;
   }

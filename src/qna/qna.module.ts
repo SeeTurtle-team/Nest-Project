@@ -5,8 +5,10 @@ import { QnaService } from './qna.service';
 import { QnaEntity } from 'src/entities/qna/qna.entity';
 import { QnaCommentEntity } from 'src/entities/qna/qnacomment.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { GetToken } from 'src/utils/GetToken';
+import { GetSearchSql } from 'src/utils/GetSearchSql';
 @Module({imports: [TypeOrmModule.forFeature([QnaEntity,UserEntity,QnaCommentEntity]),
     ],
     controllers: [QnaController],
-    providers: [QnaService],})
+    providers: [QnaService,GetToken,GetSearchSql],})
 export class QnaModule {}

@@ -42,6 +42,7 @@ import { QnaService } from './qna/qna.service';
 import { QnaModule } from './qna/qna.module';
 import { RandomSubjectEntity } from './entities/randomSubject.entity';
 import { EbookImgEntity } from './entities/ebookImg.entity';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -116,6 +117,8 @@ import { EbookImgEntity } from './entities/ebookImg.entity';
         preview: true,
       }),
     }),
+
+    CacheModule.register(),
 
     BoardModule,
     UserModule,

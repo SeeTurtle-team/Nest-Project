@@ -24,6 +24,9 @@ export class AppController {
   @Get('/cache')
   async getCache() : Promise<string>{
     const savedTime = await this.cacheManager.get('time');
+    const test = await this.cacheManager.get('test');
+    console.log(test);
+    
     if(savedTime){
       console.log('cache!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
       return "saved time : " + savedTime;
@@ -31,7 +34,8 @@ export class AppController {
 
     const now = new Date().getTime();
 
-    await this.cacheManager.set('time',now,6000); //ttl은 ms 단위
+   
+    await this.cacheManager.set('time',now); //ttl은 ms 단위
     return "save new time : "+now;
   }
 }

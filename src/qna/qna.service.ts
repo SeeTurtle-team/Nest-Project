@@ -7,6 +7,7 @@ import { QnaCommentEntity } from 'src/entities/qna/qnacomment.entity';
 import{ Page }from 'src/utils/page';
 import { GetToken } from 'src/utils/GetToken';
 import { GetSearchSql } from 'src/utils/GetSearchSql';
+import { UpdateQnaDto } from './dto/qna.dto';
 @Injectable()
 export class QnaService 
 {private readonly logger = new Logger(QnaService.name);
@@ -26,24 +27,51 @@ export class QnaService
      */ 
      async checkUserandIsSecret(qnaboardId, userId):Promise<Object> 
      {try{ 
-      const id = await this.qnaRepository.query(`select q."userId",q."issecret" from "Qna" as q join (select "id" from "Qna" where "id"=${qnaboardId}) as temp on temp."id"=q."id"`);
+      const id = await this.qnaRepository.query(`select q."userId",q."issecret" from "Qna" as q join (select qa."id" from "Qna" as qa where qa."id"=${qnaboardId}) as temp on temp."id"=q."id"`);
+      console.log(id);
       let result=[false,false];
-      if(id[0]===userId){
+      if(id[0]["userId"]===userId){
       result[0]=true;
       }
-      if(id[1]===false){
+      if(id[0]["issecret"]===false){
         result[1]=true;
         }
      if(result[0]|| result[1])
      {
-      return {success: true,status:HttpStatus.OK, rt:result};
+      return {success: true, rt:result};
      }
      else
      {
-      return {success: false,status:HttpStatus.BAD_REQUEST, rt:result};
+      if(result[1])
+      {
+        throw new HttpException(
+          {
+            status: HttpStatus.FORBIDDEN,
+            error: 'Qna비밀글에 무권한접근',
+            success: false,
+          },
+          HttpStatus.FORBIDDEN,
+        );
+      }
+      else
+      {
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_FOUND,
+            error: '해당하는 Qna게시글이 존재하지 않음',
+            success: false,
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      
      }
      }catch (err) {
       this.logger.error(err);
+      if(err.response.error)
+      {
+        throw err;
+      }
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -56,7 +84,7 @@ export class QnaService
      /** qna전체조회
      *
      *@param page
-     *@return {success,status,page}
+     *@return {success,rtpage:Page}
      */ 
     async getAll(page):Promise<object>
     {
@@ -66,7 +94,7 @@ export class QnaService
       const count=await this.qnaRepository.query(`select count(*) from "Qna" as q where q."ban"=false and q."isDeleted"=false`);
       const pg=await this.qnaRepository.query(`select qa."id",qa."title",qa."dateTime" from "Qna" as qa join (select "id" from "Qna" as q where q."ban"=false and q."isDeleted"=false order by q."id" desc offset ${offset} limit ${limit}) as temp on temp."id"=qa."id" `);
       const rtpage=new Page(count,page.pageSize,pg);
-      return {success:true,status:HttpStatus.OK,rtpage};
+      return {success:true,rtpage};
       }
       catch(err)
       {
@@ -82,7 +110,7 @@ export class QnaService
      /** qna 생성
      *
      *@param createQnaDto,headers
-     *@return  { success,status};
+     *@return  { success};
      */ 
     async create(createQnaDto,headers):Promise<object>
     {try
@@ -102,7 +130,7 @@ export class QnaService
           QnaData.username=verified.username;
         }
         await this.qnaRepository.save(QnaData);
-        return { success: true,status:HttpStatus.CREATED};
+        return { success: true};
       }
     catch(err)
     {
@@ -115,30 +143,38 @@ export class QnaService
           },HttpStatus.INTERNAL_SERVER_ERROR)
     }
     }
+     /** qna 게시글 조회
+     *
+     *@param id,headers
+     *@return  { success,Qna,check['rt'][2]{bool,bool}};
+     */ 
     async getOne(id,headers):Promise<Object>
     {
       try{ //const pg=await this.qnaRepository.query(`select * from "Qna" as q left join "QnaComment" as qc on q."id"=qc."qnaId" where q."ban"=false and q."id"=${id} and (q."userId"=${verified.userId} or q."issecret"=false)`);
       const verified=await this.gettoken.getToken(headers);
       const check=await this.checkUserandIsSecret(id,verified.userId);
-      if(check["success"]===true) 
-      {
         const pg=await this.qnaRepository.query(`select * from "Qna" as q join (select qa."id" from "Qna" as qa where qa."id"=${id})as temp on temp."id"=q."id" where q."ban"=false and q."isDeleted"=false`);
         if(pg.length>0) 
       {
-        return { success: true,status:HttpStatus.OK,pg,check};
+        return { success: true,pg,check};//check[0]=isuserid,[1]=isnotsecret
       }
       else//ban || isDeleted
       {
-        return { success: false,status:HttpStatus.BAD_REQUEST,message:"isDeleted or banned"};
+        throw new HttpException(
+          {
+            status:HttpStatus.NOT_FOUND,
+            error:'삭제된 Qna입니다',
+            success:false,
+          },HttpStatus.NOT_FOUND)
       }
     }
-      else
-      {
-        return { success: false,status:HttpStatus.BAD_REQUEST};
-      }}
       catch(err)
     {
       this.logger.error(err);
+      if(err.response.error)
+      {
+        throw err;
+      }
         throw new HttpException(
           {
             status:HttpStatus.INTERNAL_SERVER_ERROR,
@@ -155,21 +191,35 @@ export class QnaService
      /** qna 수정전 정보가져오기
      *
      *@param createQnaDto,headers
-     *@return  { success,status};
+     *@return  { success,update['success','pg','check'],};
      */ 
     async getUpdate(id, headers):Promise<Object>
     {
       try{
-        const verified=await this.gettoken.getToken(headers);
         const update=await this.getOne(id,headers);
-        if(update["success"]===true)
+        if(update['check']['rt'][0]===true)
         {
+          return {success:true,update};
         }
-        return Object;
+        else
+        {
+          throw new HttpException(
+            {
+              status: HttpStatus.FORBIDDEN,
+              error: 'Qna비밀글에 무권한접근',
+              success: false,
+            },
+            HttpStatus.FORBIDDEN,
+          );
+        }
        }
         catch(err)
       {
         this.logger.error(err);
+        if(err.response.error)
+      {
+        throw err;
+      }
           throw new HttpException(
             {
               status:HttpStatus.INTERNAL_SERVER_ERROR,
@@ -178,10 +228,107 @@ export class QnaService
             },HttpStatus.INTERNAL_SERVER_ERROR)
       }
     }
-    async update(updateQnaDto, headers){}
-    async delete(deleteQnaDto, headers)
+     /** qna 수정하기
+     *
+     *@param updateQnaDto,headers
+     *@return  { success};
+     */ 
+    async update(updateQnaDto, headers):Promise<Object>
     {
-
+      try{
+        const verified=await this.gettoken.getToken(headers);
+        const isuser=await this.checkUserandIsSecret(updateQnaDto.Qnaid,verified.userId);
+        if(isuser['rt'][0]){
+       const ud=await this.qnaRepository
+          .createQueryBuilder('board')
+          .update()
+          .set({
+            title: updateQnaDto.title,
+            contents:updateQnaDto.contents,
+            isModified:true,
+            dateTime:new Date(),
+            issecret:updateQnaDto.issecret,
+            },
+          )
+          .where('id = :id', { id: updateQnaDto.Qnaid }).execute();
+          console.log(ud);
+          return {success:true};
+        }
+        else
+        {
+          throw new HttpException(
+            {
+              status: HttpStatus.FORBIDDEN,
+              error: 'Qna비밀글에 무권한접근',
+              success: false,
+            },
+            HttpStatus.FORBIDDEN,
+          );
+        }
+      
+    }catch(err)
+    {
+      this.logger.error(err);
+      if(err.response.error)
+    {
+      throw err;
+    }
+        throw new HttpException(
+          {
+            status:HttpStatus.INTERNAL_SERVER_ERROR,
+            error:'Qna 업데이트 중 오류발생',
+            success:false,
+          },HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+   /** qna 삭제하기
+     *
+     *@param deleteQnaDto,headers
+     *@return  { success};
+     */ 
+    async delete(deleteQnaDto, headers):Promise<Object>
+    {
+      try{
+        const verified=await this.gettoken.getToken(headers);
+        const isuser=await this.checkUserandIsSecret(deleteQnaDto.Qnaid,verified.userId);
+        if(isuser['rt'][0]){
+       const del=await this.qnaRepository
+          .createQueryBuilder('board')
+          .update()
+          .set({
+            isDeleted:true,
+            },
+          )
+          .where('id = :id', { id: deleteQnaDto.Qnaid }).execute();
+          console.log(del);
+          return {success:true};
+        }
+        else
+        {
+          throw new HttpException(
+            {
+              status: HttpStatus.FORBIDDEN,
+              error: 'Qna비밀글에 무권한접근',
+              success: false,
+            },
+            HttpStatus.FORBIDDEN,
+          );
+        }
+      return {success:true};
+    }catch(err)
+    {
+      this.logger.error(err);
+      if(err.response.error)
+    {
+      throw err;
+    }
+        throw new HttpException(
+          {
+            status:HttpStatus.INTERNAL_SERVER_ERROR,
+            error:'Qna 삭제 중 오류발생',
+            success:false,
+          },HttpStatus.INTERNAL_SERVER_ERROR);
+    }
     }
   }
 

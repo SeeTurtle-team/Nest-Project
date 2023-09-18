@@ -21,10 +21,11 @@ export class CreateQnaDto extends abstractqnaDto
 }
 export class UpdateQnaDto extends PartialType(CreateQnaDto)
 {
-
+  @IsNumber()
+  readonly Qnaid:number;
 }
 export class DeleteQnaDto
 {
   @IsNumber()
-  readonly id:number;
+  readonly Qnaid:number;
 }

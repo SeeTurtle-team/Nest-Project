@@ -24,7 +24,8 @@ import {
   
     @Column()
     isModified: Boolean;
-  
+    @Column({nullable:true})
+    imgUrl:string;
     @Column({ type: 'boolean',default:false, nullable: false})
     ban: boolean;
   }

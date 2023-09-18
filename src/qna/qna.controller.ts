@@ -9,6 +9,8 @@ import {
     Post,
     Patch,
     Query,
+    HttpCode,
+    HttpStatus,
   } from '@nestjs/common';
   import { ApiOperation, ApiTags } from '@nestjs/swagger';
   import { QnaService } from './qna.service';
@@ -28,6 +30,7 @@ import { Public } from 'src/auth/decorators/public.decorator';
     @ApiOperation({ summary: 'Qna 전체 조회' })
     @UseGuards(ThrottlerModule)
     @Throttle(10, 60)
+    @HttpCode(HttpStatus.OK)
     @Get()
     async getAll(@Query() page: PageRequest,@Headers() headers) 
     {
@@ -36,6 +39,7 @@ import { Public } from 'src/auth/decorators/public.decorator';
     }
   
     @ApiOperation({ summary: 'Qna 열람' })
+    @HttpCode(HttpStatus.OK)
     @Post('/one/:id')
     async getOne(@Param('id') id: number,@Headers() headers) {
       this.logger.log('-----GET /Qna/:id');
@@ -43,12 +47,14 @@ import { Public } from 'src/auth/decorators/public.decorator';
     }
   
     @ApiOperation({ summary: 'Qna 작성' })
+    @HttpCode(HttpStatus.CREATED)
     @Post('/create')
     async create(@Body() createQnaDto: CreateQnaDto, @Headers() headers) {
       this.logger.log('-----POST /Qna');
       return await this.QnaService.create(createQnaDto, headers);
     }
     @ApiOperation({ summary: 'Qna 수정 전 가져오기' })
+    @HttpCode(HttpStatus.OK)
     @Post('/getupdate/:id')
     async getUpdate(@Param('id') id: number, @Headers() headers) {
       this.logger.log('-----GET /Qna/getupdate');
@@ -56,6 +62,7 @@ import { Public } from 'src/auth/decorators/public.decorator';
     }
   
     @ApiOperation({ summary: 'Qna 수정' })
+    @HttpCode(HttpStatus.CREATED)
     @Patch()
     async update(@Body() updateQnaDto: UpdateQnaDto, @Headers() headers) {
       this.logger.log('-----PATCH /Qna');
@@ -63,6 +70,7 @@ import { Public } from 'src/auth/decorators/public.decorator';
     }
   
     @ApiOperation({ summary: 'Qna 삭제' })
+    @HttpCode(HttpStatus.NO_CONTENT)
     @Delete()
     async delete(@Body() deleteQnaDto: DeleteQnaDto, @Headers() headers) {
       this.logger.log('-----DELETE /Qna');

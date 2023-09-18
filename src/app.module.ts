@@ -79,7 +79,7 @@ import { QnaCommentEntity } from './entities/qna/qnacomment.entity';
         QnaEntity,
         QnaCommentEntity,
       ],
-      synchronize: true,
+      synchronize: false,
       autoLoadEntities: true,
       logging: true,
     }),

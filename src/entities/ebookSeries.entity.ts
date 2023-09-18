@@ -22,7 +22,7 @@ export class EbookSeriesEntity {
   )
   user: UserEntity;
 
-  @Column({ nullable: false })
+  @Column({ nullable: true })
   isDeleted: boolean;
 
   @OneToMany((type) => EbookEntity, (ebookEntity) => ebookEntity.ebookSeries)

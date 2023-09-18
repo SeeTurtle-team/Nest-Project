@@ -25,47 +25,47 @@ export class QnaService
      *@param @number qnaboarId(pk) @number userId(pk)
      *@return {success,status,page}
      */ 
-     async checkUserandIsSecret(qnaboardId, userId):Promise<Object> 
-     {try{ 
-      const id = await this.qnaRepository.query(`select q."userId",q."issecret" from "Qna" as q join (select qa."id" from "Qna" as qa where qa."id"=${qnaboardId}) as temp on temp."id"=q."id"`);
-      console.log(id);
-      let result=[false,false];
-      if(id[0]["userId"]===userId){
-      result[0]=true;
-      }
-      if(id[0]["issecret"]===false){
-        result[1]=true;
+     async checkUserandIsSecret(qnaboardId, userId):Promise<Object> {
+      try{ 
+        const id = await this.qnaRepository.query(`select q."userId",q."issecret" from "Qna" as q join (select qa."id" from "Qna" as qa where qa."id"=${qnaboardId}) as temp on temp."id"=q."id"`);
+        console.log(id);
+        let result=[false,false];
+        if(id[0]["userId"]===userId){
+        result[0]=true;
         }
-     if(result[0]|| result[1])
-     {
-      return {success: true, rt:result};
-     }
-     else
-     {
-      if(result[1])
-      {
-        throw new HttpException(
-          {
-            status: HttpStatus.FORBIDDEN,
-            error: 'Qna비밀글에 무권한접근',
-            success: false,
-          },
-          HttpStatus.FORBIDDEN,
-        );
-      }
-      else
-      {
-        throw new HttpException(
-          {
-            status: HttpStatus.NOT_FOUND,
-            error: '해당하는 Qna게시글이 존재하지 않음',
-            success: false,
-          },
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      
-     }
+        if(id[0]["issecret"]===false){
+          result[1]=true;
+          }
+       if(result[0]|| result[1])
+       {
+        return {success: true, rt:result};
+       }
+       else
+       {
+        if(result[1])
+        {
+          throw new HttpException(
+            {
+              status: HttpStatus.FORBIDDEN,
+              error: 'Qna비밀글에 무권한접근',
+              success: false,
+            },
+            HttpStatus.FORBIDDEN,
+          );
+        }
+        else
+        {
+          throw new HttpException(
+            {
+              status: HttpStatus.NOT_FOUND,
+              error: '해당하는 Qna게시글이 존재하지 않음',
+              success: false,
+            },
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        
+       }
      }catch (err) {
       this.logger.error(err);
       if(err.response.error)
@@ -86,15 +86,14 @@ export class QnaService
      *@param page
      *@return {success,rtpage:Page}
      */ 
-    async getAll(page):Promise<object>
-    {
+    async getAll(page):Promise<object>{
       try{
-      const offset = page.getOffset();
-      const limit = page.getLimit();
-      const count=await this.qnaRepository.query(`select count(*) from "Qna" as q where q."ban"=false and q."isDeleted"=false`);
-      const pg=await this.qnaRepository.query(`select qa."id",qa."title",qa."dateTime" from "Qna" as qa join (select "id" from "Qna" as q where q."ban"=false and q."isDeleted"=false order by q."id" desc offset ${offset} limit ${limit}) as temp on temp."id"=qa."id" `);
-      const rtpage=new Page(count,page.pageSize,pg);
-      return {success:true,rtpage};
+        const offset = page.getOffset();
+        const limit = page.getLimit();
+        const count=await this.qnaRepository.query(`select count(*) from "Qna" as q where q."ban"=false and q."isDeleted"=false`);
+        const pg=await this.qnaRepository.query(`select qa."id",qa."title",qa."dateTime" from "Qna" as qa join (select "id" from "Qna" as q where q."ban"=false and q."isDeleted"=false order by q."id" desc offset ${offset} limit ${limit}) as temp on temp."id"=qa."id" `);
+        const rtpage=new Page(count,page.pageSize,pg);
+        return {success:true,rtpage};
       }
       catch(err)
       {
@@ -112,9 +111,8 @@ export class QnaService
      *@param createQnaDto,headers
      *@return  { success};
      */ 
-    async create(createQnaDto,headers):Promise<object>
-    {try
-      {
+    async create(createQnaDto,headers):Promise<object>{
+      try{
         const verified=await this.gettoken.getToken(headers);
         const QnaData = new QnaEntity();
         QnaData.title = createQnaDto.title;

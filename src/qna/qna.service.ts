@@ -19,18 +19,22 @@ export class QnaService
     private readonly gettoken:GetToken,
     private readonly getsearchsql:GetSearchSql,
     ){}
-    /** qna게시판 게시글전체조회
+    /** qna전체조회
      *
      *@param page
-     *@return  
+     *@return {success,status,page}
      */ 
+     async checkUser(qnaboardId, userId):Promise<any[]> 
+     {
+      return [];
+     }
     async getAll(page):Promise<object>
     {
       try{
       const offset = page.getOffset();
       const limit = page.getLimit();
       const count=await this.qnaRepository.query(`select count(*) from "Qna"`);
-      const pg=await this.qnaRepository.query(`select q."id",q."title",q."dateTime" from "Qna" as q where q."ban"=false and q."isDeleted"=false order by q."dateTime" desc offset ${offset} limit ${limit}`);
+      const pg=await this.qnaRepository.query(`select qa."id",qa."title",qa."dateTime" from "Qna" as qa join (select "id" from "Qna" as q where q."ban"=false and q."isDeleted"=false order by q."id" desc offset ${offset} limit ${limit}) as temp on temp."id"=qa."id" `);
       const rtpage=new Page(count,page.pageSize,pg);
       return {success:true,status:HttpStatus.OK,rtpage};
       }
@@ -45,10 +49,10 @@ export class QnaService
           },HttpStatus.INTERNAL_SERVER_ERROR)
       }
     }
-     /** qna게시판 게시글전체조회
-     * 등급따라 차등기능.
+     /** qna 생성
+     *
      *@param createQnaDto,headers
-     *@return 
+     *@return  { success,status};
      */ 
     async create(createQnaDto,headers):Promise<object>
     {try
@@ -68,7 +72,7 @@ export class QnaService
           QnaData.username=verified.username;
         }
         await this.qnaRepository.save(QnaData);
-        return { success: true,status:HttpStatus.OK};
+        return { success: true,status:HttpStatus.CREATED};
       }
     catch(err)
     {
@@ -80,13 +84,12 @@ export class QnaService
             success:false,
           },HttpStatus.INTERNAL_SERVER_ERROR)
     }
-
     }
     async getOne(id,headers):Promise<Object>
     {
       try{
       const verified=await this.gettoken.getToken(headers);
-      //const pg=await this.qnaRepository.query(`select * from "Qna" as q left join "QnaComment" as qc on q."id"=qc."qnaId" where q."ban"=false and q."isDeleted"=false and q."id"=${id} and q."userId"=${verified.userId}`);
+      //const pg=await this.qnaRepository.query(`select * from "Qna" as q left join "QnaComment" as qc on q."id"=qc."qnaId" where q."ban"=false and q."id"=${id} and (q."userId"=${verified.userId} or q."issecret"=false)`);
       const pg=await this.qnaRepository.query(`select * from "Qna" as q where q."ban"=false and q."isDeleted"=false and q."id"=${id} and (q."userId"=${verified.userId} or q."issecret"=false)`);
       console.log(pg,typeof(pg),pg.length);
       if(pg.length>0) 
@@ -113,7 +116,14 @@ export class QnaService
     //   const verified=await this.gettoken.getToken(headers);
     //   const pg=await this.qnaRepository.query(`select * from "Qna" as q left join "QnaComment" as qc where q."ban"=false and q."isDeleted"=false and q."id"=${id} and q.user=${verified.userId}`); 
     // }
-    async getUpdate(id, headers){}
+     /** qna 수정전 정보가져오기
+     *
+     *@param createQnaDto,headers
+     *@return  { success,status};
+     */ 
+    async getUpdate(id, headers)
+    {
+    }
     async update(updateQnaDto, headers){}
     async delete(deleteQnaDto, headers)
     {

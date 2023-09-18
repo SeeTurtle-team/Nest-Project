@@ -26,7 +26,7 @@ export class BoardService {
     private jwtService: JwtService,
     private readonly getToken: GetToken,
     private readonly getSearchSql: GetSearchSql,
-  ) {}
+  ) { }
 
   async getTotalCount() {
     try {
@@ -1114,14 +1114,14 @@ export class BoardService {
 
   /**최근 업로드 된 게시글 불러오기 */
   async lastBoard() {
-    try{
+    try {
       const res = await this.boardRepository.find({
-        take:5,
+        take: 5,
         order: { id: 'DESC' }
       });
 
       return res;
-    } catch(err) {
+    } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {

@@ -8,7 +8,6 @@ import {GetSearchSql} from 'src/utils/GetSearchSql';
 import {GetToken} from 'src/utils/GetToken';
 import {Page} from 'src/utils/page';
 import {QueryBuilder, Repository} from 'typeorm';
-
 import {UpdateQnaDto} from './dto/qna.dto';
 
 @Injectable()
@@ -31,9 +30,10 @@ export class QnaService {
    */
   async checkUserandIsSecret(qnaboardId, userId): Promise<Object> {
     try {
-      const id = await this.qnaRepository.query(
-          `select q."userId",q."issecret" from "Qna" as q where q."id"=${
-              qnaboardId}`);
+      const id =
+          await this.qnaRepository.query(`select q."userId",q."issecret" 
+            from "Qna" as q 
+            where q."id"=${qnaboardId}`);
       this.logger.log(id);
       let result = [false, false];
       if (id[0]['userId'] === userId) {
@@ -359,5 +359,9 @@ export class QnaService {
           },
           HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+  async createComment(id,createQnaCommentDto, headers):Promise<Object>
+  {
+    return {};
   }
 }

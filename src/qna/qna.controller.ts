@@ -3,7 +3,7 @@ import {ApiOperation, ApiTags} from '@nestjs/swagger';
 import {Throttle, ThrottlerModule} from '@nestjs/throttler';
 import {Public} from 'src/auth/decorators/public.decorator';
 import {PageRequest} from 'src/utils/PageRequest';
-
+import { CreateQnaCommentDto } from './dto/qnacomment.dto';
 import {CreateQnaDto, DeleteQnaDto, UpdateQnaDto} from './dto/qna.dto';
 import {QnaService} from './qna.service';
 
@@ -68,5 +68,12 @@ export class QnaController {
   async delete(@Body() deleteQnaDto: DeleteQnaDto, @Headers() headers) {
     this.logger.log('-----DELETE /Qna');
     return await this.QnaService.delete(deleteQnaDto, headers);
+  }
+  @ApiOperation({summary: 'Qna comment 작성'})
+  @HttpCode(HttpStatus.CREATED)
+  @Post('/one/:id/create/')
+  async createComment(@Param('id') id:number,@Body() createQnaCommentDto: CreateQnaCommentDto, @Headers() headers) {
+    this.logger.log('-----Post /Qna comment create');
+    return await this.QnaService.createComment(id,createQnaCommentDto, headers);
   }
 }

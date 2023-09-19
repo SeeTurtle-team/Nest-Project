@@ -22,6 +22,8 @@ import { UserGradeEntity } from './userGrade.Entity';
 import { SmallSubjectEntity } from './smallSubject.entity';
 import { EbookStarRatingEntity } from './ebookStarRating.entity';
 import { EbookSeriesEntity } from './ebookSeries.entity';
+import { QnaEntity } from './qna/qna.entity';
+import { QnaCommentEntity } from './qna/qnacomment.entity';
 
 @Entity('user')
 export class UserEntity {
@@ -57,7 +59,10 @@ export class UserEntity {
 
   @OneToMany((type) => BoardEntity, (boardEntity) => boardEntity.user)
   boardEntities: BoardEntity[];
-
+  @OneToMany((type) => QnaEntity, (qnaEntities) => qnaEntities.user)
+  Qnaentities: QnaEntity[];
+  @OneToMany((type) => QnaCommentEntity, (qnacommentEntities) => qnacommentEntities.user)
+  QnacommentEntities: QnaCommentEntity[];
   @OneToMany(
     (type) => BoardCommentEntity,
     (boardCommentEntity) => boardCommentEntity.user,

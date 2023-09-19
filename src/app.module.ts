@@ -36,9 +36,14 @@ import { MethodTimeMeterInterceptor } from './Interceptor/MethodTimeMeter.interc
 import { AdminModule } from './admin/admin.module';
 import { EbookStarRatingEntity } from './entities/ebookStarRating.entity';
 import { EbookSeriesEntity } from './entities/ebookSeries.entity';
+<<<<<<< HEAD
 import { QnaService } from './qna/qna.service';
+=======
+>>>>>>> a72d95eac582ffa3c9b0d3387400ca702c8b2a87
 import { QnaModule } from './qna/qna.module';
 import { RandomSubjectEntity } from './entities/randomSubject.entity';
+import { QnaEntity } from './entities/qna/qna.entity';
+import { QnaCommentEntity } from './entities/qna/qnacomment.entity';
 import { EbookImgEntity } from './entities/ebookImg.entity';
 import { CacheModule } from '@nestjs/cache-manager';
 import { RedisClientOptions } from 'redis';
@@ -78,6 +83,8 @@ import { redisStore } from 'cache-manager-redis-store';
         UserGradeEntity,
         EbookStarRatingEntity,
         EbookSeriesEntity,
+        QnaEntity,
+        QnaCommentEntity,
         EbookImgEntity,
       ],
       synchronize: false,
@@ -164,7 +171,6 @@ import { redisStore } from 'cache-manager-redis-store';
       useClass: ThrottlerGuard,
     },
     Logger,
-    QnaService,
   ],
 })
 export class AppModule implements NestModule {

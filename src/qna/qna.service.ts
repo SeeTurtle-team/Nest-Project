@@ -27,7 +27,14 @@ export class QnaService {
          */
     async checkUserandIsSecret(qnaboardId, userId): Promise<Object> {
         try {
-            const id = await this.qnaRepository.query(`select q."userId",q."issecret" from "Qna" as q join (select qa."id" from "Qna" as qa where qa."id"=${qnaboardId}) as temp on temp."id"=q."id"`);
+            const id = await this.qnaRepository.query(`
+                select q."userId",q."issecret" 
+                from "Qna" as q join (
+                    select qa."id" 
+                    from "Qna" as qa 
+                    where qa."id"=${qnaboardId}) 
+                as temp on temp."id"=q."id"`);
+
             console.log(id);
             let result = [false, false];
             if (id[0]["userId"] === userId) {
@@ -86,8 +93,26 @@ export class QnaService {
         try {
             const offset = page.getOffset();
             const limit = page.getLimit();
-            const count = await this.qnaRepository.query(`select count(*) from "Qna" as q where q."ban"=false and q."isDeleted"=false`);
-            const pg = await this.qnaRepository.query(`select qa."id",qa."title",qa."dateTime" from "Qna" as qa join (select "id" from "Qna" as q where q."ban"=false and q."isDeleted"=false order by q."id" desc offset ${offset} limit ${limit}) as temp on temp."id"=qa."id" `);
+            const count = await this.qnaRepository.query(`
+                select count(*) 
+                from "Qna" as q 
+                where q."ban"=false 
+                    and q."isDeleted"=false
+                `);
+
+            const pg = await this.qnaRepository.query(`
+                select qa."id",qa."title",qa."dateTime" 
+                from "Qna" as qa join (
+                    select "id" 
+                    from "Qna" as q 
+                    where q."ban"=false 
+                    and q."isDeleted"=false 
+                    order by q."id" desc 
+                    offset ${offset} 
+                    limit ${limit}) 
+                    as temp on temp."id"=qa."id" 
+                `);
+
             const rtpage = new Page(count, page.pageSize, pg);
             return { success: true, rtpage };
         }
@@ -143,7 +168,17 @@ export class QnaService {
         try { //const pg=await this.qnaRepository.query(`select * from "Qna" as q left join "QnaComment" as qc on q."id"=qc."qnaId" where q."ban"=false and q."id"=${id} and (q."userId"=${verified.userId} or q."issecret"=false)`);
             const verified = await this.gettoken.getToken(headers);
             const check = await this.checkUserandIsSecret(id, verified.userId);
-            const pg = await this.qnaRepository.query(`select * from "Qna" as q join (select qa."id" from "Qna" as qa where qa."id"=${id})as temp on temp."id"=q."id" where q."ban"=false and q."isDeleted"=false`);
+            const pg = await this.qnaRepository.query(`
+                select * 
+                from "Qna" as q join (
+                    select qa."id" 
+                    from "Qna" as qa 
+                    where qa."id"=${id}) 
+                    as temp on temp."id"=q."id" 
+                    where q."ban"=false 
+                    and q."isDeleted"=false`
+                );
+                
             if (pg.length > 0) {
                 return { success: true, pg, check };//check[0]=isuserid,[1]=isnotsecret
             }

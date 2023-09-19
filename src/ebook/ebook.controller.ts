@@ -29,17 +29,17 @@ export class EbookController {
   constructor(private ebookService: EbookService) {}
   private readonly logger = new Logger(EbookController.name);
 
-  @ApiOperation({ summary: 'ebook 전체 조회' })
+  @ApiOperation({ summary: 'ebook 최신순 전체 조회' })
   @Get()
-  async getAll() {
+  async getAll(@Query() page: PageRequest) {
     this.logger.log('-----GET /ebook');
-    return await this.ebookService.getAll();
+    return await this.ebookService.getAll(page);
   }
 
   @ApiOperation({ summary: 'ebook 열람' })
   @Get('/one/:id')
   async getOne(@Param('id') id: number) {
-    this.logger.log('-----GET /ebook/:id');
+    this.logger.log('-----GET /ebook/one/:id');
     return await this.ebookService.getOne(id);
   }
 
@@ -86,7 +86,7 @@ export class EbookController {
   }
 
   //series 관련
-  @ApiOperation({ summary: '해당 유저 시리즈 조회' })
+  @ApiOperation({ summary: '본인 시리즈 조회' })
   @Get('/series')
   async getSeries(@Headers() headers) {
     this.logger.log('-----GET /ebook/series');

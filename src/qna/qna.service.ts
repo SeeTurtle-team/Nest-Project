@@ -152,8 +152,8 @@ export class QnaService {
     try {
       const verified = await this.gettoken.getToken(headers);
       const check = await this.checkUserandIsSecret(id, verified.userId);
-      const pg =
-          await this.qnaRepository.query(`select  id, title, "dateTime",contents from "Qna" where "id"=${
+      const pg = await this.qnaRepository.query(
+          `select  id, title, "dateTime",contents from "Qna" where "id"=${
               id} and "ban"=false and "isDeleted"=false`);
       if (pg.length > 0) {
         return {success: true, pg, check};  // check[0]=isuserid,[1]=isnotsecret
@@ -181,7 +181,7 @@ export class QnaService {
           HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
-   /**
+  /**
    *qna 게시글 조회
    *
    *@param id,headers
@@ -195,8 +195,8 @@ export class QnaService {
               verified.userId}) as temp on temp."userGradeId"=ug.id`);
       this.logger.log(isAdmin);
       if (isAdmin['0']['userGrade'] === userGrade.Admin) {
-        const pg =
-            await this.qnaRepository.query(`select  id,title,"dateTime",contents from "Qna" where "id"=${
+        const pg = await this.qnaRepository.query(
+            `select  id,title,"dateTime",contents from "Qna" where "id"=${
                 id} and "ban"=false and "isDeleted"=false`);
         this.logger.log(pg);
         return {

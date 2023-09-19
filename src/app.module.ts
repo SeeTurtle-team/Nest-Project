@@ -41,6 +41,7 @@ import { QnaModule } from './qna/qna.module';
 import { RandomSubjectEntity } from './entities/randomSubject.entity';
 import { QnaEntity } from './entities/qna/qna.entity';
 import { QnaCommentEntity } from './entities/qna/qnacomment.entity';
+import { EbookImgEntity } from './entities/ebookImg.entity';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { QnaCommentEntity } from './entities/qna/qnacomment.entity';
         EbookSeriesEntity,
         QnaEntity,
         QnaCommentEntity,
+        EbookImgEntity,
       ],
       synchronize: false,
       autoLoadEntities: true,
@@ -97,7 +99,7 @@ import { QnaCommentEntity } from './entities/qna/qnacomment.entity';
     //동일한 IP의 10개 요청이 1분 안에 단일 엔드포인트로 이루어질 수 있음을 의미
     ThrottlerModule.forRoot({
       ttl: 60,
-      limit: 20,
+      limit: 120,
     }), //https://github.com/nestjs/throttler
 
     MailerModule.forRootAsync({
@@ -127,7 +129,7 @@ import { QnaCommentEntity } from './entities/qna/qnacomment.entity';
     QnaModule,
   ],
 
-  controllers: [AppController, ],
+  controllers: [AppController],
   providers: [
     AppService,
     {

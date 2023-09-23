@@ -21,6 +21,8 @@ import { CreateSeriesDto } from './dto/create-series.dto';
 import { PageRequest } from 'src/utils/PageRequest';
 import { UpdateSeriesDto } from './dto/update-series.dto';
 import { DeleteSeriesDto } from './dto/delete-series.dto';
+import { InsertUrlDto } from './dto/insert-url.dto';
+import { DeleteUrlDto } from './dto/delete-url.dto';
 
 @Public()
 @Controller('ebook')
@@ -121,5 +123,34 @@ export class EbookController {
   ) {
     this.logger.log('-----Delete /ebook/series');
     return await this.ebookService.deleteSeries(deleteSeriesDto, headers);
+  }
+
+  //s3url
+  @ApiOperation({ summary: 'Get S3 presigned url' })
+  @Get('/s3url')
+  async s3url() {
+    this.logger.log('-----GET /ebook/s3url');
+    return await this.ebookService.s3url();
+  }
+
+  @ApiOperation({ summary: 'url db에 저장' })
+  @Post('/url')
+  async insertUrl(@Body() insertUrlDto: InsertUrlDto, @Headers() headers) {
+    this.logger.log('-----POST /ebook/url');
+    return await this.ebookService.insertUrl(insertUrlDto, headers);
+  }
+
+  @ApiOperation({ summary: 'url 수정' })
+  @Patch('/url')
+  async updateUrl(@Body() updateUrlDto: InsertUrlDto, @Headers() headers) {
+    this.logger.log('-----PATCH /ebook/url');
+    return await this.ebookService.updateUrl(updateUrlDto, headers);
+  }
+
+  @ApiOperation({ summary: 'url 삭제' })
+  @Delete('/url')
+  async deleteUrl(@Body() deleteUrlDto: DeleteUrlDto, @Headers() headers) {
+    this.logger.log('-----DELETE /ebook/url');
+    return await this.ebookService.deleteUrl(deleteUrlDto, headers);
   }
 }

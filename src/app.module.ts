@@ -36,10 +36,6 @@ import { MethodTimeMeterInterceptor } from './Interceptor/MethodTimeMeter.interc
 import { AdminModule } from './admin/admin.module';
 import { EbookStarRatingEntity } from './entities/ebookStarRating.entity';
 import { EbookSeriesEntity } from './entities/ebookSeries.entity';
-<<<<<<< HEAD
-import { QnaService } from './qna/qna.service';
-=======
->>>>>>> a72d95eac582ffa3c9b0d3387400ca702c8b2a87
 import { QnaModule } from './qna/qna.module';
 import { RandomSubjectEntity } from './entities/randomSubject.entity';
 import { QnaEntity } from './entities/qna/qna.entity';
@@ -135,14 +131,13 @@ import { redisStore } from 'cache-manager-redis-store';
     // }),
 
     CacheModule.register({
-      Store:redisStore,
-      host:'localhost',
-      port:6379,
-      ttl : 6000, //seconds (ms)
-      max : 15, // maximum number of items in cache
-      inGlobla:true,
+      Store: redisStore,
+      host: 'localhost',
+      port: 6379,
+      ttl: 6000, //seconds (ms)
+      max: 15, // maximum number of items in cache
+      inGlobla: true,
     }),
-
 
     BoardModule,
     UserModule,

@@ -33,7 +33,6 @@ import { EbookModule } from './ebook/ebook.module';
 import { SmallTalkModule } from './small-talk/small-talk.module';
 import { StaticTimeoutInterceptor } from './Interceptor/static-timeout-handle.interceptor';
 import { MethodTimeMeterInterceptor } from './Interceptor/MethodTimeMeter.interceptor';
-import { AdminController } from './admin/admin.controller';
 import { AdminModule } from './admin/admin.module';
 import { EbookStarRatingEntity } from './entities/ebookStarRating.entity';
 import { EbookSeriesEntity } from './entities/ebookSeries.entity';
@@ -42,6 +41,9 @@ import { RandomSubjectEntity } from './entities/randomSubject.entity';
 import { QnaEntity } from './entities/qna/qna.entity';
 import { QnaCommentEntity } from './entities/qna/qnacomment.entity';
 import { EbookImgEntity } from './entities/ebookImg.entity';
+import { CacheModule } from '@nestjs/cache-manager';
+import { RedisClientOptions } from 'redis';
+import { redisStore } from 'cache-manager-redis-store';
 
 @Module({
   imports: [
@@ -118,6 +120,25 @@ import { EbookImgEntity } from './entities/ebookImg.entity';
         preview: true,
       }),
     }),
+
+    // CacheModule.register<RedisClientOptions>({
+    //   Store:redisStore,
+    //   host:'localhost',
+    //   port:6379,
+    //   ttl : 6000, //seconds (ms)
+    //   max : 15, // maximum number of items in cache
+    //   inGlobla:true,
+    // }),
+
+    CacheModule.register({
+      Store:redisStore,
+      host:'localhost',
+      port:6379,
+      ttl : 6000, //seconds (ms)
+      max : 15, // maximum number of items in cache
+      inGlobla:true,
+    }),
+
 
     BoardModule,
     UserModule,

@@ -13,12 +13,16 @@ import { UserEntity } from '../user.entity';
   {
     @Column({default:false})
     issecret: boolean
+
     @Column({default:false})
     isanswered: boolean
+
     @Column({default:"anonymous"})
     username: string
+
     @ManyToOne((type) => UserEntity, (userentity) => userentity.Qnaentities)
     user: UserEntity;
+    
     @OneToMany((type)=>QnaCommentEntity,(qnaCommentEntities)=>qnaCommentEntities.Qna)
     QnaComments: QnaCommentEntity[]
   }

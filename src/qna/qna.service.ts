@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { QnaEntity } from 'src/entities/qna/qna.entity';
 import { QnaCommentEntity } from 'src/entities/qna/qnacomment.entity';
-import { Page } from 'src/utils/page';
+import { Page } from 'src/utils/Page';
 import { GetToken } from 'src/utils/GetToken';
 import { GetSearchSql } from 'src/utils/GetSearchSql';
 import { UpdateQnaDto } from './dto/qna.dto';

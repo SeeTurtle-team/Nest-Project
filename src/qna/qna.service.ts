@@ -26,7 +26,7 @@ export class QnaService {
   async countAll():Promise<number>
   {
       const count = await this.qnaRepository.query(
-        `select count(*) from "Qna" as q where q."ban"=false and q."isDeleted"=false and`);
+        `select count(*) from "Qna" as q where q."ban"=false and q."isDeleted"=false`);
       return count[0]['count'];
   }
   async checkAdmin(userId:number){Promise<userGrade>
@@ -283,21 +283,22 @@ export class QnaService {
       const isUser =
           await this.checkUserandIsSecret(updateQnaDto.Qnaid, verified.userId);
       if (isUser['rt'][0]) {
-        // const userData = await this.qnaRepository.createQueryBuilder('board')
-        //                .update()
-        //                .set(
-        //                    {
-        //                      title: updateQnaDto.title,
-        //                      contents: updateQnaDto.contents,
-        //                      isModified: true,
-        //                      dateTime: new Date(),
-        //                      issecret: updateQnaDto.issecret,
-        //                    },
-        //                    )
-        //                .where('id = :id', {id: updateQnaDto.Qnaid})
-        //                .execute();
-        const userData=await this.qnaRepository.query(`update "Qna" set title=${updateQnaDto.title},contents=${updateQnaDto.contents}, isModified=true,dateTime: ${new Date()},issecret=${updateQnaDto.issecret} where id=${updateQnaDto.Qnaid}`);
-        this.logger.log(userData);
+        const userData = await this.qnaRepository.createQueryBuilder('board')
+                       .update()
+                       .set(
+                           {
+                             title: updateQnaDto.title,
+                             contents: updateQnaDto.contents,
+                             isModified: true,
+                             dateTime: new Date(),
+                             issecret: updateQnaDto.issecret,
+                           },
+                           )
+                       .where('id = :id', {id: updateQnaDto.Qnaid})
+                       .execute();
+        // const isSecret=updateQnaDto.issecret?true:false;
+        // const userData=await this.qnaRepository.query(`update "Qna" set title='${updateQnaDto.title}',contents='${updateQnaDto.contents}', "isModified"=true,"dateTime"='${new Date().toLocaleTimeString()}',issecret=${isSecret} where id=${updateQnaDto.Qnaid}`);
+        // this.logger.log(userData);
         return {success: true};
       } else {
         throw new HttpException(
@@ -335,17 +336,17 @@ export class QnaService {
       const verified = await this.getToken.getToken(headers);
       const isUser =await this.checkUserandIsSecret(deleteQnaDto.Qnaid, verified.userId);
       if (isUser['rt'][0]) {
-        // const del = await this.qnaRepository.createQueryBuilder('board')
-        //                 .update()
-        //                 .set(
-        //                     {
-        //                       isDeleted: true,
-        //                     },
-        //                     )
-        //                 .where('id = :id', {id: deleteQnaDto.Qnaid})
-        //                 .execute();
-        const deleteQna=await this.qnaRepository.query(`update "Qna" set isDeleted=true where id=${deleteQnaDto.Qnaid}`);
-        this.logger.log(deleteQna);
+        const deleteQna = await this.qnaRepository.createQueryBuilder('board')
+                        .update()
+                        .set(
+                            {
+                              isDeleted: true,
+                            },
+                            )
+                        .where('id = :id', {id: deleteQnaDto.Qnaid})
+                        .execute();
+        // const deleteQna=await this.qnaRepository.query(`update "Qna" set isDeleted=true where id=${deleteQnaDto.Qnaid}`);
+        // this.logger.log(deleteQna);
         return {success: true};
       } else {
         throw new HttpException(

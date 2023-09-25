@@ -10,7 +10,7 @@ import { Page } from 'src/utils/Page';
 import { checkTokenId } from 'src/utils/CheckToken';
 import { GetToken } from 'src/utils/GetToken';
 import { GetSearchSql } from 'src/utils/GetSearchSql';
-const { generateUploadURL } = require('../Common/s3');
+import { GetS3Url } from 'src/utils/GetS3Url';
 
 @Injectable()
 export class BoardService {
@@ -26,7 +26,8 @@ export class BoardService {
     private jwtService: JwtService,
     private readonly getToken: GetToken,
     private readonly getSearchSql: GetSearchSql,
-  ) { }
+    private readonly getS3Url: GetS3Url,
+  ) {}
 
   async getTotalCount() {
     try {
@@ -871,8 +872,7 @@ export class BoardService {
   /**get s3 presigned url */
   async s3url() {
     this.logger.log('s3url');
-    const url = await generateUploadURL();
-    return { data: url };
+    return await this.getS3Url.s3url();
   }
 
   async getBoardUserId(id: number) {
@@ -1111,13 +1111,12 @@ export class BoardService {
     }
   }
 
-
   /**최근 업로드 된 게시글 불러오기 */
   async lastBoard() {
     try {
       const res = await this.boardRepository.find({
         take: 5,
-        order: { id: 'DESC' }
+        order: { id: 'DESC' },
       });
 
       return res;

@@ -2,11 +2,13 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EbookEntity } from 'src/entities/ebook.entity';
+import { EbookImgEntity } from 'src/entities/ebookImg.entity';
 import { EbookSeriesEntity } from 'src/entities/ebookSeries.entity';
 import { checkTokenId } from 'src/utils/CheckToken';
 import { GetToken } from 'src/utils/GetToken';
 import { Page } from 'src/utils/Page';
 import { DataSource, Repository } from 'typeorm';
+import { GetS3Url } from 'src/utils/GetS3Url';
 
 @Injectable()
 export class EbookService {
@@ -16,9 +18,12 @@ export class EbookService {
     private readonly ebookRepository: Repository<EbookEntity>,
     @InjectRepository(EbookSeriesEntity)
     private readonly ebookSeriesRepository: Repository<EbookSeriesEntity>,
+    @InjectRepository(EbookImgEntity)
+    private readonly ebookImgRepository: Repository<EbookImgEntity>,
     private readonly jwtService: JwtService,
     private readonly getToken: GetToken,
     private dataSource: DataSource,
+    private readonly getS3Url: GetS3Url,
   ) {}
 
   async getTotalCount() {
@@ -715,6 +720,137 @@ export class EbookService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '시리즈 삭제 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**get s3 presigned url */
+  async s3url() {
+    this.logger.log('s3url');
+    return {
+      ...(await this.getS3Url.s3url()),
+      ok: HttpStatus.OK,
+    };
+  }
+
+  /**
+   * db에 있나 확인
+   */
+  async checkUrl(ebookId) {
+    try {
+      const check = await this.ebookImgRepository.query(`
+        select id from "ebookImg" where "ebookId" = ${ebookId}
+      `);
+      return !!check[0];
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'url 체크 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**
+   * s3url db에 저장
+   */
+  async insertUrl(insertUrlDto, headers) {
+    try {
+      const dbCheck = await this.checkUrl(insertUrlDto.ebookId);
+      if (dbCheck) {
+        return await this.updateUrl(insertUrlDto, headers);
+      } else {
+        const verified = await this.getToken.getToken(headers);
+        const userId = await this.getEbookUserId(insertUrlDto.ebookId);
+        const check = checkTokenId(userId, verified.userId);
+        if (check) {
+          const ebookImgData = new EbookImgEntity();
+          ebookImgData.imgUrl = insertUrlDto.url;
+          ebookImgData.ebook = insertUrlDto.ebookId;
+          await this.ebookImgRepository.save(ebookImgData);
+
+          return { success: true, status: HttpStatus.CREATED };
+        } else return { success: false, msg: '유저 불일치' };
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'url 삽입 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**
+   * url 수정
+   */
+  async updateUrl(updateUrlDto, headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+      const userId = await this.getEbookUserId(updateUrlDto.ebookId);
+      const check = checkTokenId(userId, verified.userId);
+
+      if (check) {
+        await this.ebookImgRepository
+          .createQueryBuilder()
+          .update()
+          .set({
+            imgUrl: updateUrlDto.url,
+          })
+          .where('ebookId = :ebookId', { ebookId: updateUrlDto.ebookId })
+          .execute();
+        return { success: true, status: HttpStatus.OK };
+      } else return { success: false, msg: '유저 불일치' };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'url 수정 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**
+   * url 삭제
+   */
+  async deleteUrl(deleteUrlDto, headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+      const userId = await this.getEbookUserId(deleteUrlDto.ebookId);
+      const check = checkTokenId(userId, verified.userId);
+
+      if (check) {
+        await this.ebookImgRepository
+          .createQueryBuilder()
+          .update()
+          .set({
+            imgUrl: 'noUrl',
+          })
+          .where('ebookId = :ebookId', { ebookId: deleteUrlDto.ebookId })
+          .execute();
+        return { success: true, status: HttpStatus.OK };
+      } else return { success: false, msg: '유저 불일치' };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'url 삭제 중 에러 발생',
           success: false,
         },
         500,

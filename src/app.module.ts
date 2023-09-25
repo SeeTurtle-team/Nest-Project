@@ -131,14 +131,13 @@ import { redisStore } from 'cache-manager-redis-store';
     // }),
 
     CacheModule.register({
-      Store:redisStore,
-      host:'localhost',
-      port:6379,
-      ttl : 6000, //seconds (ms)
-      max : 15, // maximum number of items in cache
-      inGlobla:true,
+      Store: redisStore,
+      host: 'localhost',
+      port: 6379,
+      ttl: 6000, //seconds (ms)
+      max: 15, // maximum number of items in cache
+      inGlobla: true,
     }),
-
 
     BoardModule,
     UserModule,

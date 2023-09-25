@@ -8,7 +8,7 @@ import { checkTokenId } from 'src/utils/CheckToken';
 import { GetToken } from 'src/utils/GetToken';
 import { Page } from 'src/utils/Page';
 import { DataSource, Repository } from 'typeorm';
-const { generateUploadURL } = require('../Common/s3');
+import { GetS3Url } from 'src/utils/GetS3Url';
 
 @Injectable()
 export class EbookService {
@@ -23,6 +23,7 @@ export class EbookService {
     private readonly jwtService: JwtService,
     private readonly getToken: GetToken,
     private dataSource: DataSource,
+    private readonly getS3Url: GetS3Url,
   ) {}
 
   async getTotalCount() {
@@ -729,8 +730,32 @@ export class EbookService {
   /**get s3 presigned url */
   async s3url() {
     this.logger.log('s3url');
-    const url = await generateUploadURL();
-    return { data: url };
+    return {
+      ...(await this.getS3Url.s3url()),
+      ok: HttpStatus.OK,
+    };
+  }
+
+  /**
+   * db에 있나 확인
+   */
+  async checkUrl(ebookId) {
+    try {
+      const check = await this.ebookImgRepository.query(`
+        select id from "ebookImg" where "ebookId" = ${ebookId}
+      `);
+      return !!check[0];
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'url 체크 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
   }
 
   /**
@@ -738,17 +763,22 @@ export class EbookService {
    */
   async insertUrl(insertUrlDto, headers) {
     try {
-      const verified = await this.getToken.getToken(headers);
-      const userId = await this.getEbookUserId(insertUrlDto.ebookId);
-      const check = checkTokenId(userId, verified.userId);
-      if (check) {
-        const ebookImgData = new EbookImgEntity();
-        ebookImgData.imgUrl = insertUrlDto.url;
-        ebookImgData.ebook = insertUrlDto.ebookId;
-        await this.ebookImgRepository.save(ebookImgData);
+      const dbCheck = await this.checkUrl(insertUrlDto.ebookId);
+      if (dbCheck) {
+        return await this.updateUrl(insertUrlDto, headers);
+      } else {
+        const verified = await this.getToken.getToken(headers);
+        const userId = await this.getEbookUserId(insertUrlDto.ebookId);
+        const check = checkTokenId(userId, verified.userId);
+        if (check) {
+          const ebookImgData = new EbookImgEntity();
+          ebookImgData.imgUrl = insertUrlDto.url;
+          ebookImgData.ebook = insertUrlDto.ebookId;
+          await this.ebookImgRepository.save(ebookImgData);
 
-        return { success: true };
-      } else return { success: false, msg: '유저 불일치' };
+          return { success: true, status: HttpStatus.CREATED };
+        } else return { success: false, msg: '유저 불일치' };
+      }
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -780,7 +810,7 @@ export class EbookService {
           })
           .where('ebookId = :ebookId', { ebookId: updateUrlDto.ebookId })
           .execute();
-        return { success: true };
+        return { success: true, status: HttpStatus.OK };
       } else return { success: false, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
@@ -813,7 +843,7 @@ export class EbookService {
           })
           .where('ebookId = :ebookId', { ebookId: deleteUrlDto.ebookId })
           .execute();
-        return { success: true };
+        return { success: true, status: HttpStatus.OK };
       } else return { success: false, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);

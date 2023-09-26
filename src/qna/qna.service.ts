@@ -24,15 +24,18 @@ export class QnaService {
     ) { }
 
     async countAll(): Promise<number> {
+        //try 문으로 묶어야 err 핸들링 가능
         const count = await this.qnaRepository.query(
             `select count(*) from "Qna" as q where q."ban"=false and q."isDeleted"=false`);
         return count[0]['count'];
     }
     async checkAdmin(userId: number) {
-        Promise<userGrade>
+        Promise<userGrade> //????
         const isAdmin = await this.qnaRepository.query(
             `select ug."userGrade" from "userGrade" as ug inner join (select "userGradeId" from "user" where id=${userId}) as temp on temp."userGradeId"=ug.id`);
         return isAdmin['0']['userGrade'];
+
+        //try 문으로 묶어주세요
     }
     /**
    *qna유저확인
@@ -165,10 +168,12 @@ export class QnaService {
             const check = await this.checkUserandIsSecret(id, verified.userId);
             const page = await this.qnaRepository.query(
                 `select  id, title, "dateTime",contents from "Qna" where "id"=${id} and "ban"=false and "isDeleted"=false`);
+            //함수로 따로 분리해주세요
+                
             if (page.length > 0) {
                 return { success: true, page, check };  // check[0]=isuserid,[1]=isnotsecret
-            } else                                // ban || isDeleted
-            {
+            } else {                        // ban || isDeleted
+            
                 throw new HttpException(
                     {
                         status: HttpStatus.NOT_FOUND,
@@ -176,12 +181,12 @@ export class QnaService {
                         success: false,
                     },
                     HttpStatus.NOT_FOUND)
-            }
+            } //이런 if 문은 삼항연산자로 처리해봅시다.
         } catch (err) {
             this.logger.error(err);
             if (err.response.error) {
                 throw err;
-            }
+            } //굳이 이렇게 하신 이유가 있나요? 어떤식으로 동작하죠??
             throw new HttpException(
                 {
                     status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -207,7 +212,7 @@ export class QnaService {
                 this.logger.log(page);
                 return {
                     success: true, page
-                }
+                } //이 부분도 함수로 따로 빼서 거기서 try catch를 하면 코드가 깔끔해질거 같습니다
             } else {
                 throw new HttpException(
                     {
@@ -252,7 +257,7 @@ export class QnaService {
                     },
                     HttpStatus.FORBIDDEN,
                 );
-            }
+            } //간단한 if 문은 삼항연산자로 표현
         } catch (err) {
             this.logger.error(err);
             if (err.response.error) {
@@ -279,7 +284,7 @@ export class QnaService {
             const isUser =
                 await this.checkUserandIsSecret(updateQnaDto.Qnaid, verified.userId);
             if (isUser['rt'][0]) {
-                const userData = await this.qnaRepository.createQueryBuilder('board')
+                const userData = await this.qnaRepository.createQueryBuilder('board') //이거 안에 딱히 상관은 없을건데 테이블 명으로 바꿔주세요
                     .update()
                     .set(
                         {
@@ -290,7 +295,7 @@ export class QnaService {
                             issecret: updateQnaDto.issecret,
                         },
                     )
-                    .where('id = :id', { id: updateQnaDto.Qnaid })
+                    .where('id = :id', { id: updateQnaDto.Qnaid }) //camel 표기법 꼭 지켜주세요 QnaId입니다
                     .execute();
                 // const isSecret=updateQnaDto.issecret?true:false;
                 // const userData=await this.qnaRepository.query(`update "Qna" set title='${updateQnaDto.title}',contents='${updateQnaDto.contents}', "isModified"=true,"dateTime"='${new Date().toLocaleTimeString()}',issecret=${isSecret} where id=${updateQnaDto.Qnaid}`);
@@ -305,7 +310,7 @@ export class QnaService {
                     },
                     HttpStatus.FORBIDDEN,
                 );
-            }
+            } //이 if 문도 따로 함수로 빼면 좋을거 같습니다.
 
         } catch (err) {
             this.logger.error(err);

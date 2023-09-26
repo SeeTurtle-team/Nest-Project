@@ -346,7 +346,9 @@ export class QnaService {
     async getUpdate(id, headers): Promise<Object> {
         try {
             const update = await this.getOne(id, headers);
-            const checkIsOwner=await this.checkIsOwner(update);
+            const checkIsOwner=await this.checkIsOwner(update['check']);
+            this.logger.log(update);
+            this.logger.log(checkIsOwner);
             if (checkIsOwner) 
             {
                 return { success: true, status:update['status'],page:update['page'],check:update['check']};
@@ -385,7 +387,7 @@ export class QnaService {
             const verified = await this.getToken.getToken(headers);
             const check=
                 await this.checkUserandIsSecret(updateQnaDto.qnaId, verified.userId);
-            const isOwner=await this.checkIsOwner(check);
+            const isOwner=await this.checkIsOwner(check['check']);
             if (isOwner) {
                 await this.qnaRepository.createQueryBuilder("Qna") //이거 안에 딱히 상관은 없을건데 테이블 명으로 바꿔주세요
                     .update()

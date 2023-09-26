@@ -50,15 +50,33 @@ export class QnaService {
             from "Qna" as q 
             where q."id"=${qnaBoardId}`);
             this.logger.log(id);
-            let result = [false, false];
+            let result = [false, false]; //이거 이렇게 배열로 짜시면 나중에 무슨 의미인지 다른사람들은 하나도 모릅니다
+            //배열이 아닌 object로 표현하는게 좋습니다
+            /**예를 들겠습니다. 안에 있는 로직을 현 코드에서는 정확히 파악하기 힘들어 로직이 틀릴 수도 있습니다.
+             * 
+             * let checkUserId = false;
+             * let checkIsSecret = false;
+             *  if (id[0]['userId'] === userId) {
+                    checkUserId = true;
+                }
+                if (id[0]['issecret'] === false) {
+                    checkIsSecret = true;
+                }
+
+                let result = {checkUserId, checkIsSecret};
+
+             * 이렇게 해야 각 요소에 따른 의미를 다른 사람들이 정확히 알 수 있습니다.
+             */
             if (id[0]['userId'] === userId) {
                 result[0] = true;
             }
             if (id[0]['issecret'] === false) {
                 result[1] = true;
             }
+
+
             if (result[0] || result[1]) {
-                return { success: true, rt: result };
+                return { success: true, rt: result }; //rt의 의미가 따로 있나요? result의 약자면 의미가 확실한 변수명으로 바꿔주세요
             } else {
                 if (result[1]) {
                     throw new HttpException(

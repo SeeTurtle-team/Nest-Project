@@ -29,7 +29,7 @@ import { UserEntity } from '../user.entity';
     @Column()
     userId:number
     @TreeParent()
-    parnet:QnaCommentEntity
+    parent:QnaCommentEntity
     @TreeChildren()
     children:QnaCommentEntity[]
   }

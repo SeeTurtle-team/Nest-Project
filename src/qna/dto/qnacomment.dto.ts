@@ -5,5 +5,5 @@ export class CreateQnaCommentDto extends abstractqnaDto
 {
     @IsOptional()
     @IsNumber()
-    Parentid:number;
+    parentid:number;
 }

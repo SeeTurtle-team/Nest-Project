@@ -29,21 +29,43 @@ export class QnaService {
         const count = await this.qnaRepository.query(
             `select count(*) from "Qna" as q where q."ban"=false and q."isDeleted"=false`);
         return count[0]['count'];}
-        catch(err)
-        {
-
-        }
+        catch (err) {
+            if('response' in err){
+              if ('error' in err.response) 
+              {
+                  throw err;
+              }
+            }
+            throw new HttpException(
+                {
+                    status: HttpStatus.INTERNAL_SERVER_ERROR,
+                    error: 'Qna countall에서 에러발생',
+                    success: false,
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );}
     }
-    async checkAdmin(userId: number):Promise<userGrade>
+    async checkIsAdmin(userId: number):Promise<boolean>
     {
       try{
         const isAdmin = await this.qnaRepository.query(
             `select ug."userGrade" from "userGrade" as ug inner join (select "userGradeId" from "user" where id=${userId}) as temp on temp."userGradeId"=ug.id`);
-        return isAdmin['0']['userGrade'];}
-        catch(err)
-        {
-
-        }
+        return isAdmin['0']['userGrade']===userGrade.Admin?true:false;
+    }
+    catch (err) {
+        if('response' in err){
+          if ('error' in err.response) 
+          {
+              throw err;
+          }
+        } throw new HttpException(
+            {
+                status: HttpStatus.INTERNAL_SERVER_ERROR,
+                error: 'Qna checkisAdmin에서 에러발생',
+                success: false,
+            },
+            HttpStatus.INTERNAL_SERVER_ERROR,
+        );}
 
         //try 문으로 묶어주세요
     }
@@ -78,13 +100,8 @@ export class QnaService {
 
              * 이렇게 해야 각 요소에 따른 의미를 다른 사람들이 정확히 알 수 있습니다.
              */
-            if (checkQueryResult[0]['userId'] === userId) 
-            {
-                check.isOwner = true;
-            }
-            if (checkQueryResult[0]['issecret'] === false) {
-                check.isNotSecret = true;
-            }
+                check.isOwner = checkQueryResult[0]['userId']===userId?true:false;
+                check.isNotSecret = checkQueryResult[0]['issecret']?false:true;
             if (check.isNotSecret || check.isOwner) 
             {
                 return { success: true, check }; //rt의 의미가 따로 있나요? result의 약자면 의미가 확실한 변수명으로 바꿔주세요
@@ -126,6 +143,51 @@ export class QnaService {
             );
         }
     }
+    async getQnaPage(qnaId:number,IsAdmin?:boolean):Promise<any[]|false>
+    {try{
+        const page = await this.qnaRepository.query(
+            `select  id, title, "dateTime",username,contents from "Qna" where "id"=${qnaId} and "ban"=false and "isDeleted"=false`);
+            return page.length>0?page:false}
+            catch (err) {
+                if('response' in err){
+                  if ('error' in err.response) 
+                  {
+                      throw err;
+                  }
+                }
+                throw new HttpException(
+                    {
+                        status: HttpStatus.INTERNAL_SERVER_ERROR,
+                        error: 'getQnaPage 에서 에러 발생',
+                        success: false,
+                    },
+                    HttpStatus.INTERNAL_SERVER_ERROR,);
+            }
+    }
+    async checkIsOwner(check:Object):Promise<boolean>
+    {
+        try{
+        return check['isOwner']?true:false;
+    }
+    catch(err)
+    {         
+    if('response' in err)
+    {
+        if ('error' in err.response) 
+        {
+            throw err;
+        }
+      }
+      throw new HttpException(
+          {
+              status: HttpStatus.INTERNAL_SERVER_ERROR,
+              error: 'Qna checkIsOwner 에서 에러 발생',
+              success: false,
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,);
+        
+    }
+    }
     /**
      *qna전체조회
      *
@@ -137,9 +199,9 @@ export class QnaService {
             const offset = pageRequest.getOffset();
             const limit = pageRequest.getLimit();
             const count = await this.countAll();
-            const pg = await this.qnaRepository.query(
+            const page = await this.qnaRepository.query(
                 `select  id, title, "dateTime" from "Qna" as q where q."ban"=false and q."isDeleted"=false order by q."id" desc offset ${offset} limit ${limit}`);
-            const returnPage = new Page(count, pageRequest.pageSize, pg);
+            const returnPage = new Page(count, pageRequest.pageSize, page);
             return { success: true, returnPage };
         } catch (err) {
           if('response' in err){
@@ -179,8 +241,7 @@ export class QnaService {
                 qnaData.username = verified.username;
             }
             await this.qnaRepository.save(qnaData);
-            this.logger.log(qnaData);
-            return { success: true };
+            return { success: true,status:HttpStatus.OK};
         } catch (err) {
           if('response' in err){
             if ('error' in err.response) 
@@ -201,17 +262,15 @@ export class QnaService {
      *qna 게시글 조회
      *
      *@param id,headers
-     *@return  { success,Qna,check['rt'][2]{bool,bool}};
      */
     async getOne(id, headers): Promise<Object> {
         try {
             const verified = await this.getToken.getToken(headers);
             const check = await this.checkUserandIsSecret(id, verified.userId);
-            const page = await this.qnaRepository.query(
-                `select  id, title, "dateTime",contents from "Qna" where "id"=${id} and "ban"=false and "isDeleted"=false`);
+            const page=await this.getQnaPage(id);
             //함수로 따로 분리해주세요
-            if (page.length > 0) {
-                return { success: true, page,check ,status:HttpStatus.OK};  
+            if (page) {
+                return { success: true, page,check:check['check'] ,status:HttpStatus.OK};  
             } else {
                 throw new HttpException(
                     {
@@ -220,7 +279,7 @@ export class QnaService {
                         success: false,
                     },
                     HttpStatus.NOT_FOUND)
-            } //이런 if 문은 삼항연산자로 처리해봅시다.
+            } //미수행//이런 if 문은 삼항연산자로 처리해봅시다.
         } catch (err) {
           if('response' in err){
             if ('error' in err.response) 
@@ -246,11 +305,10 @@ export class QnaService {
     async getOnebyAdmin(id, headers): Promise<Object> {
         try {
             const verified = await this.getToken.getToken(headers);
-            const isAdmin = await this.checkAdmin(verified.userId);
-            if (isAdmin === userGrade.Admin) {
-                const page = await this.qnaRepository.query(
-                    `select  id,title,"dateTime",contents from "Qna" where "id"=${id} and "ban"=false and "isDeleted"=false`);
-                this.logger.log(page);
+            const isAdmin = await this.checkIsAdmin(verified.userId);
+            if (isAdmin) 
+            {
+                const page = await this.getQnaPage(id);
                 return {
                     success: true, page:page,status:HttpStatus.OK
                 } //이 부분도 함수로 따로 빼서 거기서 try catch를 하면 코드가 깔끔해질거 같습니다
@@ -284,13 +342,14 @@ export class QnaService {
      *qna 수정전 정보가져오기
      *
      *@param id,headers
-     *@return  { success,update['success','pg','check'],};
      */
     async getUpdate(id, headers): Promise<Object> {
         try {
             const update = await this.getOne(id, headers);
-            if (update['check']['check']['isOwner'] === true) {
-                return { success: true, status:update['status'],page:update['page'],check:update['check']['check']};
+            const checkIsOwner=await this.checkIsOwner(update);
+            if (checkIsOwner) 
+            {
+                return { success: true, status:update['status'],page:update['page'],check:update['check']};
             } else {
                 throw new HttpException(
                     {
@@ -300,21 +359,19 @@ export class QnaService {
                     },
                     HttpStatus.FORBIDDEN,
                 );
-            } //간단한 if 문은 삼항연산자로 표현
+            } //미수행//간단한 if 문은 삼항연산자로 표현
         } catch (err) {
           if('response' in err){
-            if ('error' in err.response) 
-            {
+                if ('error' in err.response) {
                 throw err;
-            }
+                }
           }
-            throw new HttpException(
-                {
-                    status: HttpStatus.INTERNAL_SERVER_ERROR,
-                    error: 'Qna 업데이트 전 오류발생',
-                    success: false,
-                },
-                HttpStatus.INTERNAL_SERVER_ERROR)
+          throw new HttpException({
+            status : HttpStatus.INTERNAL_SERVER_ERROR,
+            error : 'Qna 업데이트 전 오류발생',
+            success : false,
+          },
+                                  HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
     /**
@@ -326,18 +383,18 @@ export class QnaService {
     async update(updateQnaDto, headers): Promise<Object> {
         try {
             const verified = await this.getToken.getToken(headers);
-            const isUser =
+            const check=
                 await this.checkUserandIsSecret(updateQnaDto.qnaId, verified.userId);
-            if (isUser['check']['isOwner']) {
-                const userData = await this.qnaRepository.createQueryBuilder('Qna') //이거 안에 딱히 상관은 없을건데 테이블 명으로 바꿔주세요
+            const isOwner=await this.checkIsOwner(check);
+            if (isOwner) {
+                await this.qnaRepository.createQueryBuilder("Qna") //이거 안에 딱히 상관은 없을건데 테이블 명으로 바꿔주세요
                     .update()
                     .set(
                         {
                             title: updateQnaDto.title,
                             contents: updateQnaDto.contents,
                             isModified: true,
-                            dateTime: new Date(),
-                            issecret: updateQnaDto.issecret,
+                            issecret: updateQnaDto.isSecret,
                         },
                     )
                     .where('id = :id', { id: updateQnaDto.qnaId }) //camel 표기법 꼭 지켜주세요 QnaId입니다
@@ -355,13 +412,16 @@ export class QnaService {
                     },
                     HttpStatus.FORBIDDEN,
                 );
-            } //이 if 문도 따로 함수로 빼면 좋을거 같습니다.
+            } //미수행//이 if 문도 따로 함수로 빼면 좋을거 같습니다.
 
         } catch (err) {
             this.logger.error(err);
-            if (err.response.error) {
-                throw err;
-            }
+            if('response' in err){
+                if ('error' in err.response) 
+                {
+                    throw err;
+                }
+              }
             throw new HttpException(
                 {
                     status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -381,7 +441,7 @@ export class QnaService {
         try {
             const verified = await this.getToken.getToken(headers);
             const isUser = await this.checkUserandIsSecret(deleteQnaDto.qnaId, verified.userId);
-            if (isUser['rt'][0]) {
+            if (isUser['check']['isOwner']) {
                 const deleteQna = await this.qnaRepository.createQueryBuilder('board')
                     .update()
                     .set(
@@ -389,11 +449,11 @@ export class QnaService {
                             isDeleted: true,
                         },
                     )
-                    .where('id = :id', { id: deleteQnaDto.Qnaid })
+                    .where('id = :id', { id: deleteQnaDto.qnaId })
                     .execute();
                 // const deleteQna=await this.qnaRepository.query(`update "Qna" set isDeleted=true where id=${deleteQnaDto.Qnaid}`);
                 // this.logger.log(deleteQna);
-                return { success: true };
+                return { success: true,status:HttpStatus.NO_CONTENT };
             } else {
                 throw new HttpException(
                     {
@@ -405,10 +465,12 @@ export class QnaService {
                 );
             }
         } catch (err) {
-            this.logger.error(err);
-            if (err.response.error) {
-                throw err;
-            }
+            if('response' in err){
+                if ('error' in err.response) 
+                {
+                    throw err;
+                }
+              }
             throw new HttpException(
                 {
                     status: HttpStatus.INTERNAL_SERVER_ERROR,

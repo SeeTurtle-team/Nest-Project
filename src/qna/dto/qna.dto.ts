@@ -9,7 +9,7 @@ export abstract class abstractqnaDto {
 
   @IsOptional()
   @IsBoolean()
-  readonly issecret: boolean;
+  readonly isSecret: boolean;
 
   @IsOptional()
   @IsString()

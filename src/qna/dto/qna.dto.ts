@@ -9,7 +9,7 @@ export abstract class abstractqnaDto {
 
   @IsOptional()
   @IsBoolean()
-  readonly issecret: boolean;
+  readonly isSecret: boolean;
 
   @IsOptional()
   @IsString()
@@ -22,10 +22,10 @@ export class CreateQnaDto extends abstractqnaDto
 export class UpdateQnaDto extends PartialType(CreateQnaDto)
 {
   @IsNumber()
-  readonly Qnaid:number;
+  readonly qnaId:number;
 }
 export class DeleteQnaDto
 {
   @IsNumber()
-  readonly Qnaid:number;
+  readonly qnaId:number;
 }

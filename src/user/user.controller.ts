@@ -6,6 +6,7 @@ import {
   Post,
   Headers,
   Patch,
+  Delete,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -16,6 +17,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateForgottenPwDto } from './dto/update-forgottenPw.dto';
 import { GetForgottenIdDto } from './dto/get-forgottenId.dto';
 import { CheckUserIdDto } from './dto/check-userId.dto';
+import { UrlDto } from './dto/url.dto';
 
 @Controller('user')
 @ApiTags('User API')
@@ -117,5 +119,34 @@ export class UserController {
   @Post('/help/check')
   async checkUserIdWithEmail(@Body() checkUserIdDto: CheckUserIdDto) {
     return await this.userService.checkUserIdWithEmail(checkUserIdDto);
+  }
+
+  //userImg 관련
+  @ApiOperation({ summary: 'Get S3 presigned url' })
+  @Get('/url')
+  async s3url() {
+    this.logger.log('-----GET /user/s3url');
+    return await this.userService.s3url();
+  }
+
+  @ApiOperation({ summary: 'url db에 저장' })
+  @Post('/url')
+  async insertUrl(@Body() insertUrlDto: UrlDto, @Headers() headers) {
+    this.logger.log('-----POST /user/url');
+    return await this.userService.insertUrl(insertUrlDto, headers);
+  }
+
+  @ApiOperation({ summary: 'url 수정' })
+  @Patch('/url')
+  async updateUrl(@Body() updateUrlDto: UrlDto, @Headers() headers) {
+    this.logger.log('-----PATCH /user/url');
+    return await this.userService.updateUrl(updateUrlDto, headers);
+  }
+
+  @ApiOperation({ summary: 'url 삭제' })
+  @Delete('/url')
+  async deleteUrl(@Headers() headers) {
+    this.logger.log('-----DELETE /ebook/url');
+    return await this.userService.deleteUrl(headers);
   }
 }

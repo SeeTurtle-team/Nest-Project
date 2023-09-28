@@ -8,6 +8,8 @@ import { AuthService } from 'src/auth/auth.service';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { GetToken } from 'src/utils/GetToken';
+import { UserImgEntity } from 'src/entities/userImg.entity';
+import { GetS3Url } from 'src/utils/GetS3Url';
 
 @Module({
   imports: [
@@ -19,10 +21,10 @@ import { GetToken } from 'src/utils/GetToken';
       secret: process.env.JWT_CONSTANTS,
       signOptions: { expiresIn: '1d' },
     }),
-    TypeOrmModule.forFeature([UserEntity, EmailCheckCodeEntity])
+    TypeOrmModule.forFeature([UserEntity, EmailCheckCodeEntity, UserImgEntity]),
   ],
   controllers: [UserController],
-  providers: [UserService,GetToken],
+  providers: [UserService, GetToken, GetS3Url],
   exports: [UserService],
 })
 export class UserModule {}

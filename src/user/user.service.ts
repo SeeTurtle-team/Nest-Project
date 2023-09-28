@@ -11,6 +11,9 @@ import { userGrade } from 'src/Common/userGrade';
 import { AuthService } from 'src/auth/auth.service';
 import axios from 'axios';
 import { GetToken } from 'src/utils/GetToken';
+import { GetS3Url } from 'src/utils/GetS3Url';
+import { UserImgEntity } from 'src/entities/userImg.entity';
+import { checkTokenId } from 'src/utils/CheckToken';
 
 @Injectable()
 export class UserService {
@@ -19,9 +22,12 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(EmailCheckCodeEntity)
     private readonly emailCheckCodeRepository: Repository<EmailCheckCodeEntity>,
+    @InjectRepository(UserImgEntity)
+    private readonly userImgRepository: Repository<UserImgEntity>,
     private readonly mailerService: MailerService,
     private readonly jwtService: JwtService,
-    private readonly getToken : GetToken,
+    private readonly getToken: GetToken,
+    private readonly getS3Url: GetS3Url,
   ) {}
   private readonly logger = new Logger(UserService.name);
 
@@ -459,7 +465,7 @@ export class UserService {
 
       const jwtToken = await this.getJwtToken(payload);
 
-      console.log("sadfsdafsdaf " + jwtToken)
+      console.log('sadfsdafsdaf ' + jwtToken);
       return jwtToken;
     } catch (err) {
       this.logger.error(err);
@@ -518,7 +524,7 @@ export class UserService {
   async getUser(headers) {
     try {
       //수정 전 유저 정보 가져오기
-      
+
       const verified = await this.getToken.getToken(headers);
       const user = await this.getUserWithId(verified.userId);
       const res = {
@@ -713,6 +719,130 @@ export class UserService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '유저 아이디와 이메일 일치 여부 체크 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  ////userImg 관련
+  async s3url() {
+    this.logger.log('s3url');
+    return {
+      ...(await this.getS3Url.s3url()),
+      ok: HttpStatus.OK,
+    };
+  }
+
+  /**
+   * db에 있나 확인
+   */
+  async checkUrl(userId) {
+    try {
+      const check = await this.userImgRepository.query(`
+        select id from "userImg" where "userId" = ${userId}
+      `);
+      return !!check[0];
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'url 체크 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**
+   * s3url db에 저장
+   */
+  async insertUrl(insertUrlDto, headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+      const userId = verified.userId;
+      const dbCheck = await this.checkUrl(userId);
+      if (dbCheck) {
+        return await this.updateUrl(insertUrlDto, headers);
+      } else {
+        const userImgData = new UserImgEntity();
+        userImgData.imgUrl = insertUrlDto.url;
+        userImgData.user = userId;
+        await this.userImgRepository.save(userImgData);
+
+        return { success: true, status: HttpStatus.CREATED };
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'url 삽입 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**
+   * url 수정
+   */
+  async updateUrl(updateUrlDto, headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+      const userId = verified.userId;
+
+      await this.userImgRepository
+        .createQueryBuilder()
+        .update()
+        .set({
+          imgUrl: updateUrlDto.url,
+        })
+        .where('userId = :userId', { userId: userId })
+        .execute();
+
+      return { success: true, status: HttpStatus.OK };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'url 수정 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**
+   * url 삭제
+   */
+  async deleteUrl(headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+      const userId = verified.userId;
+
+      await this.userImgRepository
+        .createQueryBuilder()
+        .update()
+        .set({
+          imgUrl: 'noUrl',
+        })
+        .where('userId = :userId', { userId: userId })
+        .execute();
+
+      return { success: true, status: HttpStatus.OK };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'url 삭제 중 에러 발생',
           success: false,
         },
         500,

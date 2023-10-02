@@ -86,35 +86,20 @@ export class QnaService {
 
             this.logger.log(checkQueryResult);
 
-            if (checkQueryResult.length > 0) {
-                let check = { isOwner: false, isNotSecret: false };
+            if(checkQueryResult.length<=0) throw new Error('Qna.usercheck에서 존재하지 않는Qna게시글에 접근')
 
-                check.isOwner = checkQueryResult[0]['userId'] === userId ? true : false;
-                check.isNotSecret = checkQueryResult[0]['issecret'] ? false : true;
+            let qryResultOne = checkQueryResult[0];
+            let check = { isOwner: false, isNotSecret: false };
 
-                if (check.isNotSecret || check.isOwner) {
-                    return { success: true, check };
-                } else {
-                    throw new HttpException(
-                        {
-                            status: HttpStatus.FORBIDDEN,
-                            error: 'Qna.usercheck중 무권한접근',
-                            success: false,
-                        },
-                        HttpStatus.FORBIDDEN,
-                    );
-                }
+            check.isOwner = qryResultOne['userId'] === userId ? true : false;
+            check.isNotSecret = qryResultOne[0]['issecret'] ? false : true;
+
+            if (check.isNotSecret || check.isOwner) {
+                return { success: true, check };
+            } else {
+                throw new Error('Qna.usercheck중 무권한접근')
             }
-            else {
-                throw new HttpException(
-                    {
-                        status: HttpStatus.NOT_FOUND,
-                        error: 'Qna.usercheck에서 존재하지 않는Qna게시글에 접근',
-                        success: false,
-                    },
-                    HttpStatus.NOT_FOUND,
-                );
-            }
+           
         } catch (err) {
             this.logger.error(err);
             throw new HttpException(
@@ -335,7 +320,7 @@ export class QnaService {
                 error: 'Qna 업데이트 전 오류발생',
                 success: false,
             },
-                HttpStatus.INTERNAL_SERVER_ERROR)
+            HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     /**
@@ -349,42 +334,17 @@ export class QnaService {
             const verified = await this.getToken.getToken(headers);
             const check =
                 await this.checkUserandIsSecret(updateQnaDto.qnaId, verified.userId);
+            
             const isOwner = await this.checkIsOwner(check['check']);
-            if (isOwner) {
-                await this.qnaRepository.createQueryBuilder("Qna") //이거 안에 딱히 상관은 없을건데 테이블 명으로 바꿔주세요
-                    .update()
-                    .set(
-                        {
-                            title: updateQnaDto.title,
-                            contents: updateQnaDto.contents,
-                            isModified: true,
-                            issecret: updateQnaDto.isSecret,
-                        },
-                    )
-                    .where('id = :id', { id: updateQnaDto.qnaId }) //camel 표기법 꼭 지켜주세요 QnaId입니다
-                    .execute();
-                // const isSecret=updateQnaDto.issecret?true:false;
-                // const userData=await this.qnaRepository.query(`update "Qna" set title='${updateQnaDto.title}',contents='${updateQnaDto.contents}', "isModified"=true,"dateTime"='${new Date().toLocaleTimeString()}',issecret=${isSecret} where id=${updateQnaDto.Qnaid}`);
-                // this.logger.log(userData);
-                return { success: true, status: HttpStatus.OK };
-            } else {
-                throw new HttpException(
-                    {
-                        status: HttpStatus.FORBIDDEN,
-                        error: 'Qna.update 에 무권한접근',
-                        success: false,
-                    },
-                    HttpStatus.FORBIDDEN,
-                );
-            } //미수행//이 if 문도 따로 함수로 빼면 좋을거 같습니다.
+
+            if(!isOwner) throw new Error('Qna.update 에 무권한접근');
+
+            const res = await this.updateQnA(updateQnaDto);
+
+            return res;
 
         } catch (err) {
             this.logger.error(err);
-            if ('response' in err) {
-                if ('error' in err.response) {
-                    throw err;
-                }
-            }
             throw new HttpException(
                 {
                     status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -394,7 +354,39 @@ export class QnaService {
                 HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
+    /**
+     * @param updateQnaDto
+     * @returns {Success,status}
+     */
+    async updateQnA(updateQnaDto){
+        try{
+            await this.qnaRepository.createQueryBuilder("Qna") //이거 안에 딱히 상관은 없을건데 테이블 명으로 바꿔주세요
+            .update()
+            .set(
+                {
+                    title: updateQnaDto.title,
+                    contents: updateQnaDto.contents,
+                    isModified: true,
+                    issecret: updateQnaDto.isSecret,
+                },
+            )
+            .where('id = :id', { id: updateQnaDto.qnaId }) //camel 표기법 꼭 지켜주세요 QnaId입니다
+            .execute();
+      
+            return { success: true, status: HttpStatus.OK };
+        }catch(err){
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                    status: HttpStatus.INTERNAL_SERVER_ERROR,
+                    error: 'Qna 업데이트 중 오류발생',
+                    success: false,
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     /**
      *qna 삭제하기
      *
@@ -405,35 +397,22 @@ export class QnaService {
         try {
             const verified = await this.getToken.getToken(headers);
             const isUser = await this.checkUserandIsSecret(deleteQnaDto.qnaId, verified.userId);
-            if (isUser['check']['isOwner']) {
-                const deleteQna = await this.qnaRepository.createQueryBuilder('board')
-                    .update()
-                    .set(
-                        {
-                            isDeleted: true,
-                        },
-                    )
-                    .where('id = :id', { id: deleteQnaDto.qnaId })
-                    .execute();
-                // const deleteQna=await this.qnaRepository.query(`update "Qna" set isDeleted=true where id=${deleteQnaDto.Qnaid}`);
-                // this.logger.log(deleteQna);
-                return { success: true, status: HttpStatus.NO_CONTENT };
-            } else {
-                throw new HttpException(
+            if(!isUser['check']['isOwner']) throw new Error('Qna.delete에서 무권한접근');
+            
+            await this.qnaRepository.createQueryBuilder('board') //board??
+                .update()
+                .set(
                     {
-                        status: HttpStatus.FORBIDDEN,
-                        error: 'Qna.delete에서 무권한접근',
-                        success: false,
+                        isDeleted: true,
                     },
-                    HttpStatus.FORBIDDEN,
-                );
-            }
+                )
+                .where('id = :id', { id: deleteQnaDto.qnaId })
+                .execute();
+        
+            return { success: true, status: HttpStatus.NO_CONTENT };
+           
         } catch (err) {
-            if ('response' in err) {
-                if ('error' in err.response) {
-                    throw err;
-                }
-            }
+            this.logger.error(err);
             throw new HttpException(
                 {
                     status: HttpStatus.INTERNAL_SERVER_ERROR,

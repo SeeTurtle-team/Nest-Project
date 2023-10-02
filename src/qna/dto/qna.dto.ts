@@ -15,17 +15,16 @@ export abstract class abstractqnaDto {
   @IsString()
   readonly imgUrl: string;
 }
-export class CreateQnaDto extends abstractqnaDto
-{
+export class CreateQnaDto extends abstractqnaDto {
 
 }
 export class UpdateQnaDto extends PartialType(CreateQnaDto)
 {
   @IsNumber()
-  readonly qnaId:number;
+  readonly qnaId: number;
 }
-export class DeleteQnaDto
-{
+
+export class DeleteQnaDto {
   @IsNumber()
-  readonly qnaId:number;
+  readonly qnaId: number;
 }

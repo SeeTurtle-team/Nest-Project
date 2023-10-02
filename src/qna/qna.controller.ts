@@ -70,6 +70,7 @@ export class QnaController {
     this.logger.log('-----DELETE /Qna');
     return await this.QnaService.delete(deleteQnaDto, headers);
   }
+  
   @ApiOperation({summary: 'Qna comment 작성'})
   @HttpCode(HttpStatus.CREATED)
   @Post('/one/:id/create/')

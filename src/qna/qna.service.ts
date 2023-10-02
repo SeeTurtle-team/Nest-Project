@@ -123,7 +123,7 @@ export class QnaService {
 
             if (res.length > 0) return res;
         } catch (err) {
-
+            //??
         }
     }
 
@@ -134,11 +134,7 @@ export class QnaService {
             return page.length > 0 ? page : false
         }
         catch (err) {
-            if ('response' in err) {
-                if ('error' in err.response) {
-                    throw err;
-                }
-            }
+            this.logger.error(err);
             throw new HttpException(
                 {
                     status: HttpStatus.INTERNAL_SERVER_ERROR,

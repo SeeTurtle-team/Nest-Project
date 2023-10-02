@@ -31,6 +31,7 @@ export class QnaController {
     this.logger.log('-----GET /Qna/:id');
     return await this.QnaService.getOne(id, headers);
   }
+  
   @ApiOperation({summary: 'Admin의 Qna 열람'})
   @HttpCode(HttpStatus.OK)
   @Post('/one/:id')

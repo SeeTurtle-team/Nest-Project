@@ -291,27 +291,18 @@ export class QnaService {
         try {
             const verified = await this.getToken.getToken(headers);
             const isAdmin = await this.checkIsAdmin(verified.userId);
-            if (isAdmin) {
-                const page = await this.getQnaPage(id);
-                return {
-                    success: true, page: page, status: HttpStatus.OK
-                } //이 부분도 함수로 따로 빼서 거기서 try catch를 하면 코드가 깔끔해질거 같습니다
-            } else {
-                throw new HttpException(
-                    {
-                        status: HttpStatus.FORBIDDEN,
-                        error: 'Qna.getOnebyAdmin에서 admin이 아닌 접속요청',
-                        success: false,
-                    },
-                    HttpStatus.FORBIDDEN,
-                );
+            
+            if(!isAdmin) {
+                throw new Error('Qna.getOnebyAdmin에서 admin이 아닌 접속요청');
             }
+
+            const page = await this.getQnaPage(id);
+            return {
+                success: true, page: page, status: HttpStatus.OK
+            }
+
         } catch (err) {
-            if ('response' in err) {
-                if ('error' in err.response) {
-                    throw err;
-                }
-            }
+            this.logger.error(err);
             throw new HttpException(
                 {
                     status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -332,24 +323,13 @@ export class QnaService {
             const checkIsOwner = await this.checkIsOwner(update['check']);
             this.logger.log(update);
             this.logger.log(checkIsOwner);
-            if (checkIsOwner) {
-                return { success: true, status: update['status'], page: update['page'], check: update['check'] };
-            } else {
-                throw new HttpException(
-                    {
-                        status: HttpStatus.FORBIDDEN,
-                        error: 'Qna.getupdate에 무권한접근',
-                        success: false,
-                    },
-                    HttpStatus.FORBIDDEN,
-                );
-            } //미수행//간단한 if 문은 삼항연산자로 표현
+
+            if(!checkIsOwner) throw new Error('Qna.getupdate에 무권한접근');
+
+            return { success: true, status: update['status'], page: update['page'], check: update['check'] };
+          
         } catch (err) {
-            if ('response' in err) {
-                if ('error' in err.response) {
-                    throw err;
-                }
-            }
+            this.logger.error(err);
             throw new HttpException({
                 status: HttpStatus.INTERNAL_SERVER_ERROR,
                 error: 'Qna 업데이트 전 오류발생',
@@ -414,6 +394,7 @@ export class QnaService {
                 HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    
     /**
      *qna 삭제하기
      *

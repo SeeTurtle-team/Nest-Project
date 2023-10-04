@@ -1,7 +1,7 @@
 module.exports = {
   apps : [{
     name : 'texttok',
-    script: 'index.js',
+    script: 'dist/main.js',
     watch: '.'
   }, {
     script: './service-worker/',

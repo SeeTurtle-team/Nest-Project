@@ -9,6 +9,8 @@ import {
   Post,
   Patch,
   Query,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EbookService } from './ebook.service';
@@ -81,6 +83,7 @@ export class EbookController {
   }
 
   @ApiOperation({ summary: '별점 순으로 ebook 조회' })
+  @HttpCode(HttpStatus.OK)
   @Get('/starRating')
   async getEbookOrderByStarRating(@Query() page: PageRequest) {
     this.logger.log('-----GET /ebook/starRating');

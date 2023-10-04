@@ -4,16 +4,11 @@ import {
     ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
-    Tree,
-    TreeChildren,
-    TreeParent,
-    TreeLevelColumn,
   } from 'typeorm';
   import { abstractEntity } from '../abstract.entity';
 import { QnaEntity } from './qna.entity';
 import { UserEntity } from '../user.entity';  
   @Entity('qnacomment')
-  @Tree("closure-table")
   export class QnaCommentEntity extends abstractEntity
   {
     @Column({default:false})
@@ -28,8 +23,4 @@ import { UserEntity } from '../user.entity';
     user: UserEntity;
     @Column()
     userId:number
-    @TreeParent()
-    parnet:QnaCommentEntity
-    @TreeChildren()
-    children:QnaCommentEntity[]
   }

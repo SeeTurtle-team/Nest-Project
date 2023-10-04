@@ -1,6 +1,6 @@
 {
     "clang-format.fallbackStyle": "",
     "clang-format.language.javascript.fallbackStyle": "",
-    "clang-format.language.typescript.fallbackStyle": "",
+    "clang-format.language.typescript.fallbackStyle": "LLVM",
     "clang-format.style": ""
 }

@@ -36,6 +36,9 @@ export class EbookEntity {
   @Column()
   adminCheck: boolean;
 
+  @Column({ nullable: true })
+  ban: boolean;
+
   @ManyToOne((type) => UserEntity, (userEntity) => userEntity.ebookEntities)
   user: UserEntity;
 

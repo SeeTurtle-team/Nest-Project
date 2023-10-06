@@ -391,6 +391,8 @@ export class EbookService {
         },
         500,
       );
+    } finally {
+      await queryRunner.release();
     }
   }
 

@@ -31,9 +31,10 @@ export class QnaController {
     this.logger.log('-----GET /Qna/:id');
     return await this.QnaService.getOne(id, headers);
   }
+  
   @ApiOperation({summary: 'Admin의 Qna 열람'})
   @HttpCode(HttpStatus.OK)
-  @Post('/one/:id')
+  @Get('/oneByAdmin/:id') //어떠한 데이터를 요청할 때는 get으로
   async getOnebyAdmin(@Param('id') id: number, @Headers() headers) {
     this.logger.log('-----Post /Qna/:id');
     return await this.QnaService.getOnebyAdmin(id, headers);
@@ -69,6 +70,7 @@ export class QnaController {
     this.logger.log('-----DELETE /Qna');
     return await this.QnaService.delete(deleteQnaDto, headers);
   }
+  
   @ApiOperation({summary: 'Qna comment 작성'})
   @HttpCode(HttpStatus.CREATED)
   @Post('/one/:id/create/')

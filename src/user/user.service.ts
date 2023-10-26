@@ -851,4 +851,60 @@ export class UserService {
       );
     }
   }
+
+  /**
+   * 마이 페이지 관련
+   */
+  async myPageUser(headers) {
+    try {
+      const userInfo = await this.getUser(headers);
+      return { userInfo, status: HttpStatus.OK };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '마이 페이지 유저 정보 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**내가 작성한 게시판*/
+  async myPageBoard(page, headers) {
+    try {
+      const board = await this.boardService.getMyBoard(page, headers);
+      return { board, status: HttpStatus.OK };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '마이 페이지 게시판 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**추천한 게시판*/
+  async myPageLikedBoard(page, headers) {
+    try {
+      const board = await this.boardService.getLikedBoard(page, headers);
+      return { board, status: HttpStatus.OK };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '마이 페이지 추천 게시판 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
 }

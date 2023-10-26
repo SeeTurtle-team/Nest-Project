@@ -11,6 +11,7 @@ import { checkTokenId } from 'src/utils/CheckToken';
 import { GetToken } from 'src/utils/GetToken';
 import { GetSearchSql } from 'src/utils/GetSearchSql';
 import { GetS3Url } from 'src/utils/GetS3Url';
+import { BoardRecommendEntity } from 'src/entities/boardRecommend.entity';
 
 @Injectable()
 export class BoardService {
@@ -22,6 +23,8 @@ export class BoardService {
     private readonly boardNofityRepository: Repository<BoardNotifyEntity>,
     @InjectRepository(BoardCategoryEntity)
     private readonly boardCategoryRepository: Repository<BoardCategoryEntity>,
+    @InjectRepository(BoardRecommendEntity)
+    private readonly boardRecommendRepository: Repository<BoardRecommendEntity>,
     private dataSource: DataSource,
     private jwtService: JwtService,
     private readonly getToken: GetToken,
@@ -163,6 +166,29 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '내 게시판 개수 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async getLikedCount(userId) {
+    try {
+      const count = await this.boardRecommendRepository.query(`
+      select
+        count(*)
+        from "boardRecommend"
+        where "check" = true
+        and "userId" = ${userId}
+    `);
+      return count[0].count;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '좋아요 게시판 개수 조회 중 에러 발생',
           success: false,
         },
         500,
@@ -1219,6 +1245,83 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '내 게시판 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**좋아요 누른 게시판 조회*/
+  async getLikedBoard(page, headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+      const count = await this.getLikedCount(verified.userId);
+      const offset = page.getOffset();
+      const limit = page.getLimit();
+      const board = await this.boardRecommendRepository.query(
+        `
+        select
+          a."boardId" as id,
+          title,
+          "dateTime",
+          category,
+          nickname,
+          "recommendCount"
+        from "boardRecommend" as a
+        join(
+          select
+            id
+          from "boardRecommend"
+          where "userId" = ${verified.userId}
+          and "check" = true
+          order by "boardRecommend".id desc
+          offset ${offset}
+          limit ${limit}
+        ) as temp
+        on temp.id = a.id
+        inner join (
+          select
+            id,
+            "userId",
+            title,
+            "dateTime",
+            "boardCategoryId"
+          from board
+        ) b
+        on a."boardId" = b.id
+        inner join (
+          select
+            id,
+            category
+          from "boardCategory"
+        ) c
+        on b."boardCategoryId" = c.id
+        inner join (
+          select
+            id,
+            nickname
+          from public."user"
+        ) d
+        on b."userId" = d.id
+        left join (
+          select
+            "boardId", count (*) as "recommendCount"
+          from "boardRecommend"
+          where "check" = true
+          group by "boardId"
+        ) e
+        on a."boardId" = e."boardId"
+        `,
+      );
+
+      return new Page(count, page.pageSize, board);
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '내 추천 게시판 조회 중 에러 발생',
           success: false,
         },
         500,

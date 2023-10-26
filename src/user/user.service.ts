@@ -14,6 +14,7 @@ import { GetToken } from 'src/utils/GetToken';
 import { GetS3Url } from 'src/utils/GetS3Url';
 import { UserImgEntity } from 'src/entities/userImg.entity';
 import { checkTokenId } from 'src/utils/CheckToken';
+import { BoardService } from 'src/board/board.service';
 
 @Injectable()
 export class UserService {
@@ -28,6 +29,7 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly getToken: GetToken,
     private readonly getS3Url: GetS3Url,
+    private readonly boardService: BoardService,
   ) {}
   private readonly logger = new Logger(UserService.name);
 

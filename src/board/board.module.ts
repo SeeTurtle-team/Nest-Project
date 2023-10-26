@@ -36,5 +36,6 @@ import { GetS3Url } from 'src/utils/GetS3Url';
     GetSearchSql,
     GetS3Url,
   ],
+  exports: [BoardService],
 })
 export class BoardModule {}

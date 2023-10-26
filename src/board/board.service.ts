@@ -146,6 +146,30 @@ export class BoardService {
     }
   }
 
+  async getMyCount(userId) {
+    try {
+      const count = await this.boardRepository.query(`
+      select
+        count(*)
+        from board
+        where "isDeleted" = false
+        and ban = false
+        and "userId" = ${userId}
+    `);
+      return count[0].count;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '내 게시판 개수 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
   /**
    * get all boards with nickname
    * @return board
@@ -1126,6 +1150,75 @@ export class BoardService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '최근 업로드 게시판 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**해당 유저가 작성한 게시판 불러오기 */
+  async getMyBoard(page, headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+      const count = await this.getMyCount(verified.userId);
+      const offset = page.getOffset();
+      const limit = page.getLimit();
+      const board = await this.boardRepository.query(
+        `
+        select
+        a.id,
+        title,
+        "dateTime",
+        "category",
+        "recommendCount",
+        nickname
+        from board as a
+        join (
+          select
+            "id"
+            from board
+            where board."isDeleted" = false
+            and board.ban = false
+            and board."userId" = ${verified.userId}
+            order by board.id desc
+            offset ${offset}
+            limit ${limit}
+        ) as temp
+        on temp.id = a.id
+        inner join (
+          select
+            "id",
+            "category"
+            from "boardCategory"
+        ) b
+        on a."boardCategoryId" = b.id
+        inner join (
+          select
+            "id",
+            nickname
+            from "user"
+        ) c
+        on a."userId" = c.id
+        left join (
+          select
+            "boardId",
+            count (*) as "recommendCount"
+            from "boardRecommend"
+            where "check" = true
+            group by "boardId"
+        ) d
+        on a.id = d."boardId"
+        `,
+      );
+
+      return new Page(count, page.pageSize, board);
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '내 게시판 조회 중 에러 발생',
           success: false,
         },
         500,

@@ -214,10 +214,17 @@ export class BoardController {
   }
 
   @Public()
-  @ApiOperation({ summary: '최근 업로드 된 게시글 불러오기'})
+  @ApiOperation({ summary: '최근 업로드 된 게시글 불러오기' })
   @Get('/lastBoard')
-  async lastBoard(){
+  async lastBoard() {
     this.logger.log('----GET /lastBoard');
     return await this.boardService.lastBoard();
+  }
+
+  @ApiOperation({ summary: '내 게시판 불러오기' })
+  @Get('/myBoard')
+  async test(@Query() page: PageRequest, @Headers() headers) {
+    this.logger.log('-----GET /myBoard');
+    return await this.boardService.getMyBoard(page, headers);
   }
 }

@@ -7,6 +7,7 @@ import {
   Headers,
   Patch,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -18,6 +19,7 @@ import { UpdateForgottenPwDto } from './dto/update-forgottenPw.dto';
 import { GetForgottenIdDto } from './dto/get-forgottenId.dto';
 import { CheckUserIdDto } from './dto/check-userId.dto';
 import { UrlDto } from './dto/url.dto';
+import { PageRequest } from 'src/utils/PageRequest';
 
 @Controller('user')
 @ApiTags('User API')
@@ -146,7 +148,29 @@ export class UserController {
   @ApiOperation({ summary: 'url 삭제' })
   @Delete('/url')
   async deleteUrl(@Headers() headers) {
-    this.logger.log('-----DELETE /ebook/url');
+    this.logger.log('-----DELETE /user/url');
     return await this.userService.deleteUrl(headers);
+  }
+
+  /**마이페이지 관련 */
+  @ApiOperation({ summary: '마이페이지-유저' })
+  @Get('/info')
+  async myPageUser(@Headers() headers) {
+    this.logger.log('-----GET /user/info');
+    return await this.userService.myPageUser(headers);
+  }
+
+  @ApiOperation({ summary: '마이페이지-게시판' })
+  @Get('/board')
+  async myPageBoard(@Query() page: PageRequest, @Headers() headers) {
+    this.logger.log('-----GET /user/board');
+    return await this.userService.myPageBoard(page, headers);
+  }
+
+  @ApiOperation({ summary: '마이페이지-추천한 게시판' })
+  @Get('/likedBoard')
+  async myPageLikedBoard(@Query() page: PageRequest, @Headers() headers) {
+    this.logger.log('-----GET /user/likedBoard');
+    return await this.userService.myPageLikedBoard(page, headers);
   }
 }

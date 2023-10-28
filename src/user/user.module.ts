@@ -10,9 +10,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { GetToken } from 'src/utils/GetToken';
 import { UserImgEntity } from 'src/entities/userImg.entity';
 import { GetS3Url } from 'src/utils/GetS3Url';
+import { BoardModule } from 'src/board/board.module';
 
 @Module({
   imports: [
+    BoardModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

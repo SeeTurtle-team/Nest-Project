@@ -210,8 +210,8 @@ export class EbookService {
       );
 
       const res = ebook[0]
-        ? ebook[0]
-        : { success: false, msg: '존재하지 않는 게시글입니다' };
+        ? { ebook: ebook[0], status: HttpStatus.OK }
+        : { status: HttpStatus.NOT_FOUND, msg: '존재하지 않는 게시글입니다' };
 
       return res;
     } catch (err) {
@@ -954,5 +954,6 @@ export class EbookService {
     }
   }
 
-  /**최근 본 Ebook 조회*/
+  /**ebook 열람 시 history에 추가*/
+  async insertHistory() {}
 }

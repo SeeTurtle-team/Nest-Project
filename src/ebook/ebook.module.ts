@@ -14,5 +14,6 @@ import { EbookImgEntity } from 'src/entities/ebookImg.entity';
   ],
   controllers: [EbookController],
   providers: [EbookService, GetToken, GetS3Url],
+  exports: [EbookService],
 })
 export class EbookModule {}

@@ -9,6 +9,7 @@ import { GetToken } from 'src/utils/GetToken';
 import { Page } from 'src/utils/Page';
 import { DataSource, Repository } from 'typeorm';
 import { GetS3Url } from 'src/utils/GetS3Url';
+import { EbookHistoryEntity } from 'src/entities/ebookHistory.entity';
 
 @Injectable()
 export class EbookService {
@@ -20,6 +21,8 @@ export class EbookService {
     private readonly ebookSeriesRepository: Repository<EbookSeriesEntity>,
     @InjectRepository(EbookImgEntity)
     private readonly ebookImgRepository: Repository<EbookImgEntity>,
+    @InjectRepository(EbookHistoryEntity)
+    private readonly ebookHistoryRepository: Repository<EbookHistoryEntity>,
     private readonly jwtService: JwtService,
     private readonly getToken: GetToken,
     private dataSource: DataSource,

@@ -76,6 +76,29 @@ export class EbookService {
     }
   }
 
+  async getHistoryCount(userId) {
+    try {
+      const count = await this.ebookHistoryRepository.query(`
+        select
+          count(*)
+        from "ebookHistory"
+        where "userId" = ${userId}
+        and "isDeleted" = false
+      `);
+      return count[0].count;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'ebook history 개수 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
   async getEbookUserId(id: number) {
     try {
       const ebook = await this.ebookRepository
@@ -169,7 +192,7 @@ export class EbookService {
    * @param id userId:number
    * @returns ebook getOne
    */
-  async getOne(id): Promise<object> {
+  async getOne(id, headers, historyFlag): Promise<object> {
     try {
       const ebook = await this.ebookRepository.query(
         `select
@@ -212,6 +235,10 @@ export class EbookService {
       const res = ebook[0]
         ? { ebook: ebook[0], status: HttpStatus.OK }
         : { status: HttpStatus.NOT_FOUND, msg: '존재하지 않는 게시글입니다' };
+
+      if (historyFlag === 1 && res.status === HttpStatus.OK) {
+        await this.historyCheckAndCall(id, headers);
+      }
 
       return res;
     } catch (err) {
@@ -276,7 +303,7 @@ export class EbookService {
       const check = checkTokenId(userId, verified.userId);
 
       if (check) {
-        return await this.getOne(id);
+        return await this.getOne(id, headers, 0);
       } else return { success: false, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
@@ -954,6 +981,203 @@ export class EbookService {
     }
   }
 
+  /**history에 있는지 없는지 확인*/
+  async checkHistory(ebookId, headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+      const check = await this.ebookHistoryRepository.query(`
+        select
+          count(*)
+        from "ebookHistory"
+        where "userId" = ${verified.userId}
+        and "ebookId" = ${ebookId}
+      `);
+
+      return check[0].count;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'ebook history 체크 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**History 존재 시 삽입 호출 없으면 업데이트 호출*/
+  async historyCheckAndCall(ebookId, headers) {
+    const check = await this.checkHistory(ebookId, headers);
+    if (check === '1') {
+      await this.updateHistory(ebookId, headers);
+    } else {
+      await this.insertHistory(ebookId, headers);
+    }
+
+    return { status: HttpStatus.OK };
+  }
+
   /**ebook 열람 시 history에 추가*/
-  async insertHistory() {}
+  async insertHistory(ebookId, headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+
+      const ebookHistoryData = new EbookHistoryEntity();
+      ebookHistoryData.dateTime = new Date();
+      ebookHistoryData.isDeleted = false;
+      ebookHistoryData.user = verified.userId;
+      ebookHistoryData.ebook = ebookId;
+
+      await this.ebookHistoryRepository.save(ebookHistoryData);
+
+      return { status: HttpStatus.OK };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'ebook history 삽입 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**ebook 재열람 시 history 업데이트*/
+  async updateHistory(ebookId, headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+
+      await this.ebookHistoryRepository
+        .createQueryBuilder()
+        .update()
+        .set({
+          dateTime: new Date(),
+          isDeleted: false,
+        })
+        .where('userId = :userId', { userId: verified.userId })
+        .andWhere('ebookId = :ebookId', { ebookId: ebookId })
+        .execute();
+
+      return { status: HttpStatus.OK };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'ebook history 업데이트 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**history 삭제*/
+  async deleteHistory(ebookId, headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+
+      await this.ebookHistoryRepository
+        .createQueryBuilder()
+        .update()
+        .set({
+          dateTime: new Date(),
+          isDeleted: true,
+        })
+        .where('userId = :userId', { userId: verified.userId })
+        .andWhere('ebookId = :ebookId', { ebookId: ebookId })
+        .execute();
+
+      return { status: HttpStatus.OK };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'ebook history 삭제 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**ebook history 열람*/
+  async getEbookHistory(page, headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+      const count = await this.getHistoryCount(verified.userId);
+      const offset = page.getOffset();
+      const limit = page.getLimit();
+      const ebook = await this.ebookHistoryRepository.query(`
+        select
+          a."ebookId" as id,
+          title,
+          "dateTime"
+          nickname,
+          category,
+          "starRating"
+        from "ebookHistory" as a
+        join(
+          select
+            id
+          from "ebookHistory"
+          where "userId" = ${verified.userId}
+          and "isDeleted" = false
+          order by "ebookHistory".id desc
+          offset ${offset}
+          limit ${limit}
+        ) as temp
+        on temp.id = a.id
+        inner join (
+          select
+            id,
+            title,
+            "userId",
+            "boardCategoryId"
+          from ebook
+        ) b
+        on a."ebookId" = b.id
+        inner join (
+          select
+            id,
+            category
+          from "boardCategory"
+        ) c
+        on b."boardCategoryId" = c.id
+        inner join (
+          select
+            id,
+            nickname
+          from public."user"
+        ) d
+        on b."userId" = d.id
+        
+        left join (
+          select
+            "ebookId",
+            round(avg("starRating"), 2) as "starRating"
+          from "ebookStarRating"
+          group by "ebookId"
+        ) e
+        on e."ebookId" = a."ebookId"
+      `);
+
+      return new Page(count, page.pageSize, ebook);
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'ebook history 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
 }

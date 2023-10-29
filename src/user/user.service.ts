@@ -927,4 +927,41 @@ export class UserService {
       );
     }
   }
+
+  /**ebook history 열람*/
+  async myPageEbookHistory(page, headers) {
+    try {
+      const history = await this.ebookService.getEbookHistory(page, headers);
+      return { history, status: HttpStatus.OK };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '마이 페이지 Ebook history 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**ebook history 삭제*/
+  async myPageEbookHistoryDelete(ebookId, headers) {
+    try {
+      await this.ebookService.deleteHistory(ebookId, headers);
+
+      return { status: HttpStatus.OK };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '마이 페이지 Ebook history 삭제 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
 }

@@ -8,6 +8,7 @@ import {
   Patch,
   Delete,
   Query,
+  Param,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -179,5 +180,19 @@ export class UserController {
   async myPageEbook(@Query() page: PageRequest, @Headers() headers) {
     this.logger.log('-----GET /user/ebook');
     return await this.userService.myPageEbook(page, headers);
+  }
+
+  @ApiOperation({ summary: '마이페이지-ebookHistory' })
+  @Get('/ebookHistory')
+  async myPageEbookHistory(@Query() page: PageRequest, @Headers() headers) {
+    this.logger.log('-----GET /user/ebookHistory');
+    return await this.userService.myPageEbookHistory(page, headers);
+  }
+
+  @ApiOperation({ summary: '마이페이지-ebookHistory 삭제' })
+  @Delete('ebookHistory/:id')
+  async myPageEbookHistoryDelete(@Param('id') id: number, @Headers() headers) {
+    this.logger.log('-----DELETE /user/ebookHistory/:id');
+    return await this.userService.myPageEbookHistoryDelete(id, headers);
   }
 }

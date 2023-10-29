@@ -49,6 +49,30 @@ export class EbookService {
     }
   }
 
+  async getMyCount(userId) {
+    try {
+      const count = await this.ebookRepository.query(`
+        select
+          count(*)
+        from ebook
+        where "userId" = ${userId}
+        and "isDeleted" = false
+        and ban = false
+      `);
+      return count[0].count;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '내 ebook 개수 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
   async getEbookUserId(id: number) {
     try {
       const ebook = await this.ebookRepository
@@ -859,4 +883,73 @@ export class EbookService {
       );
     }
   }
+
+  /**내가 쓴 Ebook 조회*/
+  async getMyEbook(page, headers) {
+    try {
+      const verified = await this.getToken.getToken(headers);
+      const count = await this.getMyCount(verified.userId);
+      const offset = page.getOffset();
+      const limit = page.getLimit();
+      const ebook = await this.ebookRepository.query(
+        `select
+          a.id,
+          title,
+          "dateTime",
+          nickname,
+          "category",
+          "starRating",
+          "adminCheck"
+        from ebook as a
+        join (
+          select
+            "id"
+            from ebook
+            where ebook."userId" = ${verified.userId}
+            and ebook."isDeleted" = false
+            offset ${offset}
+            limit ${limit}
+        ) as temp
+        on temp.id = a.id
+        inner join (
+          select
+            "id",
+            nickname
+            from "user"
+        ) b
+        on a."userId" = b.id
+        inner join (
+          select
+            "id",
+            "category"
+            from "boardCategory"
+        ) c
+        on a."boardCategoryId" = c.id
+        left join (
+          select
+            "ebookId",
+            round(avg("starRating"), 2) as "starRating"
+          from "ebookStarRating"
+          group by "ebookId"
+        ) d
+        on a.id = d."ebookId"
+        order by "dateTime" desc
+        `,
+      );
+
+      return new Page(count, page.pageSize, ebook);
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '내 ebook 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**최근 본 Ebook 조회*/
 }

@@ -173,4 +173,11 @@ export class UserController {
     this.logger.log('-----GET /user/likedBoard');
     return await this.userService.myPageLikedBoard(page, headers);
   }
+
+  @ApiOperation({ summary: '마이페이지-ebook' })
+  @Get('/ebook')
+  async myPageEbook(@Query() page: PageRequest, @Headers() headers) {
+    this.logger.log('-----GET /user/ebook');
+    return await this.userService.myPageEbook(page, headers);
+  }
 }

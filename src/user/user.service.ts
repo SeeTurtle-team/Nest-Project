@@ -909,4 +909,22 @@ export class UserService {
       );
     }
   }
+
+  /**내가 작성한 Ebook*/
+  async myPageEbook(page, headers) {
+    try {
+      const ebook = await this.ebookService.getMyEbook(page, headers);
+      return { ebook, status: HttpStatus.OK };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '마이 페이지 Ebook 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
 }

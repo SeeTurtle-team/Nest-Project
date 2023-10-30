@@ -10,6 +10,7 @@ import { Page } from 'src/utils/Page';
 import { DataSource, Repository } from 'typeorm';
 import { GetS3Url } from 'src/utils/GetS3Url';
 import { EbookHistoryEntity } from 'src/entities/ebookHistory.entity';
+import { ebookHistoryFlag } from 'src/Common/ebookHistoryFlag';
 
 @Injectable()
 export class EbookService {
@@ -236,7 +237,7 @@ export class EbookService {
         ? { ebook: ebook[0], status: HttpStatus.OK }
         : { status: HttpStatus.NOT_FOUND, msg: '존재하지 않는 게시글입니다' };
 
-      if (historyFlag === 1 && res.status === HttpStatus.OK) {
+      if (historyFlag === ebookHistoryFlag.ON && res.status === HttpStatus.OK) {
         await this.historyCheckAndCall(id, headers);
       }
 
@@ -303,7 +304,7 @@ export class EbookService {
       const check = checkTokenId(userId, verified.userId);
 
       if (check) {
-        return await this.getOne(id, headers, 0);
+        return await this.getOne(id, headers, ebookHistoryFlag.OFF);
       } else return { success: false, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);

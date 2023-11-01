@@ -11,10 +11,12 @@ import { GetToken } from 'src/utils/GetToken';
 import { UserImgEntity } from 'src/entities/userImg.entity';
 import { GetS3Url } from 'src/utils/GetS3Url';
 import { BoardModule } from 'src/board/board.module';
+import { EbookModule } from 'src/ebook/ebook.module';
 
 @Module({
   imports: [
     BoardModule,
+    EbookModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

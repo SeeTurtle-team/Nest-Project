@@ -7,12 +7,19 @@ import { GetToken } from 'src/utils/GetToken';
 import { GetS3Url } from 'src/utils/GetS3Url';
 import { EbookSeriesEntity } from 'src/entities/ebookSeries.entity';
 import { EbookImgEntity } from 'src/entities/ebookImg.entity';
+import { EbookHistoryEntity } from 'src/entities/ebookHistory.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([EbookEntity, EbookSeriesEntity, EbookImgEntity]),
+    TypeOrmModule.forFeature([
+      EbookEntity,
+      EbookSeriesEntity,
+      EbookImgEntity,
+      EbookHistoryEntity,
+    ]),
   ],
   controllers: [EbookController],
   providers: [EbookService, GetToken, GetS3Url],
+  exports: [EbookService],
 })
 export class EbookModule {}

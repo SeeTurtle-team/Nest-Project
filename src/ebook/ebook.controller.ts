@@ -42,9 +42,9 @@ export class EbookController {
 
   @ApiOperation({ summary: 'ebook 열람' })
   @Get('/one/:id')
-  async getOne(@Param('id') id: number) {
+  async getOne(@Param('id') id: number, @Headers() headers) {
     this.logger.log('-----GET /ebook/one/:id');
-    return await this.ebookService.getOne(id);
+    return await this.ebookService.getOne(id, headers, 1);
   }
 
   @ApiOperation({ summary: 'ebook 작성' })

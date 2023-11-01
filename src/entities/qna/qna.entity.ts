@@ -8,7 +8,7 @@ import {
   import { abstractEntity } from '../abstract.entity';
 import { QnaCommentEntity } from './qnacomment.entity';
 import { UserEntity } from '../user.entity';  
-@Entity('Qna')
+@Entity('qna')
   export class QnaEntity extends abstractEntity
   {
     @Column({default:false})

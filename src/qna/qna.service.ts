@@ -1,4 +1,4 @@
-import { HttpCode, HttpException, HttpStatus, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { ConsoleLogger, HttpCode, HttpException, HttpStatus, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { userGrade } from 'src/Common/userGrade';
@@ -28,7 +28,7 @@ export class QnaService {
     async countAll(): Promise<number> {
         try {
             //try 문으로 묶어야 err 핸들링 가능
-            let st="Qna";
+            let st="qna";
             const count = await this.qnaRepository.query(
                 `select count(*) from "${st}" as q where q."ban"=false and q."isDeleted"=false`);
             return count[0]['count'];
@@ -71,22 +71,22 @@ export class QnaService {
 
         //try 문으로 묶어주세요
     }
-    async checkQueryResult(Id,BoardId?:Symbol):Promise<any|null>
+    async checkQuery(Id,BoardId?:Symbol):Promise<Object|null>
     {
         try{let queryResult=null;
         if(BoardId===undefined||BoardId===Object.getOwnPropertySymbols(this.qnaRepository)[0]){
         queryResult=await this.qnaRepository.query(`
         select q."userId",q."issecret" 
-        from "Qna" as q 
+        from "qna" as q 
         where q."id"=${Id}`);}
         else if(BoardId===Object.getOwnPropertySymbols(this.qnaCommentRepository)[0])
         {
             queryResult=await this.qnaCommentRepository.query(`
         select q."userId",q."issecret" 
-        from "QnaComment" as q 
+        from "qnaComment" as q 
         where q."id"=${Id}`);
         }
-        return queryResult;}catch(err)
+        return queryResult?queryResult['0']:queryResult;}catch(err)
         {
             this.logger.log(err);
             throw new HttpException(
@@ -111,21 +111,21 @@ export class QnaService {
             if(RepositorySymbol) 
             {
                 QueryResult =
-                await this.checkQueryResult(qnaBoardId,RepositorySymbol);
+                await this.checkQuery(qnaBoardId,RepositorySymbol);
             }
             else{
             QueryResult =
-                await this.checkQueryResult(qnaBoardId);
+                await this.checkQuery(qnaBoardId);
             }
             this.logger.log(QueryResult);
             if(QueryResult){
             if(QueryResult.length<=0) throw new Error('Qna.usercheck에서 존재하지 않는Qna게시글에 접근')
 
-            let qryResultOne = QueryResult[0];
+            let qryResultOne = QueryResult;
             let check = { isOwner: false, isNotSecret: false };
 
             check.isOwner = qryResultOne['userId'] === userId ? true : false;
-            check.isNotSecret = qryResultOne[0]['issecret'] ? false : true;
+            check.isNotSecret = qryResultOne['issecret'] ? false : true;
 
             if (check.isNotSecret || check.isOwner) {
                 return { success: true, check };
@@ -154,7 +154,7 @@ export class QnaService {
     async getQnaPage(qnaId: number, IsAdmin?: boolean): Promise<any[] | false> {
         try {
             const page = await this.qnaRepository.query(
-                `select  id, title, "dateTime",username,contents from "Qna" where "id"=${qnaId} and "ban"=false and "isDeleted"=false`);
+                `select  id, title, "dateTime",username,contents from "qna" where "id"=${qnaId} and "ban"=false and "isDeleted"=false`);
             return page.length > 0 ? page : false
         }
         catch (err) {
@@ -197,7 +197,7 @@ export class QnaService {
             const limit = pageRequest.getLimit();
             const count = await this.countAll();
             const page = await this.qnaRepository.query(
-                `select  id, title, "dateTime" from "Qna" as q where q."ban"=false and q."isDeleted"=false order by q."id" desc offset ${offset} limit ${limit}`);
+                `select  id, title, "dateTime" from "qna" as q where q."ban"=false and q."isDeleted"=false order by q."id" desc offset ${offset} limit ${limit}`);
             const returnPage = new Page(count, pageRequest.pageSize, page);
             return { success: true, returnPage };
         } catch (err) {
@@ -354,12 +354,17 @@ export class QnaService {
             const verified = await this.getToken.getToken(headers);
             const check =
                 await this.checkUserandIsSecret(updateQnaDto.qnaId, verified.userId);
-            
-            const isOwner = await this.checkIsOwner(check['check']);
-
+            let isOwner=null;
+            if(check){
+            isOwner = await this.checkIsOwner(check['check']);
+            }
+            else
+            {
+                return null;
+            }
             if(!isOwner) throw new Error('Qna.update 에 무권한접근');
 
-            const res = await this.updateQnA(updateQnaDto);
+            const res = await this.updateQna(updateQnaDto);
 
             return res;
 
@@ -379,9 +384,10 @@ export class QnaService {
      * @param updateQnaDto
      * @returns {Success,status}
      */
-    async updateQnA(updateQnaDto){
+    async updateQna(updateQnaDto):Promise<Object>
+    {
         try{
-            await this.qnaRepository.createQueryBuilder("Qna") //이거 안에 딱히 상관은 없을건데 테이블 명으로 바꿔주세요
+            await this.qnaRepository.createQueryBuilder("qna") //이거 안에 딱히 상관은 없을건데 테이블 명으로 바꿔주세요
             .update()
             .set(
                 {
@@ -391,9 +397,8 @@ export class QnaService {
                     issecret: updateQnaDto.isSecret,
                 },
             )
-            .where('id = :id', { id: updateQnaDto.QnaId }) //camel 표기법 꼭 지켜주세요 QnaId입니다
+            .where('id = :id', { id: updateQnaDto.qnaId }) //camel 표기법 꼭 지켜주세요 QnaId입니다
             .execute();
-      
             return { success: true, status: HttpStatus.OK };
         }catch(err){
             this.logger.error(err);

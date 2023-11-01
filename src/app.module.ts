@@ -44,6 +44,7 @@ import { EbookImgEntity } from './entities/ebookImg.entity';
 import { CacheModule } from '@nestjs/cache-manager';
 import { RedisClientOptions } from 'redis';
 import { redisStore } from 'cache-manager-redis-store';
+import { EbookHistoryEntity } from './entities/ebookHistory.entity';
 
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { redisStore } from 'cache-manager-redis-store';
         QnaEntity,
         QnaCommentEntity,
         EbookImgEntity,
+        EbookHistoryEntity,
       ],
       synchronize: true,
       autoLoadEntities: true,

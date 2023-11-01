@@ -15,6 +15,7 @@ import { GetS3Url } from 'src/utils/GetS3Url';
 import { UserImgEntity } from 'src/entities/userImg.entity';
 import { checkTokenId } from 'src/utils/CheckToken';
 import { BoardService } from 'src/board/board.service';
+import { EbookService } from 'src/ebook/ebook.service';
 
 @Injectable()
 export class UserService {
@@ -30,6 +31,7 @@ export class UserService {
     private readonly getToken: GetToken,
     private readonly getS3Url: GetS3Url,
     private readonly boardService: BoardService,
+    private readonly ebookService: EbookService,
   ) {}
   private readonly logger = new Logger(UserService.name);
 
@@ -901,6 +903,61 @@ export class UserService {
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: '마이 페이지 추천 게시판 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**내가 작성한 Ebook*/
+  async myPageEbook(page, headers) {
+    try {
+      const ebook = await this.ebookService.getMyEbook(page, headers);
+      return { ebook, status: HttpStatus.OK };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '마이 페이지 Ebook 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**ebook history 열람*/
+  async myPageEbookHistory(page, headers) {
+    try {
+      const history = await this.ebookService.getEbookHistory(page, headers);
+      return { history, status: HttpStatus.OK };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '마이 페이지 Ebook history 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  /**ebook history 삭제*/
+  async myPageEbookHistoryDelete(ebookId, headers) {
+    try {
+      await this.ebookService.deleteHistory(ebookId, headers);
+
+      return { status: HttpStatus.OK };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '마이 페이지 Ebook history 삭제 중 에러 발생',
           success: false,
         },
         500,

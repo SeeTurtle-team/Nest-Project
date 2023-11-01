@@ -20,9 +20,9 @@ import { UserEntity } from '../user.entity';
     @Column({default:"anonymous"})
     username: string
 
-    @ManyToOne((type) => UserEntity, (userentity) => userentity.Qnaentities)
+    @ManyToOne((type) => UserEntity, (userentity) => userentity.qnaentities)
     user: UserEntity;
     
-    @OneToMany((type)=>QnaCommentEntity,(qnaCommentEntities)=>qnaCommentEntities.Qna)
-    QnaComments: QnaCommentEntity[]
+    @OneToMany((type)=>QnaCommentEntity,(qnaCommentEntities)=>qnaCommentEntities.qna)
+    qnaComments: QnaCommentEntity[]
   }

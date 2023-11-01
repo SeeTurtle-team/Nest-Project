@@ -15,12 +15,10 @@ import { UserEntity } from '../user.entity';
     issecret: boolean
     @Column({default:"anonymous"})
     username: string
-    @ManyToOne((Type)=>QnaEntity,(Qnaentities)=>Qnaentities.QnaComments)
-    Qna:QnaEntity
-    @ManyToOne((type) => UserEntity, (userentity) => userentity.QnacommentEntities)
+    @ManyToOne((Type)=>QnaEntity,(Qnaentities)=>Qnaentities.qnaComments)
+    qna:QnaEntity
+    @ManyToOne((type) => UserEntity, (userentity) => userentity.qnacommentEntities)
     user: UserEntity;
-    @Column()
-    userId:number
     @Column({default:null,nullable:true})
     parentId:number
   }

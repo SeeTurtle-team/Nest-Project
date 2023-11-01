@@ -60,9 +60,9 @@ export class UserEntity {
   @OneToMany((type) => BoardEntity, (boardEntity) => boardEntity.user)
   boardEntities: BoardEntity[];
   @OneToMany((type) => QnaEntity, (qnaEntities) => qnaEntities.user)
-  Qnaentities: QnaEntity[];
+  qnaentities: QnaEntity[];
   @OneToMany((type) => QnaCommentEntity, (qnacommentEntities) => qnacommentEntities.user)
-  QnacommentEntities: QnaCommentEntity[];
+  qnacommentEntities: QnaCommentEntity[];
   @OneToMany(
     (type) => BoardCommentEntity,
     (boardCommentEntity) => boardCommentEntity.user,

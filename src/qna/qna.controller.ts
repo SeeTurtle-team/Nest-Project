@@ -3,12 +3,12 @@ import {ApiOperation, ApiTags} from '@nestjs/swagger';
 import {Throttle, ThrottlerModule} from '@nestjs/throttler';
 import {Public} from 'src/auth/decorators/public.decorator';
 import {PageRequest} from 'src/utils/PageRequest';
-import { CreateQnaCommentDto,UpdateQnaCommentDto } from './dto/qnacomment.dto';
+import { CreateQnaCommentDto, UpdateQnaCommentDto } from './dto/qnacomment.dto';
 import {CreateQnaDto, DeleteQnaDto, UpdateQnaDto} from './dto/qna.dto';
 import {QnaService} from './qna.service';
 
 
-@Controller('Qna')
+@Controller('qna')
 @ApiTags('Qna API')
 export class QnaController {
   constructor(private QnaService: QnaService) {}
@@ -27,14 +27,18 @@ export class QnaController {
   @ApiOperation({summary: 'Qna 열람'})
   @HttpCode(HttpStatus.OK)
   @Get('/one/:id')
-  async getOne(@Param('id') id: number, @Headers() headers) {
+  async getOne(@Param('id') id: number, @Headers() headers,@Query() page: PageRequest,) {
     this.logger.log('-----GET /Qna/:id');
-    return await this.QnaService.getOne(id, headers);
+    if(page){
+    return await this.QnaService.getOne(id, headers,page);}
+    else
+    {
+      return await this.QnaService.getOne(id, headers);
+    }
   }
-  
   @ApiOperation({summary: 'Admin의 Qna 열람'})
   @HttpCode(HttpStatus.OK)
-  @Get('/oneByAdmin/:id') //어떠한 데이터를 요청할 때는 get으로
+  @Post('/one/:id')
   async getOnebyAdmin(@Param('id') id: number, @Headers() headers) {
     this.logger.log('-----Post /Qna/:id');
     return await this.QnaService.getOnebyAdmin(id, headers);
@@ -56,7 +60,7 @@ export class QnaController {
   }
 
   @ApiOperation({summary: 'Qna 수정'})
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.OK)
   @Patch()
   async update(@Body() updateQnaDto: UpdateQnaDto, @Headers() headers) {
     this.logger.log('-----PATCH /Qna');
@@ -70,7 +74,6 @@ export class QnaController {
     this.logger.log('-----DELETE /Qna');
     return await this.QnaService.delete(deleteQnaDto, headers);
   }
-  
   @ApiOperation({summary: 'Qna comment 작성'})
   @HttpCode(HttpStatus.CREATED)
   @Post('/one/:id/create/')
@@ -78,11 +81,18 @@ export class QnaController {
     this.logger.log('-----Post /Qna comment create');
     return await this.QnaService.createComment(id,createQnaCommentDto, headers);
   }
+  @ApiOperation({summary: 'Qna 수정 전 가져오기'})
+  @HttpCode(HttpStatus.OK)
+  @Get('/getCommentUpdate/:commentId')
+  async getCommentUpdate(@Param('commentId') commentId:number, @Headers() headers) {
+    this.logger.log('-----GET /Qna/getupdate');
+    return await this.QnaService.getCommentUpdate(commentId, headers);
+  }
   @ApiOperation({summary: 'Qna 수정'})
-  @HttpCode(HttpStatus.CREATED)
-  @Patch()
-  async updateComment(@Body() updateQnaDto: UpdateQnaCommentDto, @Headers() headers) {
-    this.logger.log('-----PATCH /Qna');
-    return await this.QnaService.update(updateQnaDto, headers);
+  @HttpCode(HttpStatus.OK)
+  @Patch('/comment')
+  async updateComment(@Body() updateQnaCommentDto: UpdateQnaCommentDto, @Headers() headers) {
+    this.logger.log('-----PATCH /Qna Comment');
+    return await this.QnaService.update(updateQnaCommentDto, headers);
   }
 }

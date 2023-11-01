@@ -83,7 +83,7 @@ import { redisStore } from 'cache-manager-redis-store';
         QnaCommentEntity,
         EbookImgEntity,
       ],
-      synchronize: true,
+      synchronize: false,
       autoLoadEntities: true,
       logging: true,
     }),

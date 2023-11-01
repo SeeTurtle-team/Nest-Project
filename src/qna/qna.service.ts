@@ -10,6 +10,8 @@ import { Page } from 'src/utils/page';
 import { QueryBuilder, Repository } from 'typeorm';
 import { UpdateQnaDto } from './dto/qna.dto';
 import { error } from 'console';
+import { PageRequest } from 'src/utils/PageRequest';
+import { Header } from 'aws-sdk/clients/lambda';
 @Injectable()
 export class QnaService {
     private readonly logger = new Logger(QnaService.name);
@@ -25,10 +27,15 @@ export class QnaService {
 
     }
 
-    async countAll(): Promise<number> {
+    async countAll(boardId?:number): Promise<number> {
         try {
             //try 문으로 묶어야 err 핸들링 가능
-            let st="qna";
+            let st=null;
+            if(boardId) {st="qnaComment";}
+            else
+            {
+                st="qna";
+            }
             const count = await this.qnaRepository.query(
                 `select count(*) from "${st}" as q where q."ban"=false and q."isDeleted"=false`);
             return count[0]['count'];
@@ -71,15 +78,16 @@ export class QnaService {
 
         //try 문으로 묶어주세요
     }
-    async checkQuery(Id,BoardId?:Symbol):Promise<Object|null>
+    async checkQuery(Id:number,RepositorySymbol?:Symbol):Promise<Object|null>
     {
         try{let queryResult=null;
-        if(BoardId===undefined||BoardId===Object.getOwnPropertySymbols(this.qnaRepository)[0]){
+            this.logger.log(Id,RepositorySymbol);
+        if(RepositorySymbol===undefined||RepositorySymbol===Object.getOwnPropertySymbols(this.qnaRepository)[0]){
         queryResult=await this.qnaRepository.query(`
         select q."userId",q."issecret" 
         from "qna" as q 
         where q."id"=${Id}`);}
-        else if(BoardId===Object.getOwnPropertySymbols(this.qnaCommentRepository)[0])
+        else if(RepositorySymbol===Object.getOwnPropertySymbols(this.qnaCommentRepository)[0])
         {
             queryResult=await this.qnaCommentRepository.query(`
         select q."userId",q."issecret" 
@@ -105,7 +113,7 @@ export class QnaService {
    *@param @number qnaboarId(pk) @number userId(pk)
    *@return {success,status,page}
    */
-    async checkUserandIsSecret(qnaBoardId, userId,RepositorySymbol?): Promise<Object> {
+    async checkUserandIsSecret(qnaBoardId:number, userId:number,RepositorySymbol?:symbol): Promise<Object> {
         try {
             let QueryResult=null;
             if(RepositorySymbol) 
@@ -151,7 +159,7 @@ export class QnaService {
         }
     }
 
-    async getQnaPage(qnaId: number, IsAdmin?: boolean): Promise<any[] | false> {
+    async getQnaPage(qnaId: number): Promise<any[] | false> {
         try {
             const page = await this.qnaRepository.query(
                 `select  id, title, "dateTime",username,contents from "qna" where "id"=${qnaId} and "ban"=false and "isDeleted"=false`);
@@ -251,30 +259,21 @@ export class QnaService {
      *
      *@param id,headers
      */
-    async getOne(id, headers): Promise<Object> {
+    async getOne(id:number, headers:Header,pageRequest?:PageRequest): Promise<Object> {
         try {
             const verified = await this.getToken.getToken(headers);
             const check = await this.checkUserandIsSecret(id, verified.userId);
             let page = await this.getQnaPage(id);
-
+            let comments=await this.getAllComment(id,pageRequest);
+            if(comments['success'])
+            {
+                comments=comments['Page'];
+            }
+            else{comments=false;}
             if(!page){
                throw new Error('Qna.getone에서 삭제된 Qna에 접근')
             }
-            return { success: true, page, check: check['check'], status: HttpStatus.OK };
-    
-            // if (page) {
-            //     return { success: true, page, check: check['check'], status: HttpStatus.OK };
-            // } else {
-            //     throw new HttpException(
-            //         {
-            //             status: HttpStatus.NOT_FOUND,
-            //             error: 'Qna.getone에서 삭제된 Qna에 접근',
-            //             success: false,
-            //         },
-            //         HttpStatus.NOT_FOUND)
-            // } 확인해보니 이런식으로 if 문안에 있는 에러문은 출력이
-            // 되거나 에러를 프론트에서 확인할 수 없습니다. 
-            //간단하게 에러 로그만 찍고 catch문에 있는 로그를 반환하도록 하는게 가독성에 좀 더 도움이 될거 같네요
+            return { success: true, page, comments,check: check['check'], status: HttpStatus.OK };
         } catch (err) {
             this.logger.error(err);
             throw new HttpException(
@@ -458,7 +457,7 @@ export class QnaService {
         qnaCommentData.isDeleted = false;
         qnaCommentData.isModified = false;
         qnaCommentData.issecret = createQnaCommentDto.issecret;
-        qnaCommentData.Qna=id;
+        qnaCommentData.qna=id;
         qnaCommentData.parentId=createQnaCommentDto.parnetId;
         if (!qnaCommentData.issecret) {
             qnaCommentData.username = verified.username;
@@ -475,88 +474,134 @@ export class QnaService {
             },
             HttpStatus.INTERNAL_SERVER_ERROR)
     }
-    // async getUpdateComment(id, headers): Promise<Object> {
-    //     try {
-    //         const update = await this.getOneComment(id, headers);
-    //         const checkIsOwner = await this.checkIsOwner(update['check']);
-    //         this.logger.log(update);
-    //         this.logger.log(checkIsOwner);
+    async getAllComment(boarId:number,pageRequest?:PageRequest): Promise<Object> {
+        try {
+            let offset=10;
+            let limit=10;
+            let pageSize=10;
+            if(pageRequest){
+            offset = pageRequest.getOffset();
+            limit = pageRequest.getLimit();
+            pageSize= pageRequest.pageSize;
+        }
+            const count = await this.countAll(boarId);
+            const page = await this.qnaCommentRepository.query(
+                `select  id, title,username, "dateTime","issecret" from "qnaComment" as q where q."isDeleted"=false and q."ban"=false order by q."parentId" desc offset ${offset} limit ${limit}`);
+            const returnPage = new Page(count,pageSize, page);
+            return { success: true, Page:returnPage };
+        } catch (err) {
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                    status: HttpStatus.INTERNAL_SERVER_ERROR,
+                    error: 'Qna 전체조회중 오류발생',
+                    success: false,
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR
+            )
+        }
+    }
+    async getOneComment(id:number,headers:Headers):Promise<Object>
+    {
+        try {
+            const verified = await this.getToken.getToken(headers);
+            const check = await this.checkUserandIsSecret(id, verified.userId,Object.getOwnPropertySymbols(this.qnaCommentRepository)[0]);
+            const page = await this.qnaCommentRepository.query(
+                `select  id, title, "dateTime",username,contents from "qnaComment" where "id"=${id} and "ban"=false and "isDeleted"=false`);
+            if(!page){
+               throw new Error('Qna.getOneComment에서 삭제된 Qna에 접근')
+            }
+            return { success: true, page, check: check['check'], status: HttpStatus.OK };
+    
+        } catch (err) {
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                    status: HttpStatus.INTERNAL_SERVER_ERROR,
+                    error: 'Qna 조회중 오류발생',
+                    success: false,
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+    async getCommentUpdate(id, headers): Promise<Object> {
+        try {
+            const update = await this.getOneComment(id, headers);
+            const checkIsOwner = await this.checkIsOwner(update['check']);
+            if(!checkIsOwner) throw new Error('Qna.getupdate에 무권한접근');
 
-    //         if(!checkIsOwner) throw new Error('Qna.getupdate에 무권한접근');
-
-    //         return { success: true, status: update['status'], page: update['page'], check: update['check'] };
+            return { success: true, status: update['status'], page: update['page'], check: update['check'] };
           
-    //     } catch (err) {
-    //         this.logger.error(err);
-    //         throw new HttpException({
-    //             status: HttpStatus.INTERNAL_SERVER_ERROR,
-    //             error: 'Qna 업데이트 전 오류발생',
-    //             success: false,
-    //         },
-    //         HttpStatus.INTERNAL_SERVER_ERROR);
-    //     }
-    // }
-    // /**
-    //  *qna 수정하기
-    //  *
-    //  *@param updateQnaDto,headers
-    //  *@return  { success};
-    //  */
-    // async updateComment(updateQnaCommentDto, headers): Promise<Object> {
-    //     try {
-    //         const verified = await this.getToken.getToken(headers);
-    //         const check =
-    //             await this.checkUserandIsSecret(updateQnaCommentDto.qnaId, verified.userId);
+        } catch (err) {
+            this.logger.error(err);
+            throw new HttpException({
+                status: HttpStatus.INTERNAL_SERVER_ERROR,
+                error: 'Qna 업데이트 전 오류발생',
+                success: false,
+            },
+            HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    /**
+     *qna 수정하기
+     *
+     *@param updateQnaDto,headers
+     *@return  { success};
+     */
+    async updateComment(updateQnaCommentDto, headers): Promise<Object> {
+        try {
+            const verified = await this.getToken.getToken(headers);
+            const check =
+                await this.checkUserandIsSecret(updateQnaCommentDto.qnaCommentId, verified.userId,Object.getOwnPropertySymbols(this.qnaCommentRepository)[0]);
             
-    //         const isOwner = await this.checkIsOwner(check['check']);
+            const isOwner = await this.checkIsOwner(check['check']);
 
-    //         if(!isOwner) throw new Error('Qna.update 에 무권한접근');
+            if(!isOwner) throw new Error('Qna.Commentupdate 에 무권한접근');
 
-    //         const res = await this.updateQnA(updateQnaCommentDto);
+            const res = await this.updateQnaComment(updateQnaCommentDto);
 
-    //         return res;
+            return res;
 
-    //     } catch (err) {
-    //         this.logger.error(err);
-    //         throw new HttpException(
-    //             {
-    //                 status: HttpStatus.INTERNAL_SERVER_ERROR,
-    //                 error: 'Qna 업데이트 중 오류발생',
-    //                 success: false,
-    //             },
-    //             HttpStatus.INTERNAL_SERVER_ERROR);
-    //     }
-    // }
+        } catch (err) {
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                    status: HttpStatus.INTERNAL_SERVER_ERROR,
+                    error: 'Qna Comment업데이트 중 오류발생',
+                    success: false,
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
-    // /**
-    //  * @param updateQnaCommentDto
-    //  * @returns {Success,status}
-    //  */
-    // async updateQnAComment(updateQnaCommentDto){
-    //     try{
-    //         await this.qnaRepository.createQueryBuilder("QnaComment") //이거 안에 딱히 상관은 없을건데 테이블 명으로 바꿔주세요
-    //         .update()
-    //         .set(
-    //             {
-    //                 title: updateQnaCommentDto.title,
-    //                 contents: updateQnaCommentDto.contents,
-    //                 isModified: true,
-    //                 issecret: updateQnaCommentDto.isSecret,
-    //             },
-    //         )
-    //         .where('id = :id', { id: updateQnaCommentDto.QnaCommentId }) //camel 표기법 꼭 지켜주세요 QnaId입니다
-    //         .execute();
-      
-    //         return { success: true, status: HttpStatus.OK };
-    //     }catch(err){
-    //         this.logger.error(err);
-    //         throw new HttpException(
-    //             {
-    //                 status: HttpStatus.INTERNAL_SERVER_ERROR,
-    //                 error: 'Qna 업데이트 중 오류발생',
-    //                 success: false,
-    //             },
-    //             HttpStatus.INTERNAL_SERVER_ERROR);
-    //     }
-    // }
+    /**
+     * @param updateQnaCommentDto
+     * @returns {Success,status}
+     */
+    async updateQnaComment(updateQnaCommentDto){
+        try{
+            await this.qnaCommentRepository.createQueryBuilder("qnaComment") //이거 안에 딱히 상관은 없을건데 테이블 명으로 바꿔주세요
+            .update()
+            .set(
+                {
+                    title: updateQnaCommentDto.title,
+                    contents: updateQnaCommentDto.contents,
+                    isModified: true,
+                    issecret: updateQnaCommentDto.isSecret,
+                },
+            )
+            .where('id = :id', { id: updateQnaCommentDto.qnaCommentId }) //camel 표기법 꼭 지켜주세요 QnaId입니다
+            .execute();
+            return { success: true, status: HttpStatus.OK };
+        }catch(err){
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                    status: HttpStatus.INTERNAL_SERVER_ERROR,
+                    error: 'Qna 업데이트 중 오류발생',
+                    success: false,
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

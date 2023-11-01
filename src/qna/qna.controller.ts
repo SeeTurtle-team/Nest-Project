@@ -3,7 +3,7 @@ import {ApiOperation, ApiTags} from '@nestjs/swagger';
 import {Throttle, ThrottlerModule} from '@nestjs/throttler';
 import {Public} from 'src/auth/decorators/public.decorator';
 import {PageRequest} from 'src/utils/PageRequest';
-import { CreateQnaCommentDto } from './dto/qnacomment.dto';
+import { CreateQnaCommentDto,UpdateQnaCommentDto } from './dto/qnacomment.dto';
 import {CreateQnaDto, DeleteQnaDto, UpdateQnaDto} from './dto/qna.dto';
 import {QnaService} from './qna.service';
 
@@ -77,5 +77,12 @@ export class QnaController {
   async createComment(@Param('id') id:number,@Body() createQnaCommentDto: CreateQnaCommentDto, @Headers() headers) {
     this.logger.log('-----Post /Qna comment create');
     return await this.QnaService.createComment(id,createQnaCommentDto, headers);
+  }
+  @ApiOperation({summary: 'Qna 수정'})
+  @HttpCode(HttpStatus.CREATED)
+  @Patch()
+  async updateComment(@Body() updateQnaDto: UpdateQnaCommentDto, @Headers() headers) {
+    this.logger.log('-----PATCH /Qna');
+    return await this.QnaService.update(updateQnaDto, headers);
   }
 }

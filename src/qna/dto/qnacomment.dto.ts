@@ -5,5 +5,10 @@ export class CreateQnaCommentDto extends abstractqnaDto
 {
     @IsOptional()
     @IsNumber()
-    parentid:number;
+    parentId:number;
+}
+export class UpdateQnaCommentDto extends PartialType(CreateQnaCommentDto)
+{
+  @IsNumber()
+  readonly qnaCommentId: number;
 }

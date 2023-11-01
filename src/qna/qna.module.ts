@@ -10,5 +10,7 @@ import { GetSearchSql } from 'src/utils/GetSearchSql';
 @Module({imports: [TypeOrmModule.forFeature([QnaEntity,UserEntity,QnaCommentEntity]),
     ],
     controllers: [QnaController],
-    providers: [QnaService,GetToken,GetSearchSql],})
+    providers: [QnaService,GetToken,GetSearchSql],} 
+    )
+
 export class QnaModule {}

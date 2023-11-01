@@ -622,7 +622,7 @@ export class QnaService {
             throw new HttpException(
                 {
                     status: HttpStatus.INTERNAL_SERVER_ERROR,
-                    error: 'Qna 삭제 중 오류발생',
+                    error: 'Qna Comment 삭제 중 오류발생',
                     success: false,
                 },
                 HttpStatus.INTERNAL_SERVER_ERROR);

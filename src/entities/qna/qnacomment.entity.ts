@@ -15,7 +15,9 @@ import { UserEntity } from '../user.entity';
     issecret: boolean
     @Column({default:"anonymous"})
     username: string
-    @ManyToOne((Type)=>QnaEntity,(Qnaentities)=>Qnaentities.qnaComments)
+    @ManyToOne((Type)=>QnaEntity,(Qnaentities)=>Qnaentities.qnaComments,{
+      onDelete: 'CASCADE',
+  })
     qna:QnaEntity
     @ManyToOne((type) => UserEntity, (userentity) => userentity.qnacommentEntities)
     user: UserEntity;

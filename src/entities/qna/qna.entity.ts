@@ -23,6 +23,8 @@ import { UserEntity } from '../user.entity';
     @ManyToOne((type) => UserEntity, (userentity) => userentity.qnaentities)
     user: UserEntity;
     
-    @OneToMany((type)=>QnaCommentEntity,(qnaCommentEntities)=>qnaCommentEntities.qna)
+    @OneToMany((type)=>QnaCommentEntity,(qnaCommentEntities)=>qnaCommentEntities.qna,{
+      cascade: true,
+})
     qnaComments: QnaCommentEntity[]
   }

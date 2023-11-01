@@ -3,7 +3,7 @@ import {ApiOperation, ApiTags} from '@nestjs/swagger';
 import {Throttle, ThrottlerModule} from '@nestjs/throttler';
 import {Public} from 'src/auth/decorators/public.decorator';
 import {PageRequest} from 'src/utils/PageRequest';
-import { CreateQnaCommentDto, UpdateQnaCommentDto } from './dto/qnacomment.dto';
+import {CreateQnaCommentDto, UpdateQnaCommentDto,DeleteQnaCommentDto } from './dto/qnacomment.dto';
 import {CreateQnaDto, DeleteQnaDto, UpdateQnaDto} from './dto/qna.dto';
 import {QnaService} from './qna.service';
 
@@ -76,23 +76,38 @@ export class QnaController {
   }
   @ApiOperation({summary: 'Qna comment 작성'})
   @HttpCode(HttpStatus.CREATED)
-  @Post('/one/:id/create/')
+  @Post('/comment/create/')
   async createComment(@Param('id') id:number,@Body() createQnaCommentDto: CreateQnaCommentDto, @Headers() headers) {
-    this.logger.log('-----Post /Qna comment create');
+    this.logger.log('-----Post /Qna/comment/create');
     return await this.QnaService.createComment(id,createQnaCommentDto, headers);
   }
-  @ApiOperation({summary: 'Qna 수정 전 가져오기'})
+  @ApiOperation({summary: 'Qna  Comment 수정 전 가져오기'})
   @HttpCode(HttpStatus.OK)
   @Get('/getCommentUpdate/:commentId')
   async getCommentUpdate(@Param('commentId') commentId:number, @Headers() headers) {
-    this.logger.log('-----GET /Qna/getupdate');
+    this.logger.log('-----GET /Qna/getCommentupdate');
     return await this.QnaService.getCommentUpdate(commentId, headers);
   }
-  @ApiOperation({summary: 'Qna 수정'})
+  @ApiOperation({summary: 'Qna Comment 수정'})
   @HttpCode(HttpStatus.OK)
   @Patch('/comment')
   async updateComment(@Body() updateQnaCommentDto: UpdateQnaCommentDto, @Headers() headers) {
-    this.logger.log('-----PATCH /Qna Comment');
-    return await this.QnaService.update(updateQnaCommentDto, headers);
+    this.logger.log('-----PATCH /Qna/Comment');
+    return await this.QnaService.updateComment(updateQnaCommentDto, headers);
+  }
+  @ApiOperation({summary: 'Qna Comment 열람'})
+  @HttpCode(HttpStatus.OK)
+  @Get('/comment/:id')
+  async getOneComment(@Param('id') id: number, @Headers() headers) {
+    this.logger.log('-----GET /Qna/Comment/:id')
+    return await this.QnaService.getOneComment(id, headers);
+
+  }
+  @ApiOperation({summary: 'Qna Comment 삭제'})
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete('/comment')
+  async deleteComment(@Body() deleteQnaCommentDto: DeleteQnaCommentDto, @Headers() headers) {
+    this.logger.log('-----DELETE /Qna/Comment ');
+    return await this.QnaService.deleteComment(deleteQnaCommentDto, headers);
   }
 }

@@ -23,8 +23,7 @@ export class QnaService {
         private readonly jwtService: JwtService,
         private readonly getToken: GetToken,
         private readonly getSearchSql: GetSearchSql,
-    ) { 
-
+    ) {
     }
 
     async countAll(boardId?:number): Promise<number> {
@@ -41,13 +40,7 @@ export class QnaService {
             return count[0]['count'];
         }
         catch (err) {
-            // if ('response' in err) {
-            //     if ('error' in err.response) {
-            //         throw err;
-            //     }
-            // } 이 부분은 꼭 필요가 없어 지우는게 좋아보입니다.
             this.logger.error(err); //에러 로그 남겨주면 좋습니다.
-
             throw new HttpException(
                 {
                     status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -78,23 +71,24 @@ export class QnaService {
 
         //try 문으로 묶어주세요
     }
-    async checkQuery(Id:number,RepositorySymbol?:Symbol):Promise<Object|null>
+    async checkQuery(Id,isComment?):Promise<Object|null>
     {
         try{let queryResult=null;
-            this.logger.log(Id,RepositorySymbol);
-        if(RepositorySymbol===undefined||RepositorySymbol===Object.getOwnPropertySymbols(this.qnaRepository)[0]){
-        queryResult=await this.qnaRepository.query(`
-        select q."userId",q."issecret" 
-        from "qna" as q 
-        where q."id"=${Id}`);}
-        else if(RepositorySymbol===Object.getOwnPropertySymbols(this.qnaCommentRepository)[0])
-        {
+        if(isComment){
             queryResult=await this.qnaCommentRepository.query(`
-        select q."userId",q."issecret" 
-        from "qnaComment" as q 
-        where q."id"=${Id}`);
+            select q."userId",q."issecret" 
+            from "qnaComment" as q 
+            where q."id"=${Id}`);
         }
-        return queryResult?queryResult['0']:queryResult;}catch(err)
+        else
+        {
+            queryResult=await this.qnaRepository.query(`
+            select q."userId",q."issecret" 
+            from "qna" as q 
+            where q."id"=${Id}`);
+        }
+        return queryResult?queryResult['0']:queryResult;}
+        catch(err)
         {
             this.logger.log(err);
             throw new HttpException(
@@ -113,22 +107,12 @@ export class QnaService {
    *@param @number qnaboarId(pk) @number userId(pk)
    *@return {success,status,page}
    */
-    async checkUserandIsSecret(qnaBoardId:number, userId:number,RepositorySymbol?:symbol): Promise<Object> {
+    async checkUserandIsSecret(qnaBoardId:number, userId:number,isComment?:boolean): Promise<Object> {
         try {
-            let QueryResult=null;
-            if(RepositorySymbol) 
-            {
-                QueryResult =
-                await this.checkQuery(qnaBoardId,RepositorySymbol);
-            }
-            else{
-            QueryResult =
-                await this.checkQuery(qnaBoardId);
-            }
-            this.logger.log(QueryResult);
+               const QueryResult =
+                await this.checkQuery(qnaBoardId,isComment);        
             if(QueryResult){
-            if(QueryResult.length<=0) throw new Error('Qna.usercheck에서 존재하지 않는Qna게시글에 접근')
-
+            if(Object.keys(QueryResult).length===0) throw new Error('Qna.usercheck에서 존재하지 않는Qna게시글에 접근')
             let qryResultOne = QueryResult;
             let check = { isOwner: false, isNotSecret: false };
 
@@ -422,8 +406,14 @@ export class QnaService {
             const verified = await this.getToken.getToken(headers);
             const isUser = await this.checkUserandIsSecret(deleteQnaDto.qnaId, verified.userId);
             if(!isUser['check']['isOwner']) throw new Error('Qna.delete에서 무권한접근');
-            
-            await this.qnaRepository.createQueryBuilder('board') //board??
+            await this.qnaCommentRepository.createQueryBuilder('qnaComment').update().set(
+                {
+                    isDeleted: true,
+                },
+            )
+            .where('"qnaId" = :id', { id: deleteQnaDto.qnaId })
+            .execute();
+            await this.qnaRepository.createQueryBuilder('qna') //board??
                 .update()
                 .set(
                     {
@@ -501,11 +491,12 @@ export class QnaService {
             )
         }
     }
-    async getOneComment(id:number,headers:Headers):Promise<Object>
+    async getOneComment(id:number,headers:Headers,page?):Promise<Object>
     {
         try {
+            const isComment=true;
             const verified = await this.getToken.getToken(headers);
-            const check = await this.checkUserandIsSecret(id, verified.userId,Object.getOwnPropertySymbols(this.qnaCommentRepository)[0]);
+            const check = await this.checkUserandIsSecret(id, verified.userId,isComment);
             const page = await this.qnaCommentRepository.query(
                 `select  id, title, "dateTime",username,contents from "qnaComment" where "id"=${id} and "ban"=false and "isDeleted"=false`);
             if(!page){
@@ -550,9 +541,12 @@ export class QnaService {
      */
     async updateComment(updateQnaCommentDto, headers): Promise<Object> {
         try {
+            this.logger.log(updateQnaCommentDto);
+            this.logger.log(headers);
+            const isComment=true;
             const verified = await this.getToken.getToken(headers);
             const check =
-                await this.checkUserandIsSecret(updateQnaCommentDto.qnaCommentId, verified.userId,Object.getOwnPropertySymbols(this.qnaCommentRepository)[0]);
+                await this.checkUserandIsSecret(updateQnaCommentDto.qnaCommentId, verified.userId,isComment);
             
             const isOwner = await this.checkIsOwner(check['check']);
 
@@ -598,7 +592,37 @@ export class QnaService {
             throw new HttpException(
                 {
                     status: HttpStatus.INTERNAL_SERVER_ERROR,
-                    error: 'Qna 업데이트 중 오류발생',
+                    error: 'Qna Comment 업데이트 중 오류발생',
+                    success: false,
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    async deleteComment(deleteQnaCommentDto, headers): Promise<Object> {
+        try {
+            const isComment=true;
+            const verified = await this.getToken.getToken(headers);
+            const isUser = await this.checkUserandIsSecret(deleteQnaCommentDto.qnaCommentId, verified.userId,isComment);
+            if(!isUser['check']['isOwner']) throw new Error('Qna.delete Comment 에서 무권한접근');
+
+            await this.qnaRepository.createQueryBuilder('qnaComment')
+                .update()
+                .set(
+                    {
+                      isDeleted : true,
+                    },
+                    )
+                .where('id = :id', {id : deleteQnaCommentDto.qnaCommentId})
+                .execute();
+
+            return { success: true, status: HttpStatus.NO_CONTENT };
+           
+        } catch (err) {
+            this.logger.error(err);
+            throw new HttpException(
+                {
+                    status: HttpStatus.INTERNAL_SERVER_ERROR,
+                    error: 'Qna 삭제 중 오류발생',
                     success: false,
                 },
                 HttpStatus.INTERNAL_SERVER_ERROR);

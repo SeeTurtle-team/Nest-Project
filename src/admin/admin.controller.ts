@@ -9,9 +9,14 @@ import { AdminService } from './admin.service';
 @ApiTags('Admin API')
 export class AdminController {
     constructor(
-        private amdinService : AdminService,
+        private adminService : AdminService,
     ){}
-
     private readonly logger = new Logger(AdminController.name);
-
+@ApiOperation({summary: 'Admin의 미승인 계시글 열람'})
+  @HttpCode(HttpStatus.OK)
+  @Get('/getUncheckedEbookList')
+  async getUncheckedEbookList(@Headers() headers,@Query() pageRequest?:PageRequest) {
+    this.logger.log('-----GET /admin/getUncheckedList');
+    return await this.adminService.getUncheckedEbookList(headers,pageRequest);
+  }
 }

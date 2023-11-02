@@ -62,7 +62,7 @@ export class QnaService {
             throw new HttpException(
                 {
                     status: HttpStatus.INTERNAL_SERVER_ERROR,
-                    error: 'Qna checkisAdmin에서 에러발생',
+                    error: 'checkisAdmin에서 에러발생',
                     success: false,
                 },
                 HttpStatus.INTERNAL_SERVER_ERROR,

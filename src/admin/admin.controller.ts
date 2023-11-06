@@ -37,12 +37,20 @@ export class AdminController {
     this.logger.log('-----GET /admin/getUncheckedList');
     return await this.adminService.getUncheckedEbookList(headers, pageRequest);
   }
-  @ApiOperation({summary : 'Admin의 미승인 게시글 승인,반려'})
+  @ApiOperation({summary : 'Admin의 미승인 게시글 승인'})
   @HttpCode(HttpStatus.OK)
-  @Post('/approveEbookList')
-  async approveEbookList(@Headers() headers,
+  @Post('/accepctEbookList')
+  async accepctEbookList(@Headers() headers,
                          @Body() ebookList: CheckedEbookListDto) {
     this.logger.log('-----POST /admin/checkedList');
-    return await this.adminService.approveEbookList(headers, ebookList);
+    return await this.adminService.accepctEbookList(headers, ebookList);
+  }
+  @ApiOperation({summary : 'Admin의 미승인 게시글 반려'})
+  @HttpCode(HttpStatus.OK)
+  @Post('/rejectEbookList')
+  async rejectEbookList(@Headers() headers,
+                         @Body() ebookList: CheckedEbookListDto) {
+    this.logger.log('-----POST /admin/checkedList');
+    return await this.adminService.rejectEbookList(headers, ebookList);
   }
 }

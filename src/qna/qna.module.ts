@@ -11,7 +11,8 @@ import { QnaCommentService } from './qnaComment.service';
 @Module({imports: [TypeOrmModule.forFeature([QnaEntity,UserEntity,QnaCommentEntity]),
     ],
     controllers: [QnaController],
-    providers: [QnaService,GetToken,GetSearchSql,QnaCommentService],} 
+    providers: [QnaService,GetToken,GetSearchSql,QnaCommentService],
+}
     )
 
 export class QnaModule {}

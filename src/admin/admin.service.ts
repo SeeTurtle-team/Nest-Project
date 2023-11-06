@@ -13,12 +13,16 @@ import {UserEntity} from 'src/entities/user.entity';
 import {GetToken} from 'src/utils/GetToken';
 import {Page} from 'src/utils/Page';
 import {PageRequest} from 'src/utils/PageRequest';
-import {DataSource} from 'typeorm';
-
+import {Repository} from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 @Injectable()
 export class AdminService {
-  constructor(private readonly dataSource: DataSource,
-              private readonly getToken: GetToken) {}
+  constructor(private readonly getToken: GetToken,
+              @InjectRepository(EbookEntity)
+              private readonly ebookRepository: Repository<EbookEntity>,
+              @InjectRepository(UserEntity)
+              private readonly userRepository: Repository<EbookEntity>,
+              ) {}
   private readonly logger = new Logger(AdminService.name);
    /**
    * 접근대상자가 admin인지 권한확인.
@@ -27,13 +31,13 @@ export class AdminService {
   async checkIsAdmin(headers: Headers): Promise<boolean> {
     try {
       const verified = await this.getToken.getToken(headers);
-      const isAdmin = await this.dataSource.getRepository(UserEntity)
+      const isAdmin = await this.userRepository
                           .createQueryBuilder('user')
                           .innerJoin("user.userGrade", "userGrade")
-                          .select("userGrade.userGrade", "uG")
+                          .select("userGrade.userGrade", "userGrade")
                           .where("user.id=:id", {id : verified.userId})
                           .getRawOne();
-      return isAdmin['uG'] === userGrade.Admin ? true : false;
+      return isAdmin['userGrade'] === userGrade.Admin ? true : false;
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -64,7 +68,7 @@ export class AdminService {
       }
       if (isAdmin) {
         const page =
-            await this.dataSource.getRepository(EbookEntity)
+            await this.ebookRepository
                 .createQueryBuilder('ebook')
                 .innerJoinAndSelect("ebook.boardCategory", "boardCategory")
                 .where("ebook.adminCheck=:bool", {bool : false})
@@ -105,7 +109,7 @@ export class AdminService {
       const isAdmin = await this.checkIsAdmin(headers);
       if (isAdmin) {
         const accepcted =
-            await this.dataSource.getRepository(EbookEntity)
+            await this.ebookRepository
                 .createQueryBuilder('ebook')
                 .update()
                 .set({adminCheck : true})
@@ -144,10 +148,10 @@ export class AdminService {
       const isAdmin = await this.checkIsAdmin(headers);
       if (isAdmin) {
         const rejected =
-            await this.dataSource.getRepository(EbookEntity)
+            await this.ebookRepository
                 .createQueryBuilder('ebook')
                 .update()
-                .set({ban : true, isDeleted : true})
+                .set({ban : true, isDeleted : true,adminCheck : true})
                 .where("ebook.id IN (:...ids)", {ids : ebookList.rejectedList})
                 .execute();
         return {success : true};

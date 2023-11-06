@@ -20,17 +20,15 @@ import {
   import {PageRequest} from 'src/utils/PageRequest';
   import {QueryBuilder, Repository} from 'typeorm';
   import { QnaService } from './qna.service';
-  import {UpdateQnaDto} from './dto/qna.dto';
-  @Injectable()
+@Injectable()
 export class QnaCommentService {
   private readonly logger = new Logger(QnaCommentService.name);
   constructor(
-      @InjectRepository(QnaCommentEntity) private readonly qnaCommentRepository:
+    private qnaService: QnaService,
+      @InjectRepository(QnaCommentEntity) 
+      private readonly qnaCommentRepository:
           Repository<QnaCommentEntity>,
-      private readonly jwtService: JwtService,
       private readonly getToken: GetToken,
-      private readonly getSearchSql: GetSearchSql,
-      private readonly qnaService: QnaService,
   ) {}
   async createComment(id, createQnaCommentDto, headers): Promise<Object> {
     const verified = await this.getToken.getToken(headers);
@@ -81,7 +79,7 @@ export class QnaCommentService {
       this.logger.error(err);
       throw new HttpException({
         status : HttpStatus.INTERNAL_SERVER_ERROR,
-        error : 'Qna 전체조회중 오류발생',
+        error : 'Qna Comment 전체조회중 오류발생',
         success : false,
       },
                               HttpStatus.INTERNAL_SERVER_ERROR)

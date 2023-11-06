@@ -19,8 +19,9 @@ import {GetToken} from 'src/utils/GetToken';
 import {Page} from 'src/utils/page';
 import {PageRequest} from 'src/utils/PageRequest';
 import {QueryBuilder, Repository} from 'typeorm';
-import { QnaCommentService } from './qnaComment.service';
+
 import {UpdateQnaDto} from './dto/qna.dto';
+import {QnaCommentService} from './qnaComment.service';
 
 @Injectable()
 export class QnaService {
@@ -30,12 +31,36 @@ export class QnaService {
           Repository<QnaEntity>,
       @InjectRepository(QnaCommentEntity) private readonly qnaCommentRepository:
           Repository<QnaCommentEntity>,
-      private readonly jwtService: JwtService,
       private readonly getToken: GetToken,
-      private readonly getSearchSql: GetSearchSql,
-      private readonly qnaCommentService: QnaCommentService
   ) {}
 
+  async getAllComment(boarId: number,
+                      pageRequest?: PageRequest): Promise<Object> {
+    try {
+      let offset = 10;
+      let limit = 10;
+      let pageSize = 10;
+      if (pageRequest) {
+        offset = pageRequest.getOffset();
+        limit = pageRequest.getLimit();
+        pageSize = pageRequest.pageSize;
+      }
+      const count = await this.countAll(boarId);
+      const page = await this.qnaCommentRepository.query(
+          `select  id, title,username, "dateTime","issecret" from "qnaComment" as q where q."isDeleted"=false and q."ban"=false order by q."parentId" desc offset ${
+              offset} limit ${limit}`);
+      const returnPage = new Page(count, pageSize, page);
+      return {success : true, Page : returnPage};
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException({
+        status : HttpStatus.INTERNAL_SERVER_ERROR,
+        error : 'Qna Comment 전체조회중 오류발생',
+        success : false,
+      },
+                              HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
   async countAll(boardId?: number): Promise<number> {
     try {
       // try 문으로 묶어야 err 핸들링 가능
@@ -252,7 +277,7 @@ export class QnaService {
       const verified = await this.getToken.getToken(headers);
       const check = await this.checkUserandIsSecret(id, verified.userId);
       let page = await this.getQnaPage(id);
-      let comments = await this.qnaCommentService.getAllComment(id, pageRequest);
+      let comments = await this.getAllComment(id, pageRequest);
       if (comments['success']) {
         comments = comments['Page'];
       } else {
@@ -452,5 +477,4 @@ export class QnaService {
                               HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  
 }

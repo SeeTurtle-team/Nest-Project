@@ -12,6 +12,7 @@ import { EbookRatingEntity } from './ebookRating.entity';
 import { EbookFileEntity } from './ebookFile.entity';
 import { EbookStarRatingEntity } from './ebookStarRating.entity';
 import { EbookSeriesEntity } from './ebookSeries.entity';
+import { EbookHistoryEntity } from './ebookHistory.entity';
 
 @Entity('ebook')
 export class EbookEntity {
@@ -77,4 +78,10 @@ export class EbookEntity {
     (ebookSeriesEntity) => ebookSeriesEntity.ebookEntities,
   )
   ebookSeries: EbookSeriesEntity;
+
+  @OneToMany(
+    (type) => EbookHistoryEntity,
+    (ebookHistoryEntity) => ebookHistoryEntity.ebook,
+  )
+  ebookHistoryEntities: EbookHistoryEntity[];
 }

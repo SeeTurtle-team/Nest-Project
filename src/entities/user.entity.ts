@@ -24,6 +24,7 @@ import { EbookStarRatingEntity } from './ebookStarRating.entity';
 import { EbookSeriesEntity } from './ebookSeries.entity';
 import { QnaEntity } from './qna/qna.entity';
 import { QnaCommentEntity } from './qna/qnacomment.entity';
+import { EbookHistoryEntity } from './ebookHistory.entity';
 
 @Entity('user')
 export class UserEntity {
@@ -137,4 +138,10 @@ export class UserEntity {
     (ebookSeriesEntity) => ebookSeriesEntity.user,
   )
   ebookSeriesEntities: EbookSeriesEntity[];
+
+  @OneToMany(
+    (type) => EbookHistoryEntity,
+    (ebookhistoryEntity) => ebookhistoryEntity.user,
+  )
+  ebookHistoryEntities: EbookHistoryEntity[];
 }

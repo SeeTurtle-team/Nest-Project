@@ -59,7 +59,7 @@ export class QnaController {
   }
   @ApiOperation({summary : 'Admin의 Qna 열람'})
   @HttpCode(HttpStatus.OK)
-  @Post('/one/:id')
+  @Get('/oneByAdmin/:id')
   async getOnebyAdmin(@Param('id') id: number, @Headers() headers) {
     this.logger.log('-----Post /Qna/:id');
     return await this.qnaService.getOnebyAdmin(id, headers);

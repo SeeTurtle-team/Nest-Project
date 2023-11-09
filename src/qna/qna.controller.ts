@@ -95,6 +95,7 @@ export class QnaController {
     this.logger.log('-----DELETE /Qna');
     return await this.qnaService.delete(deleteQnaDto, headers);
   }
+
   @ApiOperation({summary : 'Qna comment 작성'})
   @HttpCode(HttpStatus.CREATED)
   @Post('/comment/create/')
@@ -105,6 +106,7 @@ export class QnaController {
     return await this.qnaCommentService.createComment(id, createQnaCommentDto,
                                                headers);
   }
+
   @ApiOperation({summary : 'Qna  Comment 수정 전 가져오기'})
   @HttpCode(HttpStatus.OK)
   @Get('/getCommentUpdate/:commentId')
@@ -113,6 +115,7 @@ export class QnaController {
     this.logger.log('-----GET /Qna/getCommentupdate');
     return await this.qnaCommentService.getCommentUpdate(commentId, headers);
   }
+
   @ApiOperation({summary : 'Qna Comment 수정'})
   @HttpCode(HttpStatus.OK)
   @Patch('/comment')
@@ -121,6 +124,7 @@ export class QnaController {
     this.logger.log('-----PATCH /Qna/Comment');
     return await this.qnaCommentService.updateComment(updateQnaCommentDto, headers);
   }
+
   @ApiOperation({summary : 'Qna Comment 열람'})
   @HttpCode(HttpStatus.OK)
   @Get('/comment/:id')
@@ -128,6 +132,7 @@ export class QnaController {
     this.logger.log('-----GET /Qna/Comment/:id')
     return await this.qnaCommentService.getOneComment(id, headers);
   }
+  
   @ApiOperation({summary : 'Qna Comment 삭제'})
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete('/comment')

@@ -16,7 +16,7 @@ import { QnaEntity } from 'src/entities/qna/qna.entity';
 import { QnaCommentEntity } from 'src/entities/qna/qnacomment.entity';
 import { GetSearchSql } from 'src/utils/GetSearchSql';
 import { GetToken } from 'src/utils/GetToken';
-import { Page } from 'src/utils/page';
+import { Page } from 'src/utils/Page';
 import { PageRequest } from 'src/utils/PageRequest';
 import { QueryBuilder, Repository } from 'typeorm';
 

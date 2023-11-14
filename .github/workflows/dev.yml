@@ -24,7 +24,9 @@ jobs:
             npm i --legacy-peer-deps  
                   
       - name : run build
-        run : npm run build
+        run : 
+          cd /home/ubuntu/app/Nest-Project
+          npm run build
 
       - name : pm2 start
         run : pm2 start dist/main.js

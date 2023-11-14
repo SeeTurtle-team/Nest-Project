@@ -22,11 +22,12 @@ jobs:
             git pull origin master
             pm2 kill
             npm i --legacy-peer-deps  
-                  
+
+      - name : mv to dirc
+        run : cd /home/ubuntu/app/Nest-Project
+
       - name : run build
-        run : 
-          cd /home/ubuntu/app/Nest-Project
-          npm run build
+        run : npm run build
 
       - name : pm2 start
         run : pm2 start dist/main.js

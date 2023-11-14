@@ -42,7 +42,7 @@ jobs:
       #   run : pm2 start dist/main.js
 
       - name: Send mail
-        if: failure() && step.build.outcome =='failure'
+        if: always()
         uses: dawidd6/action-send-mail@v2
         with:
           # mail server settings

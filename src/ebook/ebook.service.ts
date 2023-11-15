@@ -607,7 +607,8 @@ export class EbookService {
           "dateTime",
           nickname,
           "category",
-          "starRating"
+          "starRating",
+          coalesce("imgUrl", 'noUrl')
         from ebook as a
         join (
           select
@@ -635,12 +636,20 @@ export class EbookService {
         on a."boardCategoryId" = c.id
         left join (
           select
+            id,
+            "imgUrl",
+            "ebookId"
+          from "ebookImg"
+        ) d
+        on d."ebookId" = a.id
+        left join (
+          select
             "ebookId",
             round(avg("starRating"), 2) as "starRating"
           from "ebookStarRating"
           group by "ebookId"
-        ) d
-        on a.id = d."ebookId"
+        ) e
+        on a.id = e."ebookId"
         order by "starRating" desc nulls last, "dateTime" desc
         `,
       );
@@ -939,7 +948,8 @@ export class EbookService {
           nickname,
           "category",
           "starRating",
-          "adminCheck"
+          "adminCheck",
+          coalesce("imgUrl", 'noUrl')
         from ebook as a
         join (
           select
@@ -967,12 +977,20 @@ export class EbookService {
         on a."boardCategoryId" = c.id
         left join (
           select
+            id,
+            "imgUrl",
+            "ebookId"
+          from "ebookImg"
+        ) d
+        on d."ebookId" = a.id
+        left join (
+          select
             "ebookId",
             round(avg("starRating"), 2) as "starRating"
           from "ebookStarRating"
           group by "ebookId"
-        ) d
-        on a.id = d."ebookId"
+        ) e
+        on a.id = e."ebookId"
         order by "dateTime" desc
         `,
       );

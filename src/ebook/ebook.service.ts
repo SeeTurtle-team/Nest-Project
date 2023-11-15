@@ -1145,7 +1145,7 @@ export class EbookService {
         select
           a."ebookId" as id,
           title,
-          "dateTime"
+          "dateTime",
           nickname,
           category,
           "starRating",

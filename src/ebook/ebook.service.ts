@@ -1121,7 +1121,8 @@ export class EbookService {
           "dateTime"
           nickname,
           category,
-          "starRating"
+          "starRating",
+          "imgUrl"
         from "ebookHistory" as a
         join(
           select
@@ -1157,15 +1158,22 @@ export class EbookService {
           from public."user"
         ) d
         on b."userId" = d.id
-        
+        inner join (
+          select
+            id,
+            "imgUrl",
+            "ebookId"
+          from "ebookImg"
+        ) e
+        on e."ebookId" = b.id
         left join (
           select
             "ebookId",
             round(avg("starRating"), 2) as "starRating"
           from "ebookStarRating"
           group by "ebookId"
-        ) e
-        on e."ebookId" = a."ebookId"
+        ) f
+        on f."ebookId" = a."ebookId"
       `);
 
       return new Page(count, page.pageSize, ebook);

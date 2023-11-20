@@ -128,7 +128,7 @@ export class UserController {
   @ApiOperation({ summary: 'Get S3 presigned url' })
   @Get('/url')
   async s3url() {
-    this.logger.log('-----GET /user/s3url');
+    this.logger.log('-----GET /user/url');
     return await this.userService.s3url();
   }
 

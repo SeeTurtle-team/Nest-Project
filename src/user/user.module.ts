@@ -12,6 +12,7 @@ import { UserImgEntity } from 'src/entities/userImg.entity';
 import { GetS3Url } from 'src/utils/GetS3Url';
 import { BoardModule } from 'src/board/board.module';
 import { EbookModule } from 'src/ebook/ebook.module';
+import { RedisModule } from 'src/redis/redis.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { EbookModule } from 'src/ebook/ebook.module';
       signOptions: { expiresIn: '1d' },
     }),
     TypeOrmModule.forFeature([UserEntity, EmailCheckCodeEntity, UserImgEntity]),
+    RedisModule,
   ],
   controllers: [UserController],
   providers: [UserService, GetToken, GetS3Url],

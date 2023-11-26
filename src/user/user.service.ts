@@ -16,6 +16,7 @@ import { UserImgEntity } from 'src/entities/userImg.entity';
 import { checkTokenId } from 'src/utils/CheckToken';
 import { BoardService } from 'src/board/board.service';
 import { EbookService } from 'src/ebook/ebook.service';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class UserService {
@@ -32,6 +33,7 @@ export class UserService {
     private readonly getS3Url: GetS3Url,
     private readonly boardService: BoardService,
     private readonly ebookService: EbookService,
+    private readonly redisService: RedisService,
   ) {}
   private readonly logger = new Logger(UserService.name);
 
@@ -262,8 +264,11 @@ export class UserService {
         .then((result) => {
           this.logger.log(result);
         });
-      await this.saveVerificationCode(email.email, code);
+      await this.saveVerificationCode(email.email);
 
+      // 캐시 설정 key: email, value: code
+      await this.redisService.set(email.email, code);
+      console.log(code);
       return { success: true };
     } catch (err) {
       this.logger.error(err);
@@ -278,13 +283,12 @@ export class UserService {
     }
   }
 
-  async updateVerificationCode(email, code) {
+  async updateVerificationCode(email) {
     try {
       await this.emailCheckCodeRepository
         .createQueryBuilder()
         .update()
         .set({
-          code: code,
           check: false,
         })
         .where('email = :email', { email: email })
@@ -304,14 +308,14 @@ export class UserService {
     }
   }
 
-  async saveVerificationCode(email, code) {
+  async saveVerificationCode(email) {
     try {
       const check = await this.getVerificationCode(email);
-      if (!!check) await this.updateVerificationCode(email, code);
-      else {
+      if (!!check) {
+        await this.updateVerificationCode(email);
+      } else {
         const emailCode = new EmailCheckCodeEntity();
         emailCode.email = email;
-        emailCode.code = code;
         emailCode.check = false;
 
         await this.emailCheckCodeRepository.save(emailCode);
@@ -361,6 +365,9 @@ export class UserService {
         })
         .where('email = :email', { email: email })
         .execute();
+
+      // 할당했던 캐시 삭제
+      await this.redisService.del(email);
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -376,8 +383,9 @@ export class UserService {
 
   async checkVerificationCode(checkCodeDto) {
     try {
-      const dbObj = await this.getVerificationCode(checkCodeDto.email);
-      if (dbObj.code === checkCodeDto.code) {
+      // const dbObj = await this.getVerificationCode(checkCodeDto.email);
+      const cacheCode = await this.redisService.get(checkCodeDto.email);
+      if (cacheCode === checkCodeDto.code) {
         await this.toggleEmailCheck(checkCodeDto.email);
         return { success: true };
       } else return { success: false, msg: '코드 인증 실패' };

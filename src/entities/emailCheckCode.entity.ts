@@ -9,8 +9,5 @@ export class EmailCheckCodeEntity {
   email: string;
 
   @Column()
-  code: string;
-
-  @Column()
   check: boolean;
 }

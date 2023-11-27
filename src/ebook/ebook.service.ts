@@ -806,7 +806,7 @@ export class EbookService {
   async s3url() {
     this.logger.log('s3url');
     return {
-      ...(await this.getS3Url.s3url()),
+      url: (await this.getS3Url.s3url()).data.split('?')[0],
       ok: HttpStatus.OK,
     };
   }

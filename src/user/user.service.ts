@@ -220,6 +220,8 @@ export class UserService {
       user.userLoginType = createUserDto.userLoginType;
       user.userGrade = createUserDto.userGradeId;
 
+      //이미지 추가 필
+
       const salt = await bcrypt.genSalt();
       const hashedPw = await bcrypt.hash(user.password, salt);
       user.password = hashedPw;

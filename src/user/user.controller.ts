@@ -132,13 +132,6 @@ export class UserController {
     return await this.userService.s3url();
   }
 
-  @ApiOperation({ summary: 'url db에 저장' })
-  @Post('/url')
-  async insertUrl(@Body() insertUrlDto: UrlDto, @Headers() headers) {
-    this.logger.log('-----POST /user/url');
-    return await this.userService.insertUrl(insertUrlDto, headers);
-  }
-
   @ApiOperation({ summary: 'url 수정' })
   @Patch('/url')
   async updateUrl(@Body() updateUrlDto: UrlDto, @Headers() headers) {
@@ -194,5 +187,12 @@ export class UserController {
   async myPageEbookHistoryDelete(@Param('id') id: number, @Headers() headers) {
     this.logger.log('-----DELETE /user/ebookHistory/:id');
     return await this.userService.myPageEbookHistoryDelete(id, headers);
+  }
+
+  @Public()
+  @Get('/test/:userId')
+  async test(@Param('userId') userId: string) {
+    this.logger.log('test');
+    return await this.userService.getId(userId);
   }
 }

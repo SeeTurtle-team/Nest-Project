@@ -137,7 +137,7 @@ export class EbookService {
           nickname,
           "category",
           "starRating",
-          coalesce("imgUrl", 'noUrl')
+          coalesce("imgUrl", 'noUrl') as "imgUrl"
         from ebook as a
         join (
           select
@@ -608,7 +608,7 @@ export class EbookService {
           nickname,
           "category",
           "starRating",
-          coalesce("imgUrl", 'noUrl')
+          coalesce("imgUrl", 'noUrl') as "imgUrl"
         from ebook as a
         join (
           select
@@ -949,7 +949,7 @@ export class EbookService {
           "category",
           "starRating",
           "adminCheck",
-          coalesce("imgUrl", 'noUrl')
+          coalesce("imgUrl", 'noUrl') as "imgUrl"
         from ebook as a
         join (
           select
@@ -1149,7 +1149,7 @@ export class EbookService {
           nickname,
           category,
           "starRating",
-          coalesce("imgUrl", 'noUrl')
+          coalesce("imgUrl", 'noUrl') as "imgUrl"
         from "ebookHistory" as a
         join(
           select

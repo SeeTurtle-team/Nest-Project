@@ -28,6 +28,10 @@ export class CreateUserDto {
   readonly userGradeId: userGrade;
 
   @IsOptional()
+  @IsString()
+  readonly img?: string;
+
+  @IsOptional()
   @IsNumber()
   readonly jobId?: number;
 }

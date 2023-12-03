@@ -12,4 +12,7 @@ export class UpdateUserDto {
 
   @IsString()
   readonly nickname: string;
+
+  @IsString()
+  readonly img: string;
 }

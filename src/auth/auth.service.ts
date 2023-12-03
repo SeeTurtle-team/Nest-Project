@@ -48,7 +48,6 @@ export class AuthService {
         nickname: user.nickname,
         imgUrl: url.imgUrl,
       };
-      console.log(payload);
       const jwtToken = await this.getJwtToken(payload);
 
       return { success: true, jwtToken };

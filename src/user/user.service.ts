@@ -493,6 +493,9 @@ export class UserService {
 
       const res = await this.userRepository.save(user);
 
+      const id = await this.getId(googleToken.email);
+      await this.insertUrl(googleToken.picture, id);
+
       return res;
     } catch (err) {
       this.logger.error(err);
@@ -585,6 +588,7 @@ export class UserService {
 
       const verified = await this.getToken.getToken(headers);
       const user = await this.getUserWithId(verified.userId);
+      const url = await this.getUserImgUrl(verified.userId);
       const res = {
         //비밀번호는 빼고 넘기기
         id: user.id,
@@ -594,7 +598,7 @@ export class UserService {
         nickname: user.nickname,
         email: user.email,
         userLoginType: user.userLoginType,
-        //이미지 추가 필
+        igmUrl: url,
       };
       return res;
     } catch (err) {
@@ -648,10 +652,12 @@ export class UserService {
           birth: updateUserDto.birth,
           nickname: updateUserDto.nickname,
           password: hashedPw,
-          //이미지 추가 필
         })
         .where('id = :id', { id: verified.userId })
         .execute();
+
+      const updateUrlDto = { url: updateUserDto.img };
+      await this.updateUrl(updateUrlDto, headers);
 
       const payload = {
         userId: verified.userId,

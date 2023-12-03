@@ -19,14 +19,13 @@ export class AuthService {
 
   async signIn(signInDto: SignInDto) {
     try {
-      const user = await this.getUser(signInDto.userId)
+      const user = await this.getUser(signInDto.userId);
       if (!user) return { success: false, msg: '존재하지 않는 아이디입니다.' };
       const check = await bcrypt.compare(signInDto.password, user.password);
       if (!check)
         return { success: false, msg: '비밀번호가 일치하지 않습니다.' };
 
       return this.returnJwtToken(user);
-     
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -40,18 +39,20 @@ export class AuthService {
     }
   }
 
-  async returnJwtToken(user){
-    try{
+  async returnJwtToken(user) {
+    try {
+      const url = await this.usersService.getUserImgUrl(user.id);
       const payload = {
         userId: user.id,
         username: user.name,
         nickname: user.nickname,
-        imgUrl: user.img,
+        imgUrl: url.imgUrl,
       };
+      console.log(payload);
       const jwtToken = await this.getJwtToken(payload);
 
       return { success: true, jwtToken };
-    }catch(err){
+    } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
@@ -64,13 +65,12 @@ export class AuthService {
     }
   }
 
- 
   async getUser(userId) {
-    try{
+    try {
       const user = await this.usersService.findOne(userId);
-     
+
       return user;
-    }catch(err){
+    } catch (err) {
       this.logger.error(err);
       throw new HttpException(
         {
@@ -90,8 +90,7 @@ export class AuthService {
   //     console.log(decodetoken);
 
   //     const user = await this.getUser(decodetoken['id']);
-      
-      
+
   //   }catch(err){
   //     this.logger.error(err);
   //   }

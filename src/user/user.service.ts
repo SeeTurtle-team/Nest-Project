@@ -150,6 +150,26 @@ export class UserService {
     }
   }
 
+  async getUserImgUrl(userId) {
+    try {
+      const result = await this.userImgRepository.query(`
+          select "imgUrl" from "userImg" where "userId" = ${userId};
+      `);
+
+      return result[0] ? result[0] : { imgUrl: 'noUrl' };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '유저 이미지 url 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
   async userIdCheck(userId) {
     try {
       const check = await this.getUserId(userId.userId || userId);
@@ -891,7 +911,11 @@ export class UserService {
    */
   async myPageUser(headers) {
     try {
-      const userInfo = await this.getUser(headers);
+      const verified = await this.getToken.getToken(headers);
+      const userId = verified.userId;
+      const user = await this.getUser(headers);
+      const url = await this.getUserImgUrl(userId);
+      const userInfo = { ...user, ...url };
       return { userInfo, status: HttpStatus.OK };
     } catch (err) {
       this.logger.error(err);

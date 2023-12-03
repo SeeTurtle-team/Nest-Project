@@ -191,8 +191,8 @@ export class UserController {
 
   @Public()
   @Get('/test/:userId')
-  async test(@Param('userId') userId: string) {
+  async test(@Param('userId') userId: number) {
     this.logger.log('test');
-    return await this.userService.getId(userId);
+    return await this.userService.getUserImgUrl(userId);
   }
 }

@@ -52,18 +52,21 @@ export class UserEntity {
   @Column({ type: 'enum', enum: UserStatus })
   userLoginType: UserStatus;
 
-  @Column({ length: 1000 })
-  img: string;
-
   @ManyToOne((type) => JobEntity, (jobEntity) => jobEntity.userEntities)
   job: JobEntity;
 
   @OneToMany((type) => BoardEntity, (boardEntity) => boardEntity.user)
   boardEntities: BoardEntity[];
+
   @OneToMany((type) => QnaEntity, (qnaEntities) => qnaEntities.user)
   qnaEntities: QnaEntity[];
-  @OneToMany((type) => QnaCommentEntity, (qnaCommentEntities) => qnaCommentEntities.user)
+
+  @OneToMany(
+    (type) => QnaCommentEntity,
+    (qnaCommentEntities) => qnaCommentEntities.user,
+  )
   qnaCommentEntities: QnaCommentEntity[];
+
   @OneToMany(
     (type) => BoardCommentEntity,
     (boardCommentEntity) => boardCommentEntity.user,

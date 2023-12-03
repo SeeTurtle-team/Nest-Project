@@ -224,9 +224,6 @@ export class UserService {
       const hashedPw = await bcrypt.hash(user.password, salt);
       user.password = hashedPw;
 
-      //이미지는 나중에
-      user.img = 'false';
-
       await this.userRepository.save(user);
 
       return { success: true };
@@ -438,7 +435,7 @@ export class UserService {
       user.userId = googleToken.email;
       user.userLoginType = UserStatus.google;
       user.userGrade = defaultGrade;
-      user.img = googleToken.picture;
+      // user.img = googleToken.picture; 이미지 추가 필
       user.password = '';
 
       const salt = await bcrypt.genSalt();
@@ -548,7 +545,7 @@ export class UserService {
         nickname: user.nickname,
         email: user.email,
         userLoginType: user.userLoginType,
-        img: user.img,
+        //이미지 추가 필
       };
       return res;
     } catch (err) {
@@ -601,8 +598,8 @@ export class UserService {
           name: updateUserDto.name,
           birth: updateUserDto.birth,
           nickname: updateUserDto.nickname,
-          img: updateUserDto.img,
           password: hashedPw,
+          //이미지 추가 필
         })
         .where('id = :id', { id: verified.userId })
         .execute();

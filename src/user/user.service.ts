@@ -598,7 +598,7 @@ export class UserService {
         nickname: user.nickname,
         email: user.email,
         userLoginType: user.userLoginType,
-        igmUrl: url,
+        igmUrl: url.imgUrl,
       };
       return res;
     } catch (err) {
@@ -917,12 +917,9 @@ export class UserService {
    */
   async myPageUser(headers) {
     try {
-      const verified = await this.getToken.getToken(headers);
-      const userId = verified.userId;
       const user = await this.getUser(headers);
-      const url = await this.getUserImgUrl(userId);
-      const userInfo = { ...user, ...url };
-      return { userInfo, status: HttpStatus.OK };
+      const userInfo = { ...user };
+      return { status: HttpStatus.OK, userInfo };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(

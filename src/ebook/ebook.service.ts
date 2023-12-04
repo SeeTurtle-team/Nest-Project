@@ -102,14 +102,20 @@ export class EbookService {
 
   async getEbookUserId(id: number) {
     try {
-      const ebook = await this.ebookRepository
+      const userId = await this.ebookRepository
         .createQueryBuilder()
         .select(['"userId"'])
         .where('id = :id', { id: id })
         .andWhere('"isDeleted" = :isDeleted', { isDeleted: false })
         .getRawOne();
-
-      return ebook.userId;
+      console.log(userId);
+      if (userId) return userId.userId;
+      else {
+        return {
+          status: HttpStatus.BAD_REQUEST,
+          msg: '해당 ebook이 존재하지 않습니다.',
+        };
+      }
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -183,7 +189,10 @@ export class EbookService {
         `,
       );
 
-      return new Page(count, page.pageSize, ebook);
+      return {
+        status: HttpStatus.OK,
+        ...new Page(count, page.pageSize, ebook),
+      };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -286,7 +295,7 @@ export class EbookService {
 
       await this.ebookRepository.save(ebookData);
 
-      return { success: true };
+      return { status: HttpStatus.CREATED };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -314,7 +323,7 @@ export class EbookService {
 
       if (check) {
         return await this.getOne(id, headers, ebookHistoryFlag.OFF);
-      } else return { success: false, msg: '유저 불일치' };
+      } else return { status: HttpStatus.BAD_REQUEST, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -351,7 +360,7 @@ export class EbookService {
         .andWhere('userId = :userId', { userId: verified.userId })
         .execute();
 
-      return { success: true };
+      return { status: HttpStatus.CREATED };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -388,8 +397,8 @@ export class EbookService {
           .andWhere('userId = :userId', { userId: verified.userId })
           .execute();
 
-        return { success: true };
-      } else return { success: false, msg: '유저 불일치' };
+        return { status: HttpStatus.CREATED };
+      } else return { status: HttpStatus.BAD_REQUEST, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -431,10 +440,12 @@ export class EbookService {
         starRateData,
         queryRunner,
       );
+      const msg = res.msg;
+      const starRatingAvg = res.starRatingAvg;
 
       if (res['success']) {
         await queryRunner.commitTransaction();
-        return res;
+        return { status: HttpStatus.CREATED, msg, starRatingAvg };
       } else {
         this.logger.error('별점 부여 중 에러 발생');
         await queryRunner.rollbackTransaction();
@@ -654,7 +665,10 @@ export class EbookService {
         `,
       );
 
-      return new Page(count, page.pageSize, ebook);
+      return {
+        status: HttpStatus.OK,
+        ...new Page(count, page.pageSize, ebook),
+      };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(

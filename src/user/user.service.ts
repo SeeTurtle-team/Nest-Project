@@ -59,6 +59,30 @@ export class UserService {
 
   async getId(userId) {
     try {
+      const result = await this.userRepository.find({
+        select: {
+          id: true,
+        },
+        where: {
+          userId: userId,
+        },
+      });
+      return result[0].id;
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'ID 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
+  async getUserId(userId) {
+    try {
       return await this.userRepository.find({
         select: {
           userId: true,
@@ -126,9 +150,29 @@ export class UserService {
     }
   }
 
+  async getUserImgUrl(userId) {
+    try {
+      const result = await this.userImgRepository.query(`
+          select "imgUrl" from "userImg" where "userId" = ${userId};
+      `);
+
+      return result[0] ? result[0] : { imgUrl: 'noUrl' };
+    } catch (err) {
+      this.logger.error(err);
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: '유저 이미지 url 조회 중 에러 발생',
+          success: false,
+        },
+        500,
+      );
+    }
+  }
+
   async userIdCheck(userId) {
     try {
-      const check = await this.getId(userId.userId || userId);
+      const check = await this.getUserId(userId.userId || userId);
       if (check[0]) return { success: false, msg: '아이디 중복' };
       return { success: true };
     } catch (err) {
@@ -220,13 +264,16 @@ export class UserService {
       user.userLoginType = createUserDto.userLoginType;
       user.userGrade = createUserDto.userGradeId;
 
-      //이미지 추가 필
-
       const salt = await bcrypt.genSalt();
       const hashedPw = await bcrypt.hash(user.password, salt);
       user.password = hashedPw;
 
       await this.userRepository.save(user);
+
+      if (createUserDto.img) {
+        const id = await this.getId(createUserDto.userId);
+        await this.insertUrl(createUserDto.img, id);
+      }
 
       return { success: true };
     } catch (err) {
@@ -446,6 +493,9 @@ export class UserService {
 
       const res = await this.userRepository.save(user);
 
+      const id = await this.getId(googleToken.email);
+      await this.insertUrl(googleToken.picture, id);
+
       return res;
     } catch (err) {
       this.logger.error(err);
@@ -538,6 +588,7 @@ export class UserService {
 
       const verified = await this.getToken.getToken(headers);
       const user = await this.getUserWithId(verified.userId);
+      const url = await this.getUserImgUrl(verified.userId);
       const res = {
         //비밀번호는 빼고 넘기기
         id: user.id,
@@ -547,7 +598,7 @@ export class UserService {
         nickname: user.nickname,
         email: user.email,
         userLoginType: user.userLoginType,
-        //이미지 추가 필
+        igmUrl: url.imgUrl,
       };
       return res;
     } catch (err) {
@@ -601,10 +652,12 @@ export class UserService {
           birth: updateUserDto.birth,
           nickname: updateUserDto.nickname,
           password: hashedPw,
-          //이미지 추가 필
         })
         .where('id = :id', { id: verified.userId })
         .execute();
+
+      const updateUrlDto = { url: updateUserDto.img };
+      await this.updateUrl(updateUrlDto, headers);
 
       const payload = {
         userId: verified.userId,
@@ -771,21 +824,14 @@ export class UserService {
   /**
    * s3url db에 저장
    */
-  async insertUrl(insertUrlDto, headers) {
+  async insertUrl(url, id) {
     try {
-      const verified = await this.getToken.getToken(headers);
-      const userId = verified.userId;
-      const dbCheck = await this.checkUrl(userId);
-      if (dbCheck) {
-        return await this.updateUrl(insertUrlDto, headers);
-      } else {
-        const userImgData = new UserImgEntity();
-        userImgData.imgUrl = insertUrlDto.url;
-        userImgData.user = userId;
-        await this.userImgRepository.save(userImgData);
+      const userImgData = new UserImgEntity();
+      userImgData.imgUrl = url;
+      userImgData.user = id;
+      await this.userImgRepository.save(userImgData);
 
-        return { success: true, status: HttpStatus.CREATED };
-      }
+      return { success: true, status: HttpStatus.CREATED };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -807,14 +853,19 @@ export class UserService {
       const verified = await this.getToken.getToken(headers);
       const userId = verified.userId;
 
-      await this.userImgRepository
-        .createQueryBuilder()
-        .update()
-        .set({
-          imgUrl: updateUrlDto.url,
-        })
-        .where('userId = :userId', { userId: userId })
-        .execute();
+      const check = await this.checkUrl(userId);
+      if (check) {
+        await this.userImgRepository
+          .createQueryBuilder()
+          .update()
+          .set({
+            imgUrl: updateUrlDto.url,
+          })
+          .where('userId = :userId', { userId: userId })
+          .execute();
+      } else {
+        await this.insertUrl(updateUrlDto.url, userId);
+      }
 
       return { success: true, status: HttpStatus.OK };
     } catch (err) {
@@ -866,8 +917,9 @@ export class UserService {
    */
   async myPageUser(headers) {
     try {
-      const userInfo = await this.getUser(headers);
-      return { userInfo, status: HttpStatus.OK };
+      const user = await this.getUser(headers);
+      const userInfo = { ...user };
+      return { status: HttpStatus.OK, userInfo };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(

@@ -360,7 +360,7 @@ export class EbookService {
         .andWhere('userId = :userId', { userId: verified.userId })
         .execute();
 
-      return { status: HttpStatus.CREATED };
+      return { status: HttpStatus.NO_CONTENT };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -397,7 +397,7 @@ export class EbookService {
           .andWhere('userId = :userId', { userId: verified.userId })
           .execute();
 
-        return { status: HttpStatus.CREATED };
+        return { status: HttpStatus.NO_CONTENT };
       } else return { status: HttpStatus.BAD_REQUEST, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
@@ -445,7 +445,7 @@ export class EbookService {
 
       if (res['success']) {
         await queryRunner.commitTransaction();
-        return { status: HttpStatus.CREATED, msg, starRatingAvg };
+        return { status: HttpStatus.NO_CONTENT, msg, starRatingAvg };
       } else {
         this.logger.error('별점 부여 중 에러 발생');
         await queryRunner.rollbackTransaction();
@@ -687,9 +687,16 @@ export class EbookService {
     try {
       const verified = await this.getToken.getToken(headers);
       const series = await this.ebookSeriesRepository.query(`
-        select id, "seriesName", "userId" from "ebookSeries" where "userId" = ${verified.userId} and "isDeleted" = false
+        select
+          id,
+          "seriesName",
+          "userId"
+        from "ebookSeries"
+        where "userId" = ${verified.userId}
+        and "isDeleted" = false
+        order by id desc
       `);
-      return series;
+      return { status: HttpStatus.OK, series };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -713,7 +720,7 @@ export class EbookService {
 
       await this.ebookSeriesRepository.save(series);
       const allSeries = await this.getSeries(headers);
-      return { success: true, series: allSeries };
+      return { status: HttpStatus.CREATED, series: allSeries.series };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -769,8 +776,8 @@ export class EbookService {
           .andWhere('userId = :userId', { userId: userId })
           .execute();
 
-        return { success: true };
-      } else return { success: false, msg: '유저 불일치' };
+        return { status: HttpStatus.NO_CONTENT };
+      } else return { status: HttpStatus.BAD_REQUEST, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -801,8 +808,8 @@ export class EbookService {
           .andWhere('userId = :userId', { userId: userId })
           .execute();
 
-        return { success: true };
-      } else return { success: false, msg: '유저 불일치' };
+        return { status: HttpStatus.NO_CONTENT };
+      } else return { status: HttpStatus.BAD_REQUEST, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -820,8 +827,8 @@ export class EbookService {
   async s3url() {
     this.logger.log('s3url');
     return {
+      status: HttpStatus.OK,
       ...(await this.getS3Url.s3url()),
-      ok: HttpStatus.OK,
     };
   }
 
@@ -865,8 +872,8 @@ export class EbookService {
           ebookImgData.ebook = insertUrlDto.ebookId;
           await this.ebookImgRepository.save(ebookImgData);
 
-          return { success: true, status: HttpStatus.CREATED };
-        } else return { success: false, msg: '유저 불일치' };
+          return { status: HttpStatus.CREATED };
+        } else return { status: HttpStatus.BAD_REQUEST, msg: '유저 불일치' };
       }
     } catch (err) {
       this.logger.error(err);
@@ -899,7 +906,7 @@ export class EbookService {
           })
           .where('ebookId = :ebookId', { ebookId: updateUrlDto.ebookId })
           .execute();
-        return { success: true, status: HttpStatus.OK };
+        return { status: HttpStatus.NO_CONTENT };
       } else return { success: false, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
@@ -932,8 +939,8 @@ export class EbookService {
           })
           .where('ebookId = :ebookId', { ebookId: deleteUrlDto.ebookId })
           .execute();
-        return { success: true, status: HttpStatus.OK };
-      } else return { success: false, msg: '유저 불일치' };
+        return { status: HttpStatus.NO_CONTENT };
+      } else return { status: HttpStatus.BAD_REQUEST, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(

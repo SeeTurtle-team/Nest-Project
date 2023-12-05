@@ -130,7 +130,7 @@ export class EbookController {
 
   //s3url
   @ApiOperation({ summary: 'Get S3 presigned url' })
-  @Get('/s3url')
+  @Get('/url')
   async s3url() {
     this.logger.log('-----GET /ebook/s3url');
     return await this.ebookService.s3url();

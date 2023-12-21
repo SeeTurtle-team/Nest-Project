@@ -46,7 +46,7 @@ export class AppController {
     }
 
 
-    await this.redisService.set('time','????'); //ttl은 ms 단위
+    await this.redisService.set('time','????'); 
     return "save new time : "+'????';
   }
 }

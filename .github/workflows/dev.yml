@@ -25,7 +25,7 @@ jobs:
             cd /home/ubuntu/app/Nest-Project
             git pull origin master
             pm2 kill
-            docker build -t bk0625/ebook
+            docker build -t bk0625/ebook .
             docker run -p 80:5000 bk0625/ebook
 
            # npm i --legacy-peer-deps

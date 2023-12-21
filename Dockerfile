@@ -10,4 +10,4 @@ COPY ./ ./
 
 RUN npm run build
 
-CMD ["pm2","start","dist/main.js"]
+CMD ["pm2","start","dist/main.js"] 

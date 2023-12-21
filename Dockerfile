@@ -6,9 +6,10 @@ COPY package.json ./
 
 RUN npm install --legacy-peer-deps
 
+COPY ./ ./
+
 RUN npm install --global pm2
 
-COPY ./ ./
 
 RUN npm run build
 

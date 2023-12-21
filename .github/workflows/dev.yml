@@ -21,14 +21,13 @@ jobs:
           username: ${{ secrets.REMOTE_USER }} # 우분투 아이디
           key: ${{ secrets.REMOTE_PRIVATE_KEY }} # ec2 instance pem key
           port: ${{ secrets.REMOTE_SSH_PORT }} # 접속포트
-          script: | # 실행할 스크립트  
+          script: | # 실행할 스크립트
             cd /home/ubuntu/app/Nest-Project
             git pull origin master
             pm2 kill
-            docker build -t bk0625/ebook .
-            docker run bk0625/ebook -p 80:5000
-          # npm run build
-          # pm2 start dist/main.js  
+            npm i --legacy-peer-deps
+            npm run build
+            pm2 start dist/main.js  
 
       # - name : mv to dirc
       #   run : cd /home/ubuntu/app/Nest-Project

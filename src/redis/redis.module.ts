@@ -7,7 +7,7 @@ import { redisStore } from 'cache-manager-redis-store';
   imports: [
     CacheModule.register({
       Store: redisStore,
-      host: 'redis-container',
+      host: 'localhost',
       port: 6379,
       ttl: 60000, // ms
       max: 15, // maximum number of items in cache

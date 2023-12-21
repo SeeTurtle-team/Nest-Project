@@ -35,6 +35,7 @@ export class AppController {
     return "save new time : "+now;
   }
   
+  //캐시 테스트
   @Public()
   @ApiOperation({ summary: 'cache-test'})
   @Get('/test')

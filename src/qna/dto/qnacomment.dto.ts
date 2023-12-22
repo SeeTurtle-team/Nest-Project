@@ -12,3 +12,6 @@ export class UpdateQnaCommentDto extends PartialType(CreateQnaCommentDto)
   @IsNumber()
   readonly qnaCommentId: number;
 }
+export class DeleteQnaCommentDto {
+    @IsNumber() readonly qnaCommentId: number;
+}

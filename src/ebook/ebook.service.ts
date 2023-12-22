@@ -102,14 +102,20 @@ export class EbookService {
 
   async getEbookUserId(id: number) {
     try {
-      const ebook = await this.ebookRepository
+      const userId = await this.ebookRepository
         .createQueryBuilder()
         .select(['"userId"'])
         .where('id = :id', { id: id })
         .andWhere('"isDeleted" = :isDeleted', { isDeleted: false })
         .getRawOne();
-
-      return ebook.userId;
+      console.log(userId);
+      if (userId) return userId.userId;
+      else {
+        return {
+          status: HttpStatus.BAD_REQUEST,
+          msg: '해당 ebook이 존재하지 않습니다.',
+        };
+      }
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -136,7 +142,8 @@ export class EbookService {
           "dateTime",
           nickname,
           "category",
-          "starRating"
+          "starRating",
+          coalesce("imgUrl", 'noUrl') as "imgUrl"
         from ebook as a
         join (
           select
@@ -164,17 +171,28 @@ export class EbookService {
         on a."boardCategoryId" = c.id
         left join (
           select
+            id,
+            "imgUrl",
+            "ebookId"
+          from "ebookImg"
+        ) d
+        on d."ebookId" = a.id
+        left join (
+          select
             "ebookId",
             round(avg("starRating"), 2) as "starRating"
           from "ebookStarRating"
           group by "ebookId"
-        ) d
-        on a.id = d."ebookId"
+        ) e
+        on a.id = e."ebookId"
         order by "dateTime" desc
         `,
       );
 
-      return new Page(count, page.pageSize, ebook);
+      return {
+        status: HttpStatus.OK,
+        ...new Page(count, page.pageSize, ebook),
+      };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -277,7 +295,7 @@ export class EbookService {
 
       await this.ebookRepository.save(ebookData);
 
-      return { success: true };
+      return { status: HttpStatus.CREATED };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -305,7 +323,7 @@ export class EbookService {
 
       if (check) {
         return await this.getOne(id, headers, ebookHistoryFlag.OFF);
-      } else return { success: false, msg: '유저 불일치' };
+      } else return { status: HttpStatus.BAD_REQUEST, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -342,7 +360,7 @@ export class EbookService {
         .andWhere('userId = :userId', { userId: verified.userId })
         .execute();
 
-      return { success: true };
+      return { status: HttpStatus.NO_CONTENT };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -379,8 +397,8 @@ export class EbookService {
           .andWhere('userId = :userId', { userId: verified.userId })
           .execute();
 
-        return { success: true };
-      } else return { success: false, msg: '유저 불일치' };
+        return { status: HttpStatus.NO_CONTENT };
+      } else return { status: HttpStatus.BAD_REQUEST, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -422,10 +440,12 @@ export class EbookService {
         starRateData,
         queryRunner,
       );
+      const msg = res.msg;
+      const starRatingAvg = res.starRatingAvg;
 
       if (res['success']) {
         await queryRunner.commitTransaction();
-        return res;
+        return { status: HttpStatus.NO_CONTENT, msg, starRatingAvg };
       } else {
         this.logger.error('별점 부여 중 에러 발생');
         await queryRunner.rollbackTransaction();
@@ -598,7 +618,8 @@ export class EbookService {
           "dateTime",
           nickname,
           "category",
-          "starRating"
+          "starRating",
+          coalesce("imgUrl", 'noUrl') as "imgUrl"
         from ebook as a
         join (
           select
@@ -626,17 +647,28 @@ export class EbookService {
         on a."boardCategoryId" = c.id
         left join (
           select
+            id,
+            "imgUrl",
+            "ebookId"
+          from "ebookImg"
+        ) d
+        on d."ebookId" = a.id
+        left join (
+          select
             "ebookId",
             round(avg("starRating"), 2) as "starRating"
           from "ebookStarRating"
           group by "ebookId"
-        ) d
-        on a.id = d."ebookId"
+        ) e
+        on a.id = e."ebookId"
         order by "starRating" desc nulls last, "dateTime" desc
         `,
       );
 
-      return new Page(count, page.pageSize, ebook);
+      return {
+        status: HttpStatus.OK,
+        ...new Page(count, page.pageSize, ebook),
+      };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -655,9 +687,16 @@ export class EbookService {
     try {
       const verified = await this.getToken.getToken(headers);
       const series = await this.ebookSeriesRepository.query(`
-        select id, "seriesName", "userId" from "ebookSeries" where "userId" = ${verified.userId} and "isDeleted" = false
+        select
+          id,
+          "seriesName",
+          "userId"
+        from "ebookSeries"
+        where "userId" = ${verified.userId}
+        and "isDeleted" = false
+        order by id desc
       `);
-      return series;
+      return { status: HttpStatus.OK, series };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -681,7 +720,7 @@ export class EbookService {
 
       await this.ebookSeriesRepository.save(series);
       const allSeries = await this.getSeries(headers);
-      return { success: true, series: allSeries };
+      return { status: HttpStatus.CREATED, series: allSeries.series };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -737,8 +776,8 @@ export class EbookService {
           .andWhere('userId = :userId', { userId: userId })
           .execute();
 
-        return { success: true };
-      } else return { success: false, msg: '유저 불일치' };
+        return { status: HttpStatus.NO_CONTENT };
+      } else return { status: HttpStatus.BAD_REQUEST, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -769,8 +808,8 @@ export class EbookService {
           .andWhere('userId = :userId', { userId: userId })
           .execute();
 
-        return { success: true };
-      } else return { success: false, msg: '유저 불일치' };
+        return { status: HttpStatus.NO_CONTENT };
+      } else return { status: HttpStatus.BAD_REQUEST, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -788,8 +827,8 @@ export class EbookService {
   async s3url() {
     this.logger.log('s3url');
     return {
+      status: HttpStatus.OK,
       ...(await this.getS3Url.s3url()),
-      ok: HttpStatus.OK,
     };
   }
 
@@ -833,8 +872,8 @@ export class EbookService {
           ebookImgData.ebook = insertUrlDto.ebookId;
           await this.ebookImgRepository.save(ebookImgData);
 
-          return { success: true, status: HttpStatus.CREATED };
-        } else return { success: false, msg: '유저 불일치' };
+          return { status: HttpStatus.CREATED };
+        } else return { status: HttpStatus.BAD_REQUEST, msg: '유저 불일치' };
       }
     } catch (err) {
       this.logger.error(err);
@@ -867,7 +906,7 @@ export class EbookService {
           })
           .where('ebookId = :ebookId', { ebookId: updateUrlDto.ebookId })
           .execute();
-        return { success: true, status: HttpStatus.OK };
+        return { status: HttpStatus.NO_CONTENT };
       } else return { success: false, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
@@ -900,8 +939,8 @@ export class EbookService {
           })
           .where('ebookId = :ebookId', { ebookId: deleteUrlDto.ebookId })
           .execute();
-        return { success: true, status: HttpStatus.OK };
-      } else return { success: false, msg: '유저 불일치' };
+        return { status: HttpStatus.NO_CONTENT };
+      } else return { status: HttpStatus.BAD_REQUEST, msg: '유저 불일치' };
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(
@@ -930,7 +969,8 @@ export class EbookService {
           nickname,
           "category",
           "starRating",
-          "adminCheck"
+          "adminCheck",
+          coalesce("imgUrl", 'noUrl') as "imgUrl"
         from ebook as a
         join (
           select
@@ -958,12 +998,20 @@ export class EbookService {
         on a."boardCategoryId" = c.id
         left join (
           select
+            id,
+            "imgUrl",
+            "ebookId"
+          from "ebookImg"
+        ) d
+        on d."ebookId" = a.id
+        left join (
+          select
             "ebookId",
             round(avg("starRating"), 2) as "starRating"
           from "ebookStarRating"
           group by "ebookId"
-        ) d
-        on a.id = d."ebookId"
+        ) e
+        on a.id = e."ebookId"
         order by "dateTime" desc
         `,
       );
@@ -1118,10 +1166,11 @@ export class EbookService {
         select
           a."ebookId" as id,
           title,
-          "dateTime"
+          "dateTime",
           nickname,
           category,
-          "starRating"
+          "starRating",
+          coalesce("imgUrl", 'noUrl') as "imgUrl"
         from "ebookHistory" as a
         join(
           select
@@ -1157,15 +1206,22 @@ export class EbookService {
           from public."user"
         ) d
         on b."userId" = d.id
-        
+        left join (
+          select
+            id,
+            "imgUrl",
+            "ebookId"
+          from "ebookImg"
+        ) e
+        on e."ebookId" = b.id
         left join (
           select
             "ebookId",
             round(avg("starRating"), 2) as "starRating"
           from "ebookStarRating"
           group by "ebookId"
-        ) e
-        on e."ebookId" = a."ebookId"
+        ) f
+        on f."ebookId" = a."ebookId"
       `);
 
       return new Page(count, page.pageSize, ebook);

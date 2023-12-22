@@ -41,10 +41,8 @@ import { RandomSubjectEntity } from './entities/randomSubject.entity';
 import { QnaEntity } from './entities/qna/qna.entity';
 import { QnaCommentEntity } from './entities/qna/qnacomment.entity';
 import { EbookImgEntity } from './entities/ebookImg.entity';
-import { CacheModule } from '@nestjs/cache-manager';
-import { RedisClientOptions } from 'redis';
-import { redisStore } from 'cache-manager-redis-store';
 import { EbookHistoryEntity } from './entities/ebookHistory.entity';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -85,7 +83,7 @@ import { EbookHistoryEntity } from './entities/ebookHistory.entity';
         EbookImgEntity,
         EbookHistoryEntity,
       ],
-      synchronize: true,
+      synchronize: false,
       autoLoadEntities: true,
       logging: true,
     }),
@@ -132,14 +130,14 @@ import { EbookHistoryEntity } from './entities/ebookHistory.entity';
     //   inGlobla:true,
     // }),
 
-    CacheModule.register({
-      Store: redisStore,
-      host: 'localhost',
-      port: 6379,
-      ttl: 6000, //seconds (ms)
-      max: 15, // maximum number of items in cache
-      inGlobla: true,
-    }),
+    // CacheModule.register({
+    //   Store: redisStore,
+    //   host: 'localhost',
+    //   port: 6379,
+    //   ttl: 6000, //seconds (ms)
+    //   max: 15, // maximum number of items in cache
+    //   inGlobla: true,
+    // }),
 
     BoardModule,
     UserModule,
@@ -149,6 +147,7 @@ import { EbookHistoryEntity } from './entities/ebookHistory.entity';
     SmallTalkModule,
     AdminModule,
     QnaModule,
+    RedisModule,
   ],
 
   controllers: [AppController],

@@ -221,11 +221,10 @@ export class SmallTalkService {
                     .addSelect('user.id','userId')
                     .addSelect('user.name','name')
                     .addSelect('user.nickname','nickname')
-                    .addSelect('user.img','userImg')
                     .leftJoin("smallSubject.user",'user')
                     .where('smallSubject.isDeleted = false')
             
-            //리팩토링 예정
+            
             if(title!==undefined) {
                 if(title!==''){
                     const searchKey = `%${title}%`
@@ -290,7 +289,6 @@ export class SmallTalkService {
                         .addSelect('smallTalk.contents','contents')
                         .addSelect('user.name','name')
                         .addSelect('user.nickname','userName')
-                        .addSelect('user.img','userImg')
                         .leftJoin('smallTalk.user','user')
                         .where('smallTalk.smallSubjectId = :id',{id:id})
                         .andWhere('smallTalk.isDeleted = false')
@@ -356,7 +354,6 @@ export class SmallTalkService {
                 .addSelect('user.id','userId')
                 .addSelect('user.name','name')
                 .addSelect('user.nickname','nickname')
-                .addSelect('user.img','userImg')
                 .leftJoin("smallSubject.user",'user')
                 .where('smallSubject.isDeleted = false')
                 .andWhere('smallSubject.id = :id',{id:id})

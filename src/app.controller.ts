@@ -1,19 +1,16 @@
-import { Controller, Get, Inject } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiOperation } from '@nestjs/swagger';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager'
 import { Public } from './auth/decorators/public.decorator';
+import { RedisService } from './redis/redis.service';
 
 @Controller()
 export class AppController {
-  constructor(
-    private readonly appService: AppService,
-    @Inject(CACHE_MANAGER)
-    private cacheManager : Cache
-  ) {}
+  cacheManager: any;
+  constructor(private readonly appService: AppService,private readonly redisService: RedisService,) {}
 
   @ApiOperation({ summary: 'getHello' })
+  @Public()
   @Get()
   getHello(): string {
     return this.appService.getHello();
@@ -23,10 +20,10 @@ export class AppController {
   @ApiOperation({ summary: 'cache-test'})
   @Get('/cache')
   async getCache() : Promise<string>{
-    const savedTime = await this.cacheManager.get('time');
-    const test = await this.cacheManager.get('test');
+    const savedTime = await this.redisService.get('time');
+    const test = await this.redisService.get('test');
     console.log(test);
-    
+
     if(savedTime){
       console.log('cache!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
       return "saved time : " + savedTime;
@@ -34,8 +31,23 @@ export class AppController {
 
     const now = new Date().getTime();
 
-   
-    await this.cacheManager.set('time',now); //ttl은 ms 단위
+    await this.redisService.set('time',now); //ttl은 ms 단위
     return "save new time : "+now;
+  }
+  
+  //캐시 테스트
+  @Public()
+  @ApiOperation({ summary: 'cache-test'})
+  @Get('/test')
+  async testCache() : Promise<string>{
+    const savedTime = await this.redisService.get('test');
+    if(savedTime){
+      console.log('cache!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+      return "saved time : " + test;
+    }
+
+
+    await this.redisService.set('time','????'); 
+    return "save new time : "+'????';
   }
 }

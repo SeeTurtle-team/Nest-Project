@@ -10,7 +10,11 @@ jobs:
     runs-on: ubuntu-latest # 실행될 인스턴스 OS와 버전
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: excuting remote ssh commands
+        id: build
         uses: appleboy/ssh-action@v0.1.6 # ssh 접속하는 오픈소스
         with:
           host: ${{ secrets.REMOTE_IP }} # 인스턴스 IP
@@ -21,6 +25,40 @@ jobs:
             cd /home/ubuntu/app/Nest-Project
             git pull origin master
             pm2 kill
-            npm i --legacy-peer-deps  
-            npm run build
-            pm2 start dist/main.js
+            docker build -t bk0625/ebook .
+            docker run -p 80:5000 bk0625/ebook
+
+           # npm i --legacy-peer-deps
+            # npm run build
+            # pm2 start dist/main.js
+
+      # - name : mv to dirc
+      #   run : cd /home/ubuntu/app/Nest-Project
+
+      # - name : run build
+      #   run : | 
+      #     cd /home/ubuntu/app/Nest-Project
+      #     npm run build
+      #     pm2 start dist/main.js
+
+      # - name : pm2 start
+      #   run : pm2 start dist/main.js
+
+      - name: Send mail
+        if: always()
+        uses: dawidd6/action-send-mail@v2
+        with:
+          # mail server settings
+          server_address: smtp.gmail.com
+          server_port: 465
+          # user credentials
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          # email subject
+          subject: ${{ github.job }} job of ${{ github.repository }} has ${{ job.status }}
+          # email body as text
+          body: ${{ github.job }} job in worflow ${{ github.workflow }} of ${{ github.repository }} has ${{ job.status }}
+          # comma-separated string, send email to
+          to: qudqud97@naver.com,roy1228@naver.com
+          # from email name
+          from: Nest Project EC2

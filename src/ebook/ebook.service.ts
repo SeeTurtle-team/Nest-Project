@@ -11,7 +11,7 @@ import { DataSource, Repository } from 'typeorm';
 import { GetS3Url } from 'src/utils/GetS3Url';
 import { EbookHistoryEntity } from 'src/entities/ebookHistory.entity';
 import { ebookHistoryFlag } from 'src/Common/ebookHistoryFlag';
-
+import { checkIsImage } from 'src/utils/CheckIsImage';
 @Injectable()
 export class EbookService {
   private readonly logger = new Logger(EbookService.name);
@@ -859,6 +859,7 @@ export class EbookService {
    */
   async insertUrl(insertUrlDto, headers) {
     try {
+      if(checkIsImage(insertUrlDto.url)){
       const dbCheck = await this.checkUrl(insertUrlDto.ebookId);
       if (dbCheck) {
         return await this.updateUrl(insertUrlDto, headers);
@@ -874,6 +875,10 @@ export class EbookService {
 
           return { status: HttpStatus.CREATED };
         } else return { status: HttpStatus.BAD_REQUEST, msg: '유저 불일치' };
+      }}
+      else
+      {
+        return { status: HttpStatus.BAD_REQUEST, msg: '이미지만 업로드 가능합니다' };
       }
     } catch (err) {
       this.logger.error(err);
@@ -893,6 +898,7 @@ export class EbookService {
    */
   async updateUrl(updateUrlDto, headers) {
     try {
+      if(checkIsImage(updateUrlDto.url)){
       const verified = await this.getToken.getToken(headers);
       const userId = await this.getEbookUserId(updateUrlDto.ebookId);
       const check = checkTokenId(userId, verified.userId);
@@ -907,7 +913,11 @@ export class EbookService {
           .where('ebookId = :ebookId', { ebookId: updateUrlDto.ebookId })
           .execute();
         return { status: HttpStatus.NO_CONTENT };
-      } else return { success: false, msg: '유저 불일치' };
+      } else return { success: false, msg: '유저 불일치' };}
+      else
+      {
+        return { status: HttpStatus.BAD_REQUEST, msg: '이미지만 업로드 가능합니다' };
+      }
     } catch (err) {
       this.logger.error(err);
       throw new HttpException(

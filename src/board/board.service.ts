@@ -1,4 +1,11 @@
-import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  HttpException,
+  HttpStatus,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { BoardRepository } from './repository/board.repository';
 import { BoardEntity } from 'src/entities/board.entity';
 import { DataSource, Repository } from 'typeorm';
@@ -12,6 +19,7 @@ import { GetToken } from 'src/utils/GetToken';
 import { GetSearchSql } from 'src/utils/GetSearchSql';
 import { GetS3Url } from 'src/utils/GetS3Url';
 import { BoardRecommendEntity } from 'src/entities/boardRecommend.entity';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class BoardService {
@@ -30,6 +38,8 @@ export class BoardService {
     private readonly getToken: GetToken,
     private readonly getSearchSql: GetSearchSql,
     private readonly getS3Url: GetS3Url,
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
   ) {}
 
   async getTotalCount() {

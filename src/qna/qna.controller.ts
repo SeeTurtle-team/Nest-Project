@@ -98,7 +98,7 @@ export class QnaController {
 
   @ApiOperation({summary : 'Qna comment 작성'})
   @HttpCode(HttpStatus.CREATED)
-  @Post('/comment/create/')
+  @Post('/comment/create/:id')
   async createComment(@Param('id') id: number,
                       @Body() createQnaCommentDto: CreateQnaCommentDto,
                       @Headers() headers) {

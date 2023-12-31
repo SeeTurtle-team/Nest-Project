@@ -71,9 +71,8 @@ export class QnaCommentService {
         limit = pageRequest.getLimit();
         pageSize = pageRequest.pageSize;
       }
-      const count = await this.qnaService.countAll(boarId);
-      const page = await this.qnaCommentRepository.query(
-        `select  id, title,username, "dateTime","issecret" from "qnaComment" as q where q."isDeleted"=false and q."ban"=false order by q."parentId" desc offset ${offset} limit ${limit}`);
+      const [count,page] = await Promise.all([this.qnaService.countAll(boarId),this.qnaCommentRepository.query(
+        `select  id, title,username, "dateTime","issecret" from "qnaComment" as q where q."isDeleted"=false and q."ban"=false order by q."parentId" desc offset ${offset} limit ${limit}`)]);
       const returnPage = new Page(count, pageSize, page);
       return { success: true, Page: returnPage };
     } catch (err) {
@@ -90,10 +89,8 @@ export class QnaCommentService {
     try {
       const isComment = true;
       const verified = await this.getToken.getToken(headers);
-      const check =
-        await this.qnaService.checkUserandIsSecret(id, verified.userId, isComment);
-      const page = await this.qnaCommentRepository.query(
-        `select  id, title, "dateTime",username,contents from "qnaComment" where "id"=${id} and "ban"=false and "isDeleted"=false`);
+      const [check,page]=await Promise.all([this.qnaService.checkUserandIsSecret(id, verified.userId, isComment),this.qnaCommentRepository.query(
+        `select  id, title, "dateTime",username,contents from "qnaComment" where "id"=${id} and "ban"=false and "isDeleted"=false`)]);
       if (!page) {
         throw new Error('Qna.getOneComment에서 삭제된 Qna에 접근')
       }

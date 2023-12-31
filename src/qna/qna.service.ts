@@ -45,9 +45,8 @@ export class QnaService {
                 limit = pageRequest.getLimit();
                 pageSize = pageRequest.pageSize;
             }
-            const count = await this.countAll(boarId);
-            const page = await this.qnaCommentRepository.query(
-                `select  id, title,username, "dateTime","issecret" from "qnaComment" as q where q."isDeleted"=false and q."ban"=false order by q."parentId" desc offset ${offset} limit ${limit}`);
+            const [count,page] = await Promise.all( [this.countAll(boarId),this.qnaCommentRepository.query(
+                `select  id, title,username, "dateTime","issecret" from "qnaComment" as q where q."isDeleted"=false and q."ban"=false order by q."parentId" desc offset ${offset} limit ${limit}`)]);
             const returnPage = new Page(count, pageSize, page);
             return { success: true, Page: returnPage };
         } catch (err) {
@@ -213,9 +212,8 @@ export class QnaService {
         try {
             const offset = pageRequest.getOffset();
             const limit = pageRequest.getLimit();
-            const count = await this.countAll();
-            const page = await this.qnaRepository.query(
-                `select  id, title, "dateTime" from "qna" as q where q."ban"=false and q."isDeleted"=false order by q."id" desc offset ${offset} limit ${limit}`);
+            const [count,page] = await Promise.all( [this.countAll(),this.qnaRepository.query(
+                `select  id, title, "dateTime" from "qna" as q where q."ban"=false and q."isDeleted"=false order by q."id" desc offset ${offset} limit ${limit}`)]);
             const returnPage = new Page(count, pageRequest.pageSize, page);
             return { success: true, returnPage };
         } catch (err) {
@@ -271,8 +269,7 @@ export class QnaService {
         try {
             const verified = await this.getToken.getToken(headers);
             const check = await this.checkUserandIsSecret(id, verified.userId);
-            let page = await this.getQnaPage(id);
-            let comments = await this.getAllComment(id, pageRequest);
+            let [page,comments] = await Promise.all([this.getQnaPage(id),this.getAllComment(id, pageRequest)]);
             if (comments['success']) {
                 comments = comments['Page'];
             } else {
@@ -335,9 +332,6 @@ export class QnaService {
         try {
             const update = await this.getOne(id, headers);
             const checkIsOwner = await this.checkIsOwner(update['check']);
-            this.logger.log(update);
-            this.logger.log(checkIsOwner);
-
             if (!checkIsOwner)
                 throw new Error('Qna.getupdate에 무권한접근');
 

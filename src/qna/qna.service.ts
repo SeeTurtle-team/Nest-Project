@@ -68,9 +68,7 @@ export class QnaService {
             } else {
                 count = await this.qnaRepository.query(`select count(*) from "qna" as q where q."ban"=false and q."isDeleted"=false`);
             }
-           
-
-            return count[0]['count'];
+            return Number.parseInt(count[0]['count']);
         } catch (err) {
             this.logger.error(err); // 에러 로그 남겨주면 좋습니다.
             throw new HttpException(

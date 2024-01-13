@@ -1,4 +1,11 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -31,6 +38,7 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly getToken: GetToken,
     private readonly getS3Url: GetS3Url,
+    @Inject(forwardRef(() => BoardService))
     private readonly boardService: BoardService,
     private readonly ebookService: EbookService,
     private readonly redisService: RedisService,

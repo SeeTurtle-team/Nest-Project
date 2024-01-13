@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from 'src/entities/user.entity';
 import { UserController } from './user.controller';
@@ -16,7 +16,7 @@ import { RedisModule } from 'src/redis/redis.module';
 
 @Module({
   imports: [
-    BoardModule,
+    forwardRef(() => BoardModule),
     EbookModule,
     ConfigModule.forRoot({
       isGlobal: true,

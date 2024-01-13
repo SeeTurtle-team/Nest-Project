@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { BoardController } from './board.controller';
 import { BoardRepository } from './repository/board.repository';
@@ -14,6 +14,7 @@ import { GetToken } from 'src/utils/GetToken';
 import { GetSearchSql } from 'src/utils/GetSearchSql';
 import { GetS3Url } from 'src/utils/GetS3Url';
 import { BoardRecommendEntity } from 'src/entities/boardRecommend.entity';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { BoardRecommendEntity } from 'src/entities/boardRecommend.entity';
       BoardCategoryEntity,
       BoardRecommendEntity,
     ]),
+    forwardRef(() => UserModule),
   ],
   controllers: [BoardController],
   providers: [

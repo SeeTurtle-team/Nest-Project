@@ -19,7 +19,6 @@ import { GetToken } from 'src/utils/GetToken';
 import { Page } from 'src/utils/Page';
 import { PageRequest } from 'src/utils/PageRequest';
 import { QueryBuilder, Repository } from 'typeorm';
-
 import { UpdateQnaDto } from './dto/qna.dto';
 import { QnaCommentService } from './qnaComment.service';
 
@@ -33,7 +32,7 @@ export class QnaService {
             Repository<QnaCommentEntity>,
         private readonly getToken: GetToken,
     ) { }
-
+//게시글에 딸린 모든 코멘트 가져오기
     async getAllComment(boarId: number,
         pageRequest?: PageRequest): Promise<Object> {
         try {
@@ -45,10 +44,9 @@ export class QnaService {
                 limit = pageRequest.getLimit();
                 pageSize = pageRequest.pageSize;
             }
-            const count = await this.countAll(boarId);
-            const page = await this.qnaCommentRepository.query(
-                `select  id, title,username, "dateTime","issecret" from "qnaComment" as q where q."isDeleted"=false and q."ban"=false order by q."parentId" desc offset ${offset} limit ${limit}`);
-            const returnPage = new Page(count, pageSize, page);
+            const [count,page] = await Promise.all( [this.countAll(boarId),this.qnaCommentRepository.query(
+                `select  id, title,username, "dateTime","issecret" from "qnaComment" as q where q."qnaId"=${boarId} and q."isDeleted"=false and q."ban"=false order by q."parentId" desc offset ${offset} limit ${limit}`)]);
+                const returnPage = new Page(count, pageSize, page);
             return { success: true, Page: returnPage };
         } catch (err) {
             this.logger.error(err);
@@ -60,16 +58,16 @@ export class QnaService {
                 HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
+    //게시글의 개수 혹은 게시글의 comment개수
     async countAll(boardId?: number): Promise<number> {
         try {
             // try 문으로 묶어야 err 핸들링 가능
-            let st = null;
+            let count=0;
             if (boardId) {
-                st = "qnaComment";
+                count = await this.qnaRepository.query(`select count(*) from "qnaComment" as q where q."ban"=false and q."isDeleted"=false and q."qnaId"=${boardId}`);
             } else {
-                st = "qna";
+                count = await this.qnaRepository.query(`select count(*) from "qna" as q where q."ban"=false and q."isDeleted"=false`);
             }
-            const count = await this.qnaRepository.query(`select count(*) from "${st}" as q where q."ban"=false and q."isDeleted"=false`);
             return Number.parseInt(count[0]['count']);
         } catch (err) {
             this.logger.error(err); // 에러 로그 남겨주면 좋습니다.
@@ -82,7 +80,7 @@ export class QnaService {
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
-    }
+    }//admin인지 확인
     async checkIsAdmin(userId: number): Promise<boolean> {
         try {
             const isAdmin = await this.qnaRepository.query(
@@ -102,6 +100,7 @@ export class QnaService {
 
         // try 문으로 묶어주세요
     }
+    //게시글의 작성자,비밀글여부 추출
     async checkQuery(Id, isComment?): Promise<Object | null> {
         try {
             let queryResult = null;
@@ -169,7 +168,7 @@ export class QnaService {
             );
         }
     }
-
+//qna단일게시글 조회 서브루틴,해당id의 qna게시글 리턴
     async getQnaPage(qnaId: number): Promise<any[] | false> {
         try {
             const page = await this.qnaRepository.query(
@@ -187,7 +186,7 @@ export class QnaService {
             );
         }
     }
-
+//isOwner속성확인
     async checkIsOwner(check: Object): Promise<boolean> {
         try {
             return check['isOwner'] ? true : false;
@@ -213,9 +212,8 @@ export class QnaService {
         try {
             const offset = pageRequest.getOffset();
             const limit = pageRequest.getLimit();
-            const count = await this.countAll();
-            const page = await this.qnaRepository.query(
-                `select  id, title, "dateTime" from "qna" as q where q."ban"=false and q."isDeleted"=false order by q."id" desc offset ${offset} limit ${limit}`);
+            const [count,page] = await Promise.all( [this.countAll(),this.qnaRepository.query(
+                `select  id, title, "dateTime" from "qna" as q where q."ban"=false and q."isDeleted"=false order by q."id" desc offset ${offset} limit ${limit}`)]);
             const returnPage = new Page(count, pageRequest.pageSize, page);
             return { success: true, returnPage };
         } catch (err) {
@@ -271,8 +269,7 @@ export class QnaService {
         try {
             const verified = await this.getToken.getToken(headers);
             const check = await this.checkUserandIsSecret(id, verified.userId);
-            let page = await this.getQnaPage(id);
-            let comments = await this.getAllComment(id, pageRequest);
+            let [page,comments] = await Promise.all([this.getQnaPage(id),this.getAllComment(id, pageRequest)]);
             if (comments['success']) {
                 comments = comments['Page'];
             } else {
@@ -335,9 +332,6 @@ export class QnaService {
         try {
             const update = await this.getOne(id, headers);
             const checkIsOwner = await this.checkIsOwner(update['check']);
-            this.logger.log(update);
-            this.logger.log(checkIsOwner);
-
             if (!checkIsOwner)
                 throw new Error('Qna.getupdate에 무권한접근');
 

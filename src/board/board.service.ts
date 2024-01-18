@@ -19,8 +19,8 @@ import { GetToken } from 'src/utils/GetToken';
 import { GetSearchSql } from 'src/utils/GetSearchSql';
 import { GetS3Url } from 'src/utils/GetS3Url';
 import { BoardRecommendEntity } from 'src/entities/boardRecommend.entity';
+import { checkIsImage } from 'src/utils/CheckIsImage';
 import { UserService } from 'src/user/user.service';
-
 @Injectable()
 export class BoardService {
   private readonly logger = new Logger(BoardService.name);
@@ -1177,6 +1177,7 @@ export class BoardService {
       const res = await this.boardRepository.find({
         take: 5,
         order: { id: 'DESC' },
+        where:{isDeleted: false},
       });
 
       return res;
